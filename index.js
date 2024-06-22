@@ -8,6 +8,7 @@ const testingRoute = require("./routes/testingRoute");
 const stockUsedInRoute = require("./routes/stockUsedInRoute");
 const ticketRoute = require("./routes/ticketRoute");
 const connectDB = require('./config/db');
+const path = require('path'); 
 
 dotenv.config();
 
@@ -19,7 +20,14 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(express.static('public'));
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Example route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'other.html'));
+});
 // Health Check Route
 app.get('/', (req, res) => {
   res.json({ status: 'UP' });
