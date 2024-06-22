@@ -1,0 +1,20 @@
+ const OPEN ='OPEN'
+ const PROGRESS='PROGRESS'
+const CLOSED= 'CLOSED'
+const BLOCKED= 'BLOCKED'
+const TECHNICIAN='TECHNICIAN'
+const USER='USER'
+const HOUSEKEEPING='HOUSEKEEPING'
+const MANAGER='MANAGER'
+const ADMIN='ADMIN'
+
+module.exports={
+    OPEN,
+    PROGRESS,
+    BLOCKED,
+    TECHNICIAN,
+    HOUSEKEEPING,
+    MANAGER,
+    ADMIN,
+    CLOSED
+}
