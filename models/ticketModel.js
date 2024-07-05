@@ -31,8 +31,7 @@ const ticketSchema = new mongoose.Schema(
     comments: [commentSchema], // Embed the comment schema
     issueLocation:{
       locationName:{type:String},
-      unit:{type:String},
-      floor:{type:String},
+      unit:{type: String,},
       room:{type:String},
       extraDetail:{type:String}
     },

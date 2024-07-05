@@ -43,6 +43,7 @@ createUser = async (req, res) => {
 
 const login = async (req, res) => {
     const { email, password } = req.body;
+    console.log("email",email)
 
     try {
         // Check if user exists
@@ -64,7 +65,7 @@ const login = async (req, res) => {
             // { expiresIn: '1h' }
         );
 
-        res.json({ token });
+        res.json({ token,...user.toObject() });
     } catch (err) {
         console.error('Error logging in:', err);
         res.status(500).json({ message: 'Internal server error.' });

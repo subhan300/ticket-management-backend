@@ -16,5 +16,6 @@ module.exports={
     HOUSEKEEPING,
     MANAGER,
     ADMIN,
-    CLOSED
+    CLOSED,
+    USER
 }

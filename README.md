@@ -1,1 +1,0 @@
-# ticket-management-backend

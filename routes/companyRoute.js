@@ -11,6 +11,8 @@ router.get('/getAll', adminAuthenticateJWT, companyController.getAllCompanies);
 // Route to get company by ID
 router.get('/:companyId', authenticateJWT, companyController.getCompanyById);
 router.post('/create', adminAuthenticateJWT, companyController.createCompany);
+router.post('/:companyId/units', companyController.addUnit);
+router.post('/units/:unitId/rooms', companyController.addRoom);
 
 // Other routes like POST /companies (create company), PUT /companies/:companyId, DELETE /companies/:companyId, etc.
 

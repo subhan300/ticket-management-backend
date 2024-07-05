@@ -17,7 +17,11 @@ const CompanySchema = new Schema({
     phone: {
         type: String,
         required: true
-    }
+    },
+    units: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Unit'
+    }]
 });
 
 // Create and export the Company model
