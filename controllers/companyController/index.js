@@ -2,6 +2,9 @@
 
 const Company = require('../../models/companyModel');
 const Unit=require('../../models/unitModel')
+const User = require('../../models/userModel');
+const { TECHNICIAN } = require('../../utils/constants');
+
 const createCompany = async (req, res) => {
     const { name, email, phone } = req.body;
 
@@ -99,11 +102,26 @@ const addRoom = async (req, res) => {
     }
 };
 
+const getUsersByCompanyId = async (req, res) => {
+    const { companyId } = req.params;
+    // console.log("company",req.user,"req",req.params)
+    try {
+        const users = await User.find({companyId,role:TECHNICIAN}).select("name email role");
+        if (!users) {
+            return res.status(404).json({ message: 'users not found.' });
+        }
+        res.json(users);
+    } catch (err) {
+        console.error('Error fetching company:', err);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+};
 // Other controller functions like createCompany, updateCompany, deleteCompany, etc.
 module.exports={
     getAllCompanies,
     createCompany,
     getCompanyById,
     addUnit,
-    addRoom
+    addRoom,
+    getUsersByCompanyId
 }

@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const Ticket = require('../../models/ticketModel');
 const User = require('../../models/userModel');
 const { ObjectId } = require('../../utils');
-
+const {TECHNICIAN}=require("../../utils/constants")
 const getAllTickets = async (req, res) => {
   try {
-    const tickets = await Ticket.find().populate('userId', 'name email');
+    const tickets = await Ticket.find().sort({ createdAt: -1 }).populate('userId', 'name email');
     res.status(200).json(tickets);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -15,8 +15,9 @@ const getAllTickets = async (req, res) => {
 const getTicketByUserAssignedId = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log
     
-    const tickets = await Ticket.find({ assignedTo: userId }).populate('userId', 'name email');
+    const tickets = await Ticket.find({ assignedTo: userId }).sort({ createdAt: -1 }).populate('userId', 'name email');
     res.status(200).json(tickets);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -26,9 +27,67 @@ const getTicketByUserAssignedId = async (req, res) => {
 const getTicketByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+    const tickets = await Ticket.find({ userId }).populate('userId', 'name email')
+    // .populate("assignedTo","name email");
+    const populatedTickets = await Promise.all(tickets.map(async (ticket) => {
+      const { name, email, _id } = ticket.userId; 
+
+      if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+        await ticket.populate('assignedTo', 'name email');
+      }
+      const assignedTo=ticket.assignedTo.name?ticket.assignedTo.name:ticket.assignedTo?ticket.assignedTo:""
+
+
+      return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
+    }));
+
+    // return populatedTickets;
+  //  const restructureData= tickets.map(ticket => {
+  //     const { name, email, _id } = ticket.userId; // Destructuring
+     
+  //     return ({...ticket.toObject(),name,email,userId:_id,assignedTo:ticket.assignedTo._id})
+      
+  //   });
+    res.status(200).json(populatedTickets);
+    // res.status(200).json(restructureData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const getFilterCompanyTickets = async (req, res) => {
+  try {
    
-    const tickets = await Ticket.find({ userId }).populate('userId', 'name email');
-    res.status(200).json(tickets);
+    const {id,companyId}=req.user;
+
+    const tickets = await Ticket.find({
+      companyId: companyId, 
+      $or: [
+        { assignedTo: id },
+        { assignedTo: '' }, 
+      ]
+    }).populate('userId', 'name email').populate('userId', 'name email')
+    // .populate("assignedTo","name email");
+    const populatedTickets = await Promise.all(tickets.map(async (ticket) => {
+      const { name, email, _id } = ticket.userId; 
+
+      if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+        await ticket.populate('assignedTo', 'name email');
+      }
+      const assignedTo=ticket.assignedTo.name?ticket.assignedTo.name:ticket.assignedTo?ticket.assignedTo:""
+
+
+      return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
+    }));
+
+    // return populatedTickets;
+  //  const restructureData= tickets.map(ticket => {
+  //     const { name, email, _id } = ticket.userId; // Destructuring
+     
+  //     return ({...ticket.toObject(),name,email,userId:_id,assignedTo:ticket.assignedTo._id})
+      
+  //   });
+    res.status(200).json(populatedTickets);
+    // res.status(200).json(restructureData);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -36,10 +95,11 @@ const getTicketByUserId = async (req, res) => {
 
 const createTicket = async (req, res) => {
   try {
-    const { userId, issue, description, issueLocation, status, assignedTo,images } = req.body;
-   
-
-
+    // console.log("req==== user",req.user)
+    const { userId, issue, description, issueLocation, status, assignedTo,images,companyId } = req.body;
+    // const payload=req.body
+ 
+    // const ticket = new Ticket(payload);
     const ticket = new Ticket({
       userId,
       issue,
@@ -47,6 +107,7 @@ const createTicket = async (req, res) => {
       issueLocation,
       status,
       assignedTo,
+      companyId,
       images,
    
     });
@@ -62,6 +123,7 @@ const updateTicket = async (req, res) => {
   try {
     const { ticketId } = req.params;
     const updates = req.body;
+    console.log("updates=====",updates)
 
     if (!mongoose.Types.ObjectId.isValid(ticketId)) {
       return res.status(400).json({ error: 'Invalid ticketId' });
@@ -130,6 +192,7 @@ module.exports={
     deleteTicket,
     getTicketByUserAssignedId,
     getTicketByUserId,
+    getFilterCompanyTickets ,
     updateTicket,
     getAllTickets,
     addComment

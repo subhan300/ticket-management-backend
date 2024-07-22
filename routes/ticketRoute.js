@@ -5,7 +5,9 @@ const ticketController = require('../controllers/ticketController');
 const { adminAuthenticateJWT } = require('../middleware/adminAuthMiddleware');
 const { authenticateJWT } = require('../middleware/authMiddleware');
 
-router.get('/getAll',adminAuthenticateJWT,ticketController.getAllTickets);
+router.get('/getAll',ticketController.getAllTickets);
+
+router.get('/getFilteredCompanyTickets',authenticateJWT,ticketController.getFilterCompanyTickets);
 router.get('/assigned/:userId', authenticateJWT,ticketController.getTicketByUserAssignedId);
 router.get('/user/:userId', authenticateJWT,ticketController.getTicketByUserId);
 router.post('/create', authenticateJWT,ticketController.createTicket);

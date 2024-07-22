@@ -10,6 +10,7 @@ router.get('/getAll', adminAuthenticateJWT, companyController.getAllCompanies);
 
 // Route to get company by ID
 router.get('/:companyId', authenticateJWT, companyController.getCompanyById);
+router.get('/users/:companyId', authenticateJWT, companyController.getUsersByCompanyId);
 router.post('/create', adminAuthenticateJWT, companyController.createCompany);
 router.post('/:companyId/units', companyController.addUnit);
 router.post('/units/:unitId/rooms', companyController.addRoom);

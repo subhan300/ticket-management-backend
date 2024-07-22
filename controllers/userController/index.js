@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const User = require('../../models/userModel');
 const jwt=require("jsonwebtoken")
 // Function to create a new user
-createUser = async (req, res) => {
+const createUser = async (req, res) => {
     const { name, email, role, password, companyId } = req.body;
 
     try {
@@ -43,7 +43,6 @@ createUser = async (req, res) => {
 
 const login = async (req, res) => {
     const { email, password } = req.body;
-    console.log("email",email)
 
     try {
         // Check if user exists
@@ -60,7 +59,7 @@ const login = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign(
-            { user: { id: user._id, email: user.email ,role:user.role} },
+            { user: { id: user._id, email: user.email ,role:user.role,companyId:user.companyId} },
             process.env.JWT_SECRET,
             // { expiresIn: '1h' }
         );
