@@ -10,6 +10,8 @@ const unitRoute = require("./routes/unitRoute");
 const stockUsedInRoute = require("./routes/stockUsedInRoute");
 const ticketRoute = require("./routes/ticketRoute");
 const commentRoute = require("./routes/commentRoute");
+const inventoryRoute=require("./routes/inventoryRoute");
+
 const connectDB = require('./config/db');
 const path = require('path'); 
 const cors = require('cors');
@@ -67,6 +69,7 @@ app.use('/api/stockUsedInRoute', stockUsedInRoute);
 app.use('/api/ticket', ticketRoute);
 app.use('/api/unit', unitRoute);
 app.use('/api/comment', commentRoute);
+app.use('/api/inventory', inventoryRoute);
 
 io.on('connection', (socket) => {
   console.log('A user connected');

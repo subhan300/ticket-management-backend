@@ -21,6 +21,19 @@ const commentSchema = new mongoose.Schema({
       // default: Date.now,
     }
   });
+
+
+const inventoryUsedSchema = new mongoose.Schema({
+  inventoryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Inventory',
+    required: true,
+  },
+  quantityUsed: {
+    type: Number,
+    required: true,
+  }
+});
 const ticketSchema = new mongoose.Schema(
   {
     userId: {
@@ -34,6 +47,7 @@ const ticketSchema = new mongoose.Schema(
       required:true,
     },
     comments: [commentSchema], // Embed the comment schema
+    inventoryUsed: [inventoryUsedSchema],
     issueLocation:{
       locationName:{type:String},
       unit:{type:Object},
@@ -41,6 +55,7 @@ const ticketSchema = new mongoose.Schema(
       extraDetail:{type:String}
     },
     assignedTo: { type: mongoose.Schema.Types.Mixed, ref: "User", required: false },
+    // assignedTo:  {id:{type: mongoose.Schema.Types.ObjectId},assignedName:{type:String} },
     issue: {
       type: String,
       required: true,
@@ -69,7 +84,8 @@ const ticketSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
+
 );
 
 const Ticket = mongoose.model("Ticket", ticketSchema);
