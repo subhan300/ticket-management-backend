@@ -26,9 +26,8 @@ const port = config.port;
 // Middleware
 app.use(express.json());
 const corsOptions = {
-  origin: true, // allow all URLs
+  origin: "*", // allow all URLs
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // allow all methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // allow specific headers
 };
 
 app.use(cors(corsOptions))
