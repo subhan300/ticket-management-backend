@@ -12,7 +12,7 @@ const formatTicketNumber=(ticketNo)=>{
 
 
 
-const url = "http://localhost:5173/manager/inventory/create";
+const url = "https://ticket-managment-frotnend.vercel.app/manager/inventory/create";
 const data = {
     productName: "Fans",
     productImage: "",

@@ -27,7 +27,10 @@ const port = config.port;
 app.use(express.json());
 const corsOptions = {
   origin: "*", // allow all URLs
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // allow all methods
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // allow all methods\
+  allowedHeaders: [
+    'Content-Type',
+  ],
 };
 
 app.use(cors(corsOptions))
