@@ -29,7 +29,7 @@ const createUser = async (req, res) => {
 
         // Generate JWT token for the newly created user
         const token = jwt.sign(
-            { user: { id: savedUser._id, email: savedUser.email, role: savedUser.role } },
+            { user: { id: savedUser._id, email,name, role } },
             process.env.JWT_SECRET,
             // { expiresIn: '1h' }
         );
@@ -59,7 +59,7 @@ const login = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign(
-            { user: { id: user._id, email: user.email ,role:user.role,companyId:user.companyId} },
+            { user: { id: user._id, email: user.email ,role:user.role,companyId:user.companyId,name:user.name} },
             process.env.JWT_SECRET,
             // { expiresIn: '1h' }
         );

@@ -13,7 +13,7 @@ const authenticateJWT = (req, res, next) => {
         if (err) {
             return res.status(403).json({ message: 'Token expired or invalid.' });
         }
-        req.user = decoded.user; // Assuming your JWT payload includes a 'user' object
+        req.user = decoded.user; // Assuming your JWT payload includes a 'user' 
         next();
     });
 };

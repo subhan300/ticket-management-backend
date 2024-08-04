@@ -11,13 +11,13 @@ const inventorySchema = new Schema({
     type: String,
     required: true,
   },
-  productImage:{
-    type:String,
+  productImages:{
+    type: Array,
     required:true
   },
   description: {
     type: String,
-    required: true,
+    required: false,
   },
   quantity: {
     type: Number,
@@ -26,7 +26,7 @@ const inventorySchema = new Schema({
   },
   usedItem: {
     type: Number,
-    required: true,
+    required: false,
     default: 0,
   },
  

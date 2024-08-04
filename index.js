@@ -15,6 +15,8 @@ const inventoryRoute=require("./routes/inventoryRoute");
 const connectDB = require('./config/db');
 const path = require('path'); 
 const cors = require('cors');
+const Ticket = require('./models/ticketModel');
+const { generateQRCode } = require('./utils');
 
 dotenv.config();
 
@@ -70,12 +72,36 @@ app.use('/api/ticket', ticketRoute);
 app.use('/api/unit', unitRoute);
 app.use('/api/comment', commentRoute);
 app.use('/api/inventory', inventoryRoute);
+app.get("/api/genereate-qrCode",async(req,res)=>{
+  const qrImageUrl=await generateQRCode();
+  res.status(200).send(`
+     <html>
+        
+        <head><title>qr code </title></head>
+        <body>
+           <img alt="qr code" src=${qrImageUrl}   /> 
+        </body>
+     </html>
+   `)
+ })
 
 io.on('connection', (socket) => {
   console.log('A user connected');
-  socket.on('joinTicketRoom', (ticketId) => {
+  socket.on('joinTicketRoom', async(ticketId) => {
     console.log(`User joined room for ticket: ${ticketId}`);
+    
     socket.join(ticketId);
+    try {
+      const ticket = await Ticket.findById(ticketId)
+      if (ticket) {
+        socket.emit('initialComments', ticket.comments); // Emit the comments to the user
+      } else {
+        socket.emit('error', { message: 'Ticket not found' });
+      }
+    } catch (err) {
+      console.error('Error fetching ticket comments:', err);
+      socket.emit('error', { message: 'Error fetching ticket comments' });
+    }
   });
   socket.on('leaveTicketRoom', (ticketId) => {
     console.log(`User left room for ticket: ${ticketId}`);

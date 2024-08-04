@@ -2,9 +2,10 @@
 
 const Inventory = require("../../models/inventoryModel");
 const createInventoryItem = async (req, res) => {
+  const {companyId}=req.user
   const {
     productName,
-    productImage,
+    productImages,
     description,
     quantity,
     location,
@@ -16,13 +17,14 @@ const createInventoryItem = async (req, res) => {
   try {
     const item = new Inventory({
       productName,
-      productImage,
+      productImages,
       description,
       quantity,
       location,
       category,
       status,
-      usedItem
+      usedItem,
+      companyId
     });
     const savedItem = await item.save();
     res.status(201).json(savedItem);
@@ -42,22 +44,25 @@ const getAllItems = async (req, res) => {
 
 // Function to get stock items by company ID
 const getInventoryItemsByCompany = async (req, res) => {
-  const { companyId } = req.params;
+  const {companyId}=req.user
 
   try {
-    const items = await Inventory.find({ companyId });
-    res.json(items);
+    const items = await Inventory.find({ companyId }).lean();
+    const transFormInventory=items.map(val=>({...val,quantityUsed:1,inventoryId:val._id}))
+    res.json(transFormInventory);
   } catch (err) {
     console.error("Error fetching inventory items:", err);
     res.status(500).json({ message: "Internal server error." });
   }
 };
 const getInventoryItemShortDetail = async (req, res) => {
-    const { companyId } = req.params;
+    const { companyId } = req.user;
   
     try {
-      const items = await Inventory.find({ companyId }).select("productName productImage");
-      res.json(items);
+      const items = await Inventory.find({ companyId }).select("productName productImages").lean();
+       console.log("items===",items)
+      const transFormInventory=items.map(val=>({...val,quantityUsed:1,inventoryId:val._id}))
+      res.json(transFormInventory);
     } catch (err) {
       console.error("Error fetching inventory items:", err);
       res.status(500).json({ message: "Internal server error." });

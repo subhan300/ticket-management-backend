@@ -3,7 +3,8 @@ const Ticket = require('../../models/ticketModel');
 // Add a new comment to a ticket
 const addComment = async (req, res) => {
     const { ticketId } = req.params;
-    const { userId, text, images, files,createdAt } = req.body;
+    const { userId, text, images, files,createdAt,isSystemGenerated } = req.body;
+    console.log("is system",isSystemGenerated)
 
     try {
         const ticket = await Ticket.findById(ticketId);
@@ -16,6 +17,7 @@ const addComment = async (req, res) => {
             text,
             images,
             files,
+            isSystemGenerated,
             createdAt,
         };
 
@@ -24,16 +26,18 @@ const addComment = async (req, res) => {
 
         // Emit event via Socket.io
         // req.io.emit('commentAdded', ticket);
-        req.io.to(ticketId).emit('commentAdded', ticket.comments);
+        const formatComments=[...ticket.comments.toObject()]
 
-        res.status(201).json(ticket.comments);
+        req.io.to(ticketId).emit('commentAdded', formatComments);
+
+        res.status(201).json(formatComments);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
 const editComment = async (req, res) => {
-    const { ticketId, commentId } = req.params;
+    const { ticketId, commentId,isSystemGenerated, } = req.params;
     const { userId, text,  files ,createdAt} = req.body;
 
     try {

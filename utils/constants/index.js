@@ -8,8 +8,12 @@ const USER = "USER";
 const HOUSEKEEPING = "HOUSEKEEPING";
 const MANAGER = "MANAGER";
 const ADMIN = "ADMIN";
+const NotAssigned="Not Assigned"
+const NotAssignedId="NotAssigned"
 
 module.exports = {
+  NotAssignedId,
+  NotAssigned,
   COMPLETED,
   OPEN,
   PROGRESS,

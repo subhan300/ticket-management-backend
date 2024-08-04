@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { OPEN, PROGRESS, BLOCKED, CLOSED, COMPLETED } = require("../utils/constants");
 const commentSchema = new mongoose.Schema({
+    isSystemGenerated:{type:Boolean,default:false},
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -36,6 +37,7 @@ const inventoryUsedSchema = new mongoose.Schema({
 });
 const ticketSchema = new mongoose.Schema(
   {
+    ticketNo:{type:String,},
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -48,6 +50,7 @@ const ticketSchema = new mongoose.Schema(
     },
     comments: [commentSchema], // Embed the comment schema
     inventoryUsed: [inventoryUsedSchema],
+    externalInventory:{type:String,default:"Not Ordered anything Externally"},
     issueLocation:{
       locationName:{type:String},
       unit:{type:Object},
