@@ -28,9 +28,9 @@ app.use(express.json());
 const corsOptions = {
   origin: ["https://ticket-managment-frotnend.vercel.app"], // allow all URLs
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // allow all methods\
-  allowedHeaders: [
-    'Content-Type',
-  ],
+  // allowedHeaders: [
+  //   'Content-Type',
+  // ],
 };
 
 app.use(cors(corsOptions))
