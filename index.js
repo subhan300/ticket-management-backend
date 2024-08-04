@@ -25,8 +25,13 @@ const port = config.port;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+const corsOptions = {
+  origin: true, // allow all URLs
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // allow all methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // allow specific headers
+};
 
+app.use(cors(corsOptions))
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
