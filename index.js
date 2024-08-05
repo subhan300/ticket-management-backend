@@ -57,7 +57,7 @@ const server = app.listen(port, () => {
 // const io = socketIo(server);
 const io = socketIo(server, {
   cors: {
-    origin: 'https://ticket-managment-frotnend.vercel.app', // Allow all origins for Socket.io
+    origin: '*', // Allow all origins for Socket.io
     methods: ['GET', 'POST'],
   }
 });
