@@ -11,12 +11,14 @@ const stockUsedInRoute = require("./routes/stockUsedInRoute");
 const ticketRoute = require("./routes/ticketRoute");
 const commentRoute = require("./routes/commentRoute");
 const inventoryRoute=require("./routes/inventoryRoute");
+const notificationRoute=require("./routes/notificationRoute");
 
 const connectDB = require('./config/db');
 const path = require('path'); 
 const cors = require('cors');
 const Ticket = require('./models/ticketModel');
 const { generateQRCode } = require('./utils');
+const connectedUsers = require('./utils/store-data/connectedUsers');
 
 dotenv.config();
 
@@ -66,6 +68,7 @@ const io = socketIo(server, {
 // Middleware to make io accessible in the controllers
 app.use((req, res, next) => {
   req.io = io;
+ 
   next();
 });
 
@@ -79,6 +82,7 @@ app.use('/api/ticket', ticketRoute);
 app.use('/api/unit', unitRoute);
 app.use('/api/comment', commentRoute);
 app.use('/api/inventory', inventoryRoute);
+app.use('/api/notification',notificationRoute)
 app.get("/api/genereate-qrCode",async(req,res)=>{
   const qrImageUrl=await generateQRCode();
   res.status(200).send(`
@@ -91,7 +95,7 @@ app.get("/api/genereate-qrCode",async(req,res)=>{
      </html>
    `)
  })
-
+console.log("connected users collection",connectedUsers)
 io.on('connection', (socket) => {
   console.log('A user connected');
   socket.on('joinTicketRoom', async(ticketId) => {
@@ -113,9 +117,23 @@ io.on('connection', (socket) => {
   socket.on('leaveTicketRoom', (ticketId) => {
     console.log(`User left room for ticket: ${ticketId}`);
     socket.leave(ticketId);
-});
 
+   
+  
+    
+});
+socket.on('register', (userId) => {
+  connectedUsers[userId] = socket.id;
+  console.log(`User registered: ${userId}`);
+  console.log("connedted users",connectedUsers)
+});
   socket.on('disconnect', () => {
     console.log('A user disconnected');
+    for (const [userId, socketId] of Object.entries(connectedUsers)) {
+      if (socketId === socket.id) {
+        delete connectedUsers[userId];
+        break;
+      }
+    }
   });
 });

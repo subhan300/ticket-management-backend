@@ -48,6 +48,7 @@ const ticketSchema = new mongoose.Schema(
       ref:"company",
       required:true,
     },
+    archieve:{type:Boolean,default:false},
     comments: [commentSchema], // Embed the comment schema
     inventoryUsed: [inventoryUsedSchema],
     externalInventory:{type:String,default:"Not Ordered anything Externally"},
@@ -88,6 +89,7 @@ const ticketSchema = new mongoose.Schema(
   {
     timestamps: true,
   },
+  
 
 );
 
