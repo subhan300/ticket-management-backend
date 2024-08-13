@@ -192,9 +192,9 @@ const getCompanyTickets = async (req, res) => {
 
 const createTicket = async (req, res) => {
   try {
-    const { companyId, name, email } = req.user;
+    const { companyId, name, email ,id:userId} = req.user;
     const {
-      userId,
+      
       issue,
       description,
       issueLocation,

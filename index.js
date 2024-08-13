@@ -13,6 +13,7 @@ const commentRoute = require("./routes/commentRoute");
 const inventoryRoute = require("./routes/inventoryRoute");
 const notificationRoute = require("./routes/notificationRoute");
 const productRoute = require("./routes/productRoute");
+const locationRoute = require("./routes/locationRoute");
 
 const connectDB = require("./config/db");
 const path = require("path");
@@ -84,6 +85,7 @@ app.use("/api/comment", commentRoute);
 app.use("/api/inventory", inventoryRoute);
 app.use("/api/notification", notificationRoute);
 app.use("/api/product", productRoute);
+app.use("/api/location", locationRoute);
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
 
