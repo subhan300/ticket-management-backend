@@ -258,6 +258,13 @@ const handleAssignedNotifications = async (
          managersCollection,
          ticketUnAssignedMessage);
     }
+    if(usersCollection.length){
+        await notifyUsers(req,
+         name,
+         ticket,
+         usersCollection,
+         ticketUnAssignedMessage);
+    }
     
    }
 };

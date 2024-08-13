@@ -38,3 +38,15 @@ module.exports = router;
 //       if (managersCollection.length) await notifyManagersAboutStatus(req,name,ticket,managersCollection,technicianUpdateTicketAssignedMessage);
 //     }
 //   };
+
+
+// const qrImageUrl=await generateQRCode();
+//   res.status(200).send(`
+//      <html>
+        
+//         <head><title>qr code </title></head>
+//         <body>
+//            <img alt="qr code" src=${qrImageUrl}   /> 
+//         </body>
+//      </html>
+//    `)

@@ -2,29 +2,33 @@
 
 const Inventory = require("../../models/inventoryModel");
 const createInventoryItem = async (req, res) => {
-  const {companyId}=req.user
+  const { companyId } = req.user;
   const {
     productName,
-    productImages,
+    productImage,
     description,
     quantity,
     location,
     category,
     status,
-    usedItem
+    usedItem,
+    SKU,
+    price,
   } = req.body;
 
   try {
     const item = new Inventory({
       productName,
-      productImages,
+      productImage,
       description,
       quantity,
       location,
       category,
       status,
       usedItem,
-      companyId
+      companyId,
+      SKU,
+      price,
     });
     const savedItem = await item.save();
     res.status(201).json(savedItem);
@@ -44,11 +48,15 @@ const getAllItems = async (req, res) => {
 
 // Function to get stock items by company ID
 const getInventoryItemsByCompany = async (req, res) => {
-  const {companyId}=req.user
+  const { companyId } = req.user;
 
   try {
     const items = await Inventory.find({ companyId }).lean();
-    const transFormInventory=items.map(val=>({...val,quantityUsed:1,inventoryId:val._id}))
+    const transFormInventory = items.map((val) => ({
+      ...val,
+      quantityUsed: 1,
+      inventoryId: val._id,
+    }));
     res.json(transFormInventory);
   } catch (err) {
     console.error("Error fetching inventory items:", err);
@@ -56,24 +64,32 @@ const getInventoryItemsByCompany = async (req, res) => {
   }
 };
 const getInventoryItemShortDetail = async (req, res) => {
-    const { companyId } = req.user;
-  
-    try {
-      const items = await Inventory.find({ companyId }).select("productName productImages").lean();
-       console.log("items===",items)
-      const transFormInventory=items.map(val=>({...val,quantityUsed:1,inventoryId:val._id}))
-      res.json(transFormInventory);
-    } catch (err) {
-      console.error("Error fetching inventory items:", err);
-      res.status(500).json({ message: "Internal server error." });
-    }
-  };
+  const { companyId } = req.user;
+
+  try {
+    const items = await Inventory.find({ companyId })
+      .select("productName productImage")
+      .lean();
+    console.log("items===", items);
+    const transFormInventory = items.map((val) => ({
+      ...val,
+      quantityUsed: 1,
+      inventoryId: val._id,
+    }));
+    res.json(transFormInventory);
+  } catch (err) {
+    console.error("Error fetching inventory items:", err);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
 // Update an inventory item
 const updateInventoryItem = async (req, res) => {
   try {
+    const {productId}=req.params
+    const payload=req.body
     const updatedItem = await Inventory.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+      productId,
+      payload,
       { new: true }
     );
     if (!updatedItem) return res.status(404).json({ error: "Item not found" });
@@ -86,32 +102,35 @@ const updateInventoryItem = async (req, res) => {
 // Delete an inventory item
 const deleteInventoryItem = async (req, res) => {
   try {
+    const {inventoryId}=  req.params
+    console.log("onventory===",req.params)
     const deletedItem = await Inventory.findByIdAndDelete(
-      req.params.inventoryId
+      inventoryId
     );
-    if (!deletedItem) return res.status(404).json({ error: "Item not found" });
-    res.json(deletedItem);
+    console.log("delet item",deletedItem)
+    
+    res.status(200).json("deleted");
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
 const createBulkInventoryItem = async (req, res) => {
- 
-  
-    try {
-        const  items  = req.body;
-        const {companyId}=req.params
-        console.log("items",items)
-        if (!Array.isArray(items) || items.length === 0) {
-          return res.status(400).json({ message: 'Invalid items array' });
-        }
-      const createdItems = await Inventory.insertMany(items);
-      res.status(201).json(createdItems);
-    } catch (err) {
-      res.status(500).json({ message: 'Error creating inventory items', error: err.message });
+  try {
+    const items = req.body;
+    const { companyId } = req.params;
+    console.log("items", items);
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Invalid items array" });
     }
-  };
+    const createdItems = await Inventory.insertMany(items);
+    res.status(201).json(createdItems);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error creating inventory items", error: err.message });
+  }
+};
 
 module.exports = {
   getInventoryItemsByCompany,
@@ -120,5 +139,5 @@ module.exports = {
   deleteInventoryItem,
   getAllItems,
   createBulkInventoryItem,
-  getInventoryItemShortDetail
+  getInventoryItemShortDetail,
 };

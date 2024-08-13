@@ -1,6 +1,8 @@
 const QRCode = require("qrcode");
 const jwt = require("jsonwebtoken");
+const { createCanvas } = require("canvas");
 const fs = require("fs");
+const JsBarcode = require('jsbarcode');
 const { ObjectId } = require("mongoose").Types;
 
 const formatTicketNumber = (ticketNo) => {
@@ -37,6 +39,26 @@ const generateQRCode = async () => {
     console.error("Error generating QR code:", err);
   }
 };
+function generateBarcode(text) {
+  console.log("text==",text)
+  const options = {
+    format: 'CODE128',
+    text,
+    font: 'monospace',
+    font_size: 18,
+    text_margin: 5,
+    width: 2,
+    height: 50,
+    margin: 10,
+  };
+  const canvas = createCanvas();
+  JsBarcode(canvas, text, options);
+  return canvas.toBuffer();
+}
+
+
+
+
 
 const updateTicketAssignedMessage = (name,assignedTo) => {
   return `${name} have  assigned a  ticket to ${assignedTo}`;
@@ -71,6 +93,8 @@ const  ticketUnAssignedMessage=(name,role)=>{
 // };
 
 module.exports = {
+
+  generateBarcode,
   ticketUnAssignedMessage,
   ticketCreateMessage,
   updateStatusMessage,
