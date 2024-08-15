@@ -9,8 +9,10 @@ router.get('/getAll',ticketController.getAllTickets);
 router.get('/getCompanyTicket',authenticateJWT,ticketController.getCompanyTickets);
 
 router.get('/getFilteredCompanyTickets',authenticateJWT,ticketController.getFilterCompanyTickets);
-// router.get('/assigned/:userId', authenticateJWT,ticketController.getTicketByUserAssignedId);
+
 router.get('/user/:userId', authenticateJWT,ticketController.getTicketByUserId);
+// here user id mean for the resident this ticket is created 
+router.get('/history/:SKU', authenticateJWT,ticketController.getUserTicket);
 router.post('/create', authenticateJWT,ticketController.createTicket);
 
 router.put('/update/:ticketId',authenticateJWT,ticketController.updateTicket);

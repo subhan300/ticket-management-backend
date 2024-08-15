@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 
 // Define the User schema
 const UserSchema = new Schema({
+    SKU:{type:String},
     name: {
         type: String,
         required: true
@@ -28,7 +29,13 @@ const UserSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Company',
         required:false
+    },
+    locationName:{type:String,required:true},
+    livingLocation:{
+            unit:{_id:{type:Schema.Types.ObjectId},name:{type:String}},
+            room:{type:String},
     }
+
 });
 
 // Create and export the User model

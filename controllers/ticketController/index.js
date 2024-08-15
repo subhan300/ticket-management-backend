@@ -16,6 +16,7 @@ const connectedUsers = require("../../utils/store-data/connectedUsers");
 const Notification = require("../../models/notificationModel");
 const { getAllManagers, getAllUsersByRole } = require("../globalController/GlobalController");
 const { handleNotification, handleTicketNotification } = require("../notificationController/notificationHelper");
+const userModel = require("../../models/userModel");
 const getLastTicketNumber = async () => {
   const lastTicket = await Ticket.findOne().sort({ ticketNo: -1 });
   const getNumber= lastTicket ? lastTicket.ticketNo : 0;
@@ -178,6 +179,67 @@ const getCompanyTickets = async (req, res) => {
           assignedTo,
           inventoryUsed: transformedInventoryUsed,
           assignedToColumn: assignedTo._id,
+        };
+      })
+    );
+
+  
+    res.status(200).json(populatedTickets);
+    // res.status(200).json(restructureData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const getUserTicket = async (req, res) => {
+  try {
+    const { id, companyId } = req.user;
+    const {SKU}=req.params;
+    console.log("SKU--",SKU)
+    const getResident=await userModel.findOne({SKU}).select("name locationName livingLocation email").lean();
+   console.log("get resident ===== >",getResident);
+   
+    const tickets = await Ticket.find({
+      companyId: companyId,
+      "issueLocation.room":getResident?.livingLocation.room
+    })
+      .populate("userId", "name email")
+      .populate({
+        path: "inventoryUsed.inventoryId",
+        model: "Inventory",
+        select: "productName productImages",
+      })
+      .sort({ createdAt: -1 });
+
+    // .populate("assignedTo","name email");
+    const populatedTickets = await Promise.all(
+      tickets.map(async (ticket) => {
+        const { name, email, _id } = ticket.userId;
+
+        if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+          await ticket.populate("assignedTo", "name email");
+        }
+        const assignedTo =
+          ticket.assignedTo === NotAssignedId
+            ? { name: NotAssigned, _id: NotAssignedId }
+            : ticket.assignedTo;
+        const transformedInventoryUsed = ticket.inventoryUsed.map((item) => ({
+          _id: item.inventoryId._id,
+          productName: item.inventoryId.productName,
+          productImages: item.inventoryId.productImages,
+          quantityUsed: item.quantityUsed,
+        }));
+
+        // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
+        return {
+          ...ticket.toObject(),
+          name,
+          email,
+          userId: _id,
+          assignedTo,
+          inventoryUsed: transformedInventoryUsed,
+          assignedToColumn: assignedTo._id,
+          resident:getResident
+
         };
       })
     );
@@ -386,5 +448,6 @@ module.exports = {
   updateTicket,
   getAllTickets,
   addComment,
-  getCompanyTickets
+  getCompanyTickets,
+  getUserTicket
 };
