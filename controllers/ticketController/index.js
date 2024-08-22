@@ -355,7 +355,6 @@ const updateTicket = async (req, res) => {
       new: true,
     })
       .populate("userId", "name email")
-      .populate("userId", "name email")
       .populate({
         path: "inventoryUsed.inventoryId",
         model: "Inventory",

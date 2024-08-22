@@ -19,9 +19,22 @@ const getAllManagers = async (companyId) => {
       return [];
     }
   };
+  const getAllUsersCollectionByRole = async (req,res) => {
+
+    try {
+      const {role}=req.params;
+      const {companyId}=req.user;
+      const usersCollection = await userModel.find({ role, companyId }).select('_id name');
+      return res.status(200).send(usersCollection)
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      res.status(400).send("failed to handle query")
+    }
+  };
 
 
   module.exports={
+    getAllUsersCollectionByRole,
     getAllUsersByRole ,
     getAllManagers
   }

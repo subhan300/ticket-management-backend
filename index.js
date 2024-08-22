@@ -14,13 +14,17 @@ const inventoryRoute = require("./routes/inventoryRoute");
 const notificationRoute = require("./routes/notificationRoute");
 const productRoute = require("./routes/productRoute");
 const locationRoute = require("./routes/locationRoute");
+const userItemRoute = require("./routes/userItemRoute");
+const laundryRoute = require("./routes/laundryRoute");
 
 const connectDB = require("./config/db");
 const path = require("path");
 const cors = require("cors");
 const Ticket = require("./models/ticketModel");
-const { generateQRCode, generateBarcode } = require("./utils");
+const { generateQRCode, generateBarcode, generateSKU } = require("./utils");
 const connectedUsers = require("./utils/store-data/connectedUsers");
+const LaundryTicket = require("./models/laundryModel");
+const { LaundryOperator, MANAGER } = require("./utils/constants");
 
 dotenv.config();
 
@@ -86,6 +90,8 @@ app.use("/api/inventory", inventoryRoute);
 app.use("/api/notification", notificationRoute);
 app.use("/api/product", productRoute);
 app.use("/api/location", locationRoute);
+app.use("/api/userItems", userItemRoute);
+app.use("/api/laundryTicket", laundryRoute);
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
 
@@ -103,21 +109,25 @@ app.post("/api/genereate-barCode", async (req, res) => {
 console.log("connected users collection", connectedUsers);
 io.on("connection", (socket) => {
   console.log("A user connected");
-  socket.on("joinTicketRoom", async (ticketId) => {
+  socket.on("joinTicketRoom", async (payload) => {
+    const {ticketId,role}=payload
     console.log(`User joined room for ticket: ${ticketId}`);
 
     socket.join(ticketId);
     try {
       const ticket = await Ticket.findById(ticketId);
-      if (ticket) {
+      const laundryTicket = await LaundryTicket.findById(ticketId);
+      if (ticket && role !== LaundryOperator) {
         socket.emit("initialComments", ticket.comments); // Emit the comments to the user
-      } else {
-        socket.emit("error", { message: "Ticket not found" });
+      } 
+      if(laundryTicket && role.includes(MANAGER,LaundryOperator)){
+        socket.emit("initialComments", laundryTicket.comments); // Emit the comments to the user
       }
     } catch (err) {
       console.error("Error fetching ticket comments:", err);
       socket.emit("error", { message: "Error fetching ticket comments" });
     }
+
   });
   socket.on("leaveTicketRoom", (ticketId) => {
     console.log(`User left room for ticket: ${ticketId}`);
