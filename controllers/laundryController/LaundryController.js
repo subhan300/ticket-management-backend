@@ -36,8 +36,14 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id:userId } = req.user;
-    const tickets = LaundryTicket.find({ userId })
+    const { id:userId ,role} = req.user;
+     LaundryTicket.find({ userId })
+    let tickets;
+    if(role === MANAGER){
+   tickets=LaundryTicket.find({})
+    }else{
+     tickets= LaundryTicket.find({ userId });
+    }
     console.log("tickets==",tickets,"id==",userId)
     const populatedTickets = await populateLaundryTickets(tickets);
     const populatedTicketsStucture =await laundryTicketStructure(populatedTickets)
