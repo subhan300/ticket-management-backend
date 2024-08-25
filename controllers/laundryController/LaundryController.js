@@ -292,10 +292,11 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
   try {
     const payload = req.body;
     console.log("req body", payload);
-    const item = await UserItem.find({ SKU: { $in: payload } }).select("itemName itemImage SKU")
+    const item = await UserItem.find({ SKU: { $in: payload } })
+      .select("itemName itemImage SKU")
       .populate("user", "name livingLocation locationName")
       .lean();
-      console.log("item===",item)
+    console.log("item===", item);
     if (item.length) {
       // const {
       //   itemName,
@@ -307,8 +308,8 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
       //   _id,
       // } = item;
       const structureResponse = {
-        product:item,
-        user:item[0].user,
+        product: item,
+        user: item[0].user,
       };
 
       return res.status(200).send(structureResponse);
@@ -336,8 +337,30 @@ const getResidentLocationById = async (req, res) => {
     return res.status(400).send("failed to get location");
   }
 };
+const getResidentHistory = async (req, res) => {
+  try {
+    const { residentId } = req.params;
+    const ticket = await LaundryTicket.find({ resident:residentId }).select("resident ticketNo updatedAt")
+      .populate("userItems").populate("resident")
+      .exec()
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found with this resident id " });
+    }
+
+    // Send response with ticket details including updated date and userItems
+    res.json(
+      ticket
+    );
+  } catch (error) {
+    console.error(error);
+    console.log(error)
+    return res.status(400).send(error);
+  }
+};
 
 module.exports = {
+  getResidentHistory,
   getResidentProductsAndLocationBySkuList,
   getResidentLocationById,
   getResidentLocationByItemSku,

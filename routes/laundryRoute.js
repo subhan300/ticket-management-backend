@@ -10,6 +10,7 @@ router.get('/getAll',laundryController.getAllTickets);
 router.get('/getCompanyTicket',authenticateJWT,laundryController.getCompanyTickets);
 router.get('/getResidentLocation/:residentId',authenticateJWT,laundryController.getResidentLocationById);
 router.get('/getResidentItemLocation/:SKU',authenticateJWT,laundryController.getResidentLocationByItemSku);
+router.post('/getResidentHistory/:residentId',authenticateJWT,laundryController.getResidentHistory);
 router.post('/getResidentItemLocation',authenticateJWT,laundryController.getResidentProductsAndLocationBySkuList);
 router.get('/getFilteredCompanyTickets',authenticateJWT,laundryController.getFilterCompanyTickets);
 
