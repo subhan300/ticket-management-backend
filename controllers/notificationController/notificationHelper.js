@@ -5,9 +5,10 @@ const {
   technicianUpdateTicketAssignedMessage,
   updateStatusMessage,
   ticketCreateMessage,
+  laundaryCreateMessage,
   ticketUnAssignedMessage,
 } = require("../../utils");
-const { TECHNICIAN, NotAssignedId, MANAGER } = require("../../utils/constants");
+const { TECHNICIAN, NotAssignedId, MANAGER, LaundryOperator } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 
 // Helper function to create and save a notification
@@ -61,6 +62,7 @@ const notifyUsers = async (
   messageHandler
 ) => {
     const { role, } = req.user;
+    console.log("role===",role)
   const { ticketNo, _id: ticketId, assignedTo } = ticket;
   for (const userId of usersCollection) {
     console.log("notify func run =====user====",userId)
@@ -291,9 +293,22 @@ const handleTicketNotification = async (
         ticketCreateMessage
       );
   }
-
+// here technician means laundary operator
   if (role === "MANAGER" && technicians.length) {
+    console.log("collection of ",technicians,"name",name)
     await notifyUsers(req, name, ticket, technicians, ticketCreateMessage);
+  }
+ 
+  if(role===LaundryOperator){
+   
+    if (managersCollection.length)
+      await notifyUsers(
+        req,
+        name,
+        ticket,
+        managersCollection,
+        ticketCreateMessage
+      );
   }
 };
 module.exports = { handleNotification,handleTicketNotification };
