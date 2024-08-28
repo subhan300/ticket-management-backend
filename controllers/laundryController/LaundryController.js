@@ -270,13 +270,15 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
   try {
     const payload = req.body;
     const item = await UserItem.find({ SKU: { $in: payload } })
-      .select("itemName itemImage SKU").lean()
+      .select("itemName itemImage SKU room unit").lean()
       // .populate("user", "name livingLocation locationName")
       // .lean();
     console.log("item===", item);
     if (item.length) {
       const structureResponse = {
         product: item,
+        room:item[0].room,
+        unit:item[0].unit
       };
 
       return res.status(200).send(structureResponse);
@@ -309,7 +311,7 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
 const getResidentHistory = async (req, res) => {
   try {
     const { room } = req.params;
-    console.log("room",room)
+    console.log("room",getResidentLocationByItemSku)
     const ticket = await LaundryTicket.find({ "issueLocation.room":room }).select("ticketNo updatedAt")
       .populate("userItems")
       .exec()
