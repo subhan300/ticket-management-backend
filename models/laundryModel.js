@@ -33,13 +33,7 @@ const commentSchema = new mongoose.Schema({
     // default: Date.now,
   },
 });
-const userItemsList = new mongoose.Schema({
-  item: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "UserItem",
-    required: true,
-  },
-});
+
 
 const LaundrySchema = new mongoose.Schema(
   {
@@ -49,11 +43,11 @@ const LaundrySchema = new mongoose.Schema(
       ref: "UserItem",
       required: true,}],
     quantity: { type: Number, default: 0 },
-    resident: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    // resident: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "User",
+    //   required: true,
+    // },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -7,7 +7,7 @@ router.post('/', userItemController.createItem);
 router.post('/bulk-creation', userItemController.createBulkItem);
 
 // Get all items for a user
-router.get('/user/:userId', userItemController.getUserItems);
+router.get('/user/:room', userItemController.getUserItemsByRoom);
 
 // Get a specific item
 router.get('/:SKU', userItemController.getItemById);

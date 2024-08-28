@@ -102,8 +102,8 @@ const populateLaundryTickets = async (tickets) => {
     .populate({
       path: "userItems",
       model: "UserItem",
-      // select: "",
-    }).populate("resident", "name email")
+    })
+    // .populate("resident", "name email")
     .sort({ createdAt: -1 });
 };
 const laundryTicketStructure = async (populatedTickets) => {

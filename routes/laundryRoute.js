@@ -8,16 +8,17 @@ const { getAllUsersCollectionByRole } = require('../controllers/globalController
 
 router.get('/getAll',laundryController.getAllTickets);
 router.get('/getCompanyTicket',authenticateJWT,laundryController.getCompanyTickets);
-router.get('/getResidentLocation/:residentId',authenticateJWT,laundryController.getResidentLocationById);
+// router.get('/getResidentLocation/:residentId',authenticateJWT,laundryController.getResidentLocationById);
 router.get('/getResidentItemLocation/:SKU',authenticateJWT,laundryController.getResidentLocationByItemSku);
-router.post('/getResidentHistory/:residentId',authenticateJWT,laundryController.getResidentHistory);
+
+router.post('/getResidentHistory/:room',authenticateJWT,laundryController.getResidentHistory);
 router.post('/getResidentItemLocation',authenticateJWT,laundryController.getResidentProductsAndLocationBySkuList);
 router.get('/getFilteredCompanyTickets',authenticateJWT,laundryController.getFilterCompanyTickets);
 
 router.get('/user/:userId', authenticateJWT,laundryController.getTicketByUserId);
 router.get('/company/users/:role', authenticateJWT,getAllUsersCollectionByRole);
 // here user id mean for the resident this ticket is created 
-router.get('/history/:SKU', authenticateJWT,laundryController.getUserTicket);
+router.get('/history/:room', authenticateJWT,laundryController.getUserTicket);
 router.post('/create', authenticateJWT,laundryController.createTicket);
 
 router.put('/update/:ticketId',authenticateJWT,laundryController.updateTicket);

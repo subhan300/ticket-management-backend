@@ -1,9 +1,11 @@
 const UserItem = require('../../models/userItemsModel');
+const { generateSKU } = require('../../utils');
 
 // Create a new item
 const createItem = async (req, res) => {
     try {
-        const newItem = new UserItem(req.body);
+        const generateSku = generateSKU(`${req.body.room}-${req.body.itemName}`);
+        const newItem = new UserItem({...req.body,SKU:generateSku});
         const savedItem = await newItem.save();
         res.status(201).json(savedItem);
     } catch (err) {
@@ -15,8 +17,9 @@ const createBulkItem = async (req, res) => {
     try {
         // Ensure each item in the request body includes the user ID
         const itemsWithUser=req.body
-        console.log("items",itemsWithUser)
-        const savedItems = await UserItem.insertMany(itemsWithUser);
+       
+        const addSkuInTtems=itemsWithUser.map(val=>({...val,SKU:generateSKU(`${val.itemName}-${val.category}`)}))
+        const savedItems = await UserItem.insertMany(addSkuInTtems);
         res.status(201).json(savedItems);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -24,10 +27,10 @@ const createBulkItem = async (req, res) => {
 }
 
 // Get all items for a user
-const getUserItems = async (req, res) => {
+const getUserItemsByRoom = async (req, res) => {
     try {
-        const {userId}=req.params;
-        const items = await UserItem.find({user:userId});
+        const {room}=req.params;
+        const items = await UserItem.find({room});
         res.status(200).json(items);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -72,8 +75,8 @@ const deleteItem = async (req, res) => {
 };
 
 module.exports = {
+    getUserItemsByRoom,
     createItem,
-    getUserItems,
     getItemById,
     updateItem,
     deleteItem,

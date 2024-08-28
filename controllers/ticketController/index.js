@@ -194,13 +194,12 @@ const getUserTicket = async (req, res) => {
   try {
     const { id, companyId } = req.user;
     const {SKU}=req.params;
-    console.log("SKU--",SKU)
-    const getResident=await userModel.findOne({SKU}).select("name locationName livingLocation email").lean();
-   console.log("get resident ===== >",getResident);
+  //   const getResident=await userModel.findOne({SKU}).select("name locationName livingLocation email").lean();
+  //  console.log("get resident ===== >",getResident);
    
     const tickets = await Ticket.find({
       companyId: companyId,
-      "issueLocation.room":getResident?.livingLocation.room
+      "issueLocation.room":SKU
     })
       .populate("userId", "name email")
       .populate({
@@ -238,7 +237,7 @@ const getUserTicket = async (req, res) => {
           assignedTo,
           inventoryUsed: transformedInventoryUsed,
           assignedToColumn: assignedTo._id,
-          resident:getResident
+          // resident:getResident
 
         };
       })

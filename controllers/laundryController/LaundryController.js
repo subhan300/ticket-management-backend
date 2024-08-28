@@ -104,17 +104,11 @@ const getCompanyTickets = async (req, res) => {
 const getUserTicket = async (req, res) => {
   try {
     const { companyId } = req.user;
-    const { SKU } = req.params;
-    console.log("SKU--", SKU);
-    const getResident = await userModel
-      .findOne({ SKU })
-      .select("name locationName livingLocation email")
-      .lean();
-    console.log("get resident ===== >", getResident);
+    const { room } = req.params;
 
     const tickets = await LaundryTicket.find({
       companyId: companyId,
-      resident: getResident._id,
+      "issueLocation.room":room ,
     });
     const populatedTickets = populateLaundryTickets(tickets);
     const populatedTicketsStucture = await laundryTicketStructure(
@@ -131,9 +125,8 @@ const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
 
-    const { resident } = req.body;
     const ticketNo = await getLastTicketNumber();
-    const generateSku = generateSKU(`${req.body.resident}-${ticketNo}`);
+    const generateSku = generateSKU(`${req.body.issueLocation.room}-${ticketNo}`);
     const ticket = new LaundryTicket({
       userId,
       ticketNo,
@@ -149,15 +142,11 @@ const createTicket = async (req, res) => {
       .populate({
         path: "userItems",
         model: "UserItem",
-        // select: "",
       })
-      .populate("resident", "name email");
+      // .populate("resident", "name email");
 
-    console.log("get selcted", getSelectedTicket);
     const laundryOperator = await getAllUsersByRole(companyId, LaundryOperator);
-    const user = await User.findById(resident).select(
-      "name email livingLocation"
-    );
+   
     const managers = await getAllUsersByRole(companyId, MANAGER);
 
     handleTicketNotification(req, managers, laundryOperator, ticket);
@@ -171,16 +160,11 @@ const createTicket = async (req, res) => {
 const updateTicket = async (req, res) => {
   try {
     const { role, companyId } = req.user;
-    // console.log("role===",role)
     const { ticketId } = req.params;
     const updates = req.body;
     const inventoryUsed = updates?.userItems;
 
-    console.log("connected users check here", connectedUsers);
-    //  console.log("updates====",updates)
     const managers = await getAllManagers(companyId);
-    console.log("managers", managers);
-
     if (!mongoose.Types.ObjectId.isValid(ticketId)) {
       return res.status(400).json({ error: "Invalid ticketId" });
     }
@@ -194,13 +178,10 @@ const updateTicket = async (req, res) => {
         model: "UserItem",
         // select: "",
       })
-      .populate("resident", "name email");
-    console.log("updated ===", ticket);
+      // .populate("resident", "name email");
     // const populatedTickets = await populateLaundryTickets(ticket);
     const populatedTicketsStucture = await laundryTicketStructure([ticket]);
-
     const users = await getAllUsersByRole(companyId, USER);
-
     handleNotification(
       req,
       updates,
@@ -256,14 +237,13 @@ const addComment = async (req, res) => {
   }
 };
 
+// resident , we mean room as we dont have residnet info
 const getResidentLocationByItemSku = async (req, res) => {
   try {
     const { SKU } = req.params;
-    const item = await UserItem.findOne({ SKU })
-
-      .populate("user", "name livingLocation locationName")
-      .lean();
-    if (item && item.user) {
+    const item = await UserItem.findOne({ SKU }).lean()
+     
+    if (item) {
       const {
         itemName,
         itemImage,
@@ -272,11 +252,9 @@ const getResidentLocationByItemSku = async (req, res) => {
         size,
         SKU,
         _id,
-        user,
       } = item;
       const structureResponse = {
         product: { itemName, itemImage, color, category, size, SKU, _id },
-        user,
       };
 
       return res.status(200).send(structureResponse);
@@ -291,25 +269,14 @@ const getResidentLocationByItemSku = async (req, res) => {
 const getResidentProductsAndLocationBySkuList = async (req, res) => {
   try {
     const payload = req.body;
-    console.log("req body", payload);
     const item = await UserItem.find({ SKU: { $in: payload } })
-      .select("itemName itemImage SKU")
-      .populate("user", "name livingLocation locationName")
-      .lean();
+      .select("itemName itemImage SKU").lean()
+      // .populate("user", "name livingLocation locationName")
+      // .lean();
     console.log("item===", item);
     if (item.length) {
-      // const {
-      //   itemName,
-      //   itemImage,
-      //   color,
-      //   category,
-      //   size,
-      //   SKU,
-      //   _id,
-      // } = item;
       const structureResponse = {
         product: item,
-        user: item[0].user,
       };
 
       return res.status(200).send(structureResponse);
@@ -321,27 +288,30 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
   }
 };
 
-const getResidentLocationById = async (req, res) => {
-  try {
-    const { residentId } = req.params;
-    const item = await userModel
-      .findById(residentId)
-      .select("name livingLocation locationName");
-    if (item) {
-      console.log("item", item);
-      return res.status(200).send(item);
-    }
-    return res.status(400).send("no item found");
-  } catch (error) {
-    console.error(error);
-    return res.status(400).send("failed to get location");
-  }
-};
+// const getResidentLocationById = async (req, res) => {
+//   try {
+//     const { residentId } = req.params;
+//     const item = await userModel
+//       .findById(residentId)
+//       .select("name livingLocation locationName");
+//     if (item) {
+//       console.log("item", item);
+//       return res.status(200).send(item);
+//     }
+//     return res.status(400).send("no item found");
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(400).send("failed to get location");
+//   }
+// };
+
+//getting resident history from room 
 const getResidentHistory = async (req, res) => {
   try {
-    const { residentId } = req.params;
-    const ticket = await LaundryTicket.find({ resident:residentId }).select("resident ticketNo updatedAt")
-      .populate("userItems").populate("resident")
+    const { room } = req.params;
+    console.log("room",room)
+    const ticket = await LaundryTicket.find({ "issueLocation.room":room }).select("ticketNo updatedAt")
+      .populate("userItems")
       .exec()
 
     if (!ticket) {
@@ -362,7 +332,6 @@ const getResidentHistory = async (req, res) => {
 module.exports = {
   getResidentHistory,
   getResidentProductsAndLocationBySkuList,
-  getResidentLocationById,
   getResidentLocationByItemSku,
   createTicket,
   deleteTicket,
