@@ -4,10 +4,8 @@ const socketIo = require("socket.io");
 const config = require("./config/default");
 const companyRoute = require("./routes/companyRoute");
 const userRoute = require("./routes/userRoute");
-const stockItemRoute = require("./routes/stockItemsRoute");
 const testingRoute = require("./routes/testingRoute");
 const unitRoute = require("./routes/unitRoute");
-const stockUsedInRoute = require("./routes/stockUsedInRoute");
 const ticketRoute = require("./routes/ticketRoute");
 const commentRoute = require("./routes/commentRoute");
 const inventoryRoute = require("./routes/inventoryRoute");
@@ -80,9 +78,7 @@ app.use((req, res, next) => {
 // Routes
 app.use("/api/users", userRoute);
 app.use("/api/companies", companyRoute);
-app.use("/api/stockItems", stockItemRoute);
 app.use("/api/testingRoute", testingRoute);
-app.use("/api/stockUsedInRoute", stockUsedInRoute);
 app.use("/api/ticket", ticketRoute);
 app.use("/api/unit", unitRoute);
 app.use("/api/comment", commentRoute);

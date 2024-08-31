@@ -309,13 +309,7 @@ const updateTicket = async (req, res) => {
     const { ticketId } = req.params;
     const updates = req.body;
     const inventoryUsed=updates?.inventoryUsed
-    // const { inventoryUsed={} } = req.body;
-    // console.log("inventory used",inventoryUsed);
-     console.log("connected users check here",connectedUsers)
-    //  console.log("updates====",updates)
      const managers=await getAllManagers(companyId)
-     console.log("managers",managers)
-    
     if (!mongoose.Types.ObjectId.isValid(ticketId)) {
       return res.status(400).json({ error: "Invalid ticketId" });
     }
@@ -323,24 +317,9 @@ const updateTicket = async (req, res) => {
     if (inventoryUsed && Array.isArray(inventoryUsed)) {
       for (const item of inventoryUsed) {
         let getAvailableQty = await InventoryModel.findById(item.inventoryId);
-        
-
-        if (
-          getAvailableQty &&
-          getAvailableQty.availableQty < item.quantityUsed
-        ) {
-          console.log(
-            "getAvailableQty.productName",
-            getAvailableQty,
-            getAvailableQty.productName
-          );
-          return res.status(400).json({
-            message: `Inventory quantity is out of stock for item:  
-                ${getAvailableQty.productName}`,
-          });
-        }
-      }
-    }
+        if ( getAvailableQty && getAvailableQty.availableQty < item.quantityUsed) {
+          return res.status(400).json({ message: `Inventory quantity is out of stock for item:   ${getAvailableQty.productName}`,  });
+         }}}
 
     if (req.files) {
       if (req.files.images) {
@@ -387,7 +366,7 @@ const updateTicket = async (req, res) => {
       email,
       userId: _id,
       assignedTo,
-      inventoryUsed: transformedInventoryUsed?.length || [],
+      inventoryUsed: transformedInventoryUsed?.length ? transformedInventoryUsed: [],
       assignedToColumn: assignedTo._id,
     };
     
