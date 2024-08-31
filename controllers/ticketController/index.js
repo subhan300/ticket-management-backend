@@ -301,80 +301,167 @@ const createTicket = async (req, res) => {
 
     
 
-
-const updateTicket = async (req, res) => { 
+const updateTicket = async (req, res) => {
   try {
-    const {role,companyId} = req.user;
-    // console.log("role===",role)
-    const { ticketId } = req.params;
-    const updates = req.body;
-    const inventoryUsed=updates?.inventoryUsed
-     const managers=await getAllManagers(companyId)
-    if (!mongoose.Types.ObjectId.isValid(ticketId)) {
-      return res.status(400).json({ error: "Invalid ticketId" });
-    }
-    
-    if (inventoryUsed && Array.isArray(inventoryUsed)) {
-      for (const item of inventoryUsed) {
-        let getAvailableQty = await InventoryModel.findById(item.inventoryId);
-        if ( getAvailableQty && getAvailableQty.availableQty < item.quantityUsed) {
-          return res.status(400).json({ message: `Inventory quantity is out of stock for item:   ${getAvailableQty.productName}`,  });
-         }}}
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      const { role, companyId } = req.user;
+      const { ticketId } = req.params;
+      const updates = req.body;
+      const inventoryUsed = updates?.inventoryUsed;
+      const isInventoryUsed = Array.isArray(inventoryUsed);
 
-    if (req.files) {
-      if (req.files.images) {
-        updates.images = req.files.images.map((file) => file.path);
+      if (!mongoose.Types.ObjectId.isValid(ticketId)) {
+        throw new Error("Invalid ticketId");
       }
-      if (req.files.files) {
-        updates.files = req.files.files.map((file) => file.path);
-      }
-    }
-    const ticket = await Ticket.findByIdAndUpdate(ticketId, updates, {
-      new: true,
-    })
-      .populate("userId", "name email")
-      .populate({
-        path: "inventoryUsed.inventoryId",
-        model: "Inventory",
-        select: "productName productImages",
-      });
-     
-    const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
-      _id: item.inventoryId._id,
-      productName: item.inventoryId.productName,
-      productImages: item.inventoryId.productImages
-      ,
-      quantityUsed: item.quantityUsed,
-    }));
-    const { name, email, _id } = ticket.userId;
 
-    if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
-      await ticket.populate("assignedTo", "name email");
-    }
-    const assignedTo =
-      ticket.assignedTo === NotAssignedId
-        ? { name: NotAssigned, _id: NotAssignedId }
-        : ticket.assignedTo;
-     const users = await getAllUsersByRole(companyId,USER)
-    
-   handleNotification(req,updates,managers,users,ticket)
+      if (inventoryUsed && isInventoryUsed) {
+        for (const item of inventoryUsed) {
+          const getAvailableQty = await InventoryModel.findById(item.inventoryId);
+          if (getAvailableQty && getAvailableQty.availableQty < item.quantityUsed) {
+            throw new Error(`Inventory quantity is out of stock for item: ${getAvailableQty.productName}`);
+          } else {
+            await InventoryModel.findByIdAndUpdate(item.inventoryId, { usedItem: getAvailableQty.usedItem + item.quantityUsed });
+          }
+        }
+      }
+
+      if (req.files) {
+        if (req.files.images) {
+          updates.images = req.files.images.map((file) => file.path);
+        }
+        if (req.files.files) {
+          updates.files = req.files.files.map((file) => file.path);
+        }
+      }
+
+      const ticket = await Ticket.findByIdAndUpdate(ticketId, updates, {
+        new: true,
+        session,
+      })
+        .populate("userId", "name email")
+        .populate({
+          path: "inventoryUsed.inventoryId",
+          model: "Inventory",
+          select: "productName productImages",
+        });
+
+        const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
+                _id: item.inventoryId._id,
+                productName: item.inventoryId.productName,
+                productImages: item.inventoryId.productImages
+                ,
+                quantityUsed: item.quantityUsed,
+              }));
+              const { name, email, _id } = ticket.userId;
+          
+              if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+                await ticket.populate("assignedTo", "name email");
+              }
+              const assignedTo =
+                ticket.assignedTo === NotAssignedId
+                  ? { name: NotAssigned, _id: NotAssignedId }
+                  : ticket.assignedTo;
+               const users = await getAllUsersByRole(companyId,USER)
+               const managers = await getAllUsersByRole(companyId,MANAGER)
+             handleNotification(req,updates,managers,users,ticket)
+             
+              // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
+              const populatedTickets = {
+                ...ticket.toObject(),
+                name,
+                email,
+                userId: _id,
+                assignedTo,
+                inventoryUsed: transformedInventoryUsed?.length ? transformedInventoryUsed: [],
+                assignedToColumn: assignedTo._id,
+              };
+              res.status(200).json(populatedTickets);
+    });
    
-    // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
-    const populatedTickets = {
-      ...ticket.toObject(),
-      name,
-      email,
-      userId: _id,
-      assignedTo,
-      inventoryUsed: transformedInventoryUsed?.length ? transformedInventoryUsed: [],
-      assignedToColumn: assignedTo._id,
-    };
-    
-    res.status(200).json(populatedTickets);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+// const updateTicket = async (req, res) => { 
+//   try {
+//     const {role,companyId} = req.user;
+//     // console.log("role===",role)
+//     const { ticketId } = req.params;
+//     const updates = req.body;
+//     const inventoryUsed=updates?.inventoryUsed
+//     const isInventoryUsed=Array.isArray(inventoryUsed)
+//      const managers=await getAllManagers(companyId)
+//     if (!mongoose.Types.ObjectId.isValid(ticketId)) {
+//       return res.status(400).json({ error: "Invalid ticketId" });
+//     }
+    
+//     if (inventoryUsed && isInventoryUsed) {
+//       for (const item of inventoryUsed) {
+//         let getAvailableQty = await InventoryModel.findById(item.inventoryId);
+//         if (getAvailableQty && getAvailableQty.availableQty < item.quantityUsed) {
+
+//           return res.status(400).json({ message: `Inventory quantity is out of stock for item:   ${getAvailableQty.productName}`,  });
+//          }else{
+//           const updateInventoryQty=await InventoryModel.findByIdAndUpdate(item.inventoryId,{usedItem:item.quantityUsed})
+//           console.log("uodat inventory",updateInventoryQty)
+//          }}}
+
+//     if (req.files) {
+//       if (req.files.images) {
+//         updates.images = req.files.images.map((file) => file.path);
+//       }
+//       if (req.files.files) {
+//         updates.files = req.files.files.map((file) => file.path);
+//       }
+//     }
+//     const ticket = await Ticket.findByIdAndUpdate(ticketId, updates, {
+//       new: true,
+//     })
+//       .populate("userId", "name email")
+//       .populate({
+//         path: "inventoryUsed.inventoryId",
+//         model: "Inventory",
+//         select: "productName productImages",
+//       });
+    
+     
+//     const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
+//       _id: item.inventoryId._id,
+//       productName: item.inventoryId.productName,
+//       productImages: item.inventoryId.productImages
+//       ,
+//       quantityUsed: item.quantityUsed,
+//     }));
+//     const { name, email, _id } = ticket.userId;
+
+//     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+//       await ticket.populate("assignedTo", "name email");
+//     }
+//     const assignedTo =
+//       ticket.assignedTo === NotAssignedId
+//         ? { name: NotAssigned, _id: NotAssignedId }
+//         : ticket.assignedTo;
+//      const users = await getAllUsersByRole(companyId,USER)
+    
+//    handleNotification(req,updates,managers,users,ticket)
+   
+//     // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
+//     const populatedTickets = {
+//       ...ticket.toObject(),
+//       name,
+//       email,
+//       userId: _id,
+//       assignedTo,
+//       inventoryUsed: transformedInventoryUsed?.length ? transformedInventoryUsed: [],
+//       assignedToColumn: assignedTo._id,
+//     };
+    
+//     res.status(200).json(populatedTickets);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
 
 const deleteTicket = async (req, res) => {
   try {
