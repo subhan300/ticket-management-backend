@@ -3,6 +3,16 @@ const Schema = mongoose.Schema;
 
 const inventorySchema = new Schema(
   {
+    inventoryUsed:[{
+      ticket:{ type: mongoose.Schema.Types.ObjectId,ref:"Ticket", unique: true, },
+      ticketNo:{type:String},
+      updatedDate:{type:String},
+      usedBy:{type:String},
+      room:{type:String},
+      role:{type:String},
+      usedItemQty:{type:Number},
+     
+    }],
     companyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "company",

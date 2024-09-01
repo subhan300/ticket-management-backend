@@ -52,9 +52,10 @@ const getInventoryItemsByCompany = async (req, res) => {
 
   try {
     const items = await Inventory.find({ companyId }).lean();
+    console.log("item user",items)
     const transFormInventory = items.map((val) => ({
       ...val,
-      quantityUsed: 1,
+      // quantityUsed: 1,
       inventoryId: val._id,
     }));
     res.json(transFormInventory);
@@ -70,7 +71,6 @@ const getInventoryItemShortDetail = async (req, res) => {
     const items = await Inventory.find({ companyId })
       .select("productName productImage")
       .lean();
-    console.log("items===", items);
     const transFormInventory = items.map((val) => ({
       ...val,
       quantityUsed: 1,
