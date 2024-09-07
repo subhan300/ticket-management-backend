@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { createCanvas } = require("canvas");
 const fs = require("fs");
 const JsBarcode = require("jsbarcode");
+const { updateStockStatus } = require("./inventoryUtils");
 const { ObjectId } = require("mongoose").Types;
 
 const formatTicketNumber = (ticketNo) => {
@@ -103,6 +104,7 @@ const populateLaundryTickets = async (tickets) => {
       path: "userItems",
       model: "UserItem",
     })
+   
     // .populate("resident", "name email")
     .sort({ createdAt: -1 });
 };
@@ -121,6 +123,7 @@ const laundryTicketStructure = async (populatedTickets) => {
   );
 };
 module.exports = {
+  updateStockStatus,
   laundryTicketStructure,
   populateLaundryTickets,
   generateSKU,

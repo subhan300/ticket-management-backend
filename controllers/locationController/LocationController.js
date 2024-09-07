@@ -4,13 +4,13 @@ const Location = require('../../models/locationModel');
 const createLocation = async (req, res) => {
     try {
         const { companyId } = req.user;
-        const { SKU } = req.body;
+        const { locationName } = req.body;
 
         // Check if a location with the same SKU already exists for the company
-        const existingLocation = await Location.findOne({ SKU, companyId });
+        const existingLocation = await Location.findOne({ locationName, companyId });
 
         if (existingLocation) {
-            return res.status(400).json({ error: 'Duplicate SKU. A location with this SKU already exists.' });
+            return res.status(400).json({ error: `Duplicate Location. A location with this ${locationName} already exists.` });
         }
 
         // Create a new location

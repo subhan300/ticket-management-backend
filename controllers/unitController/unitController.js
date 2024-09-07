@@ -6,7 +6,7 @@ const { ObjectId } = require('../../utils');
 const getAllUnits = async (req, res) => {
   try {
     const units = await Unit.find();
-    res.status(200).json(unit);
+    res.status(200).json(units);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

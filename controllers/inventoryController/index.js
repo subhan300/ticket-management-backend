@@ -1,6 +1,7 @@
 // stockItemController.js
 
 const Inventory = require("../../models/inventoryModel");
+const { updateStockStatus } = require("../../utils");
 const createInventoryItem = async (req, res) => {
   const { companyId } = req.user;
   const {
@@ -52,7 +53,6 @@ const getInventoryItemsByCompany = async (req, res) => {
 
   try {
     const items = await Inventory.find({ companyId }).lean();
-    console.log("item user",items)
     const transFormInventory = items.map((val) => ({
       ...val,
       // quantityUsed: 1,
@@ -82,22 +82,54 @@ const getInventoryItemShortDetail = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
-// Update an inventory item
+
 const updateInventoryItem = async (req, res) => {
   try {
-    const {productId}=req.params
-    const payload=req.body
-    const updatedItem = await Inventory.findByIdAndUpdate(
-      productId,
-      payload,
-      { new: true }
-    );
-    if (!updatedItem) return res.status(404).json({ error: "Item not found" });
+    const { productId } = req.params;
+    const payload = req.body;
+
+    const item = await Inventory.findById(productId).lean();
+    if (!item) return res.status(404).json({ error: "Item not found" });
+    
+    // Update stock status using the utility function
+     getStatus={}
+    if(payload.usedItem){
+      getStatus = updateStockStatus({...item,...payload});
+      payload.status=getStatus.status
+      
+    }
+   if(payload.status==="Out of Stock" && getStatus.availableQty < 0){
+     return res.status(400).send("Inventory is out of stock ,can't order that much")
+   }
+    // Update the inventory item
+    const updatedItem = await Inventory.findByIdAndUpdate(productId, payload, { new: true });
     res.json(updatedItem);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+// const updateInventoryItem = async (req, res) => {
+//   try {
+//     const { productId } = req.params;
+//     const payload = req.body;
+
+//     // Find and update the inventory item, running validations and hooks
+//     const updatedItem = await Inventory.findByIdAndUpdate(
+//       productId,
+//       payload,
+//       { new: true, runValidators: true, context: 'query' }  // 'new' returns the updated document, 'runValidators' ensures validation, 'context' is needed for hooks
+//     );
+
+//     if (!updatedItem) {
+//       return res.status(404).json({ error: "Item not found" });
+//     }
+
+//     res.json(updatedItem);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 
 // Delete an inventory item
 const deleteInventoryItem = async (req, res) => {

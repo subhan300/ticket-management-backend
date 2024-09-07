@@ -10,7 +10,7 @@ const inventorySchema = new Schema(
       usedBy:{type:String},
       room:{type:String},
       role:{type:String},
-      usedItemQty:{type:Number},
+      usedItemQty:{type:Number,default:0},
      
     }],
     companyId: {
@@ -56,6 +56,10 @@ const inventorySchema = new Schema(
       enum: ["In Stock", "Out of Stock", "Low Stock"],
       default: "In Stock",
     },
+    threshold:{
+      type:Number,
+      default:10
+    }
   },
   { timestamps: true }
 );
@@ -63,6 +67,8 @@ const inventorySchema = new Schema(
 inventorySchema.virtual("availableQty").get(function () {
   return this.quantity - this.usedItem;
 });
+
+
 
 //   // Ensure virtual fields are included in toJSON and toObject outputs
 //   inventorySchema.set('toJSON', { virtuals: true });
