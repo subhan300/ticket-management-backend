@@ -7,6 +7,9 @@ const { authenticateJWT } = require('../middleware/authMiddleware');
 
 router.get('/tickets',authenticateJWT, analyticsController.getTicketAnalytics);
 
+router.post('/tickets-charts',authenticateJWT, analyticsController.getTicketAnalyticsForChart);
+router.post('/laundaryTickets-charts',authenticateJWT, analyticsController. getLaundryTicketAnalyticsForChart);
+
 // Routes for laundry ticket analytics
 router.get('/laundry-tickets',authenticateJWT, analyticsController.getLaundryTicketAnalytics);
 

@@ -2,7 +2,7 @@ const Ticket = require('../../models/ticketModel');
 const LaundryTicket = require('../../models/laundryModel');
 const Inventory = require('../../models/inventoryModel');
 const userModel = require('../../models/userModel');
-const { MANAGER, TECHNICIAN, USER } = require('../../utils/constants');
+const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/constants');
 
 const getDateRangeFilter = (date) => {
     const startOfDay = new Date(date);
@@ -16,55 +16,70 @@ const getDateRangeFilter = (date) => {
   
   const getTicketAnalytics = async (req, res) => {
     try {
+      const { role, id } = req.user; // Extract user role and ID from request
       const { startDate, endDate } = req.query;
-      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
+      const baseFilter = startDate && endDate 
+        ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
+        : {};
   
+      let roleFilter = {};
+      if (role === TECHNICIAN) {
+        roleFilter = { 'assignedTo': id };
+      } else if (role ===USER) {
+        roleFilter = { userId: id };
+      }
+      
+      // Combine filters
+      const filter = { ...baseFilter, ...roleFilter };
+      
+      // Get ticket counts based on role
       const totalTickets = await Ticket.countDocuments(filter);
       const openTickets = await Ticket.countDocuments({ ...filter, status: 'OPEN' });
       const progressTickets = await Ticket.countDocuments({ ...filter, status: 'PROGRESS' });
-      const blockedTickets = await Ticket.countDocuments({ ...filter, status: 'BLOCKED' });
+      // const blockedTickets = await Ticket.countDocuments({ ...filter, status: 'BLOCKED' });
       const closedTickets = await Ticket.countDocuments({ ...filter, status: 'CLOSED' });
       const completedTickets = await Ticket.countDocuments({ ...filter, status: 'COMPLETED' });
+      
+      // Get ticket counts for the current and previous month
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
   
-      const creationAnalytics = await Ticket.aggregate([
-        {
-          $match: filter,
-        },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: "%Y-%m-%d",
-                date: "$createdAt",
-              },
-            },
-            count: {
-              $sum: 1,
-            },
-          },
-        },
-        {
-          $sort: {
-            _id: 1,
-          },
-        },
-      ]);
+      const getTicketsCountForMonth = async (startOfMonth, endOfMonth) => {
+        return Ticket.countDocuments({
+          createdAt: { $gte: new Date(startOfMonth), $lte: new Date(endOfMonth) },
+          ...roleFilter, // Apply role-specific filter
+        });
+      };
+  
+      const currentMonthCount = await getTicketsCountForMonth(currentMonthStart, currentMonthEnd);
+      const previousMonthCount = await getTicketsCountForMonth(previousMonthStart, previousMonthEnd);
+  
+      let percentageIncrease = 0;
+      if (previousMonthCount > 0) {
+        percentageIncrease = ((currentMonthCount - previousMonthCount) / previousMonthCount) * 100;
+      }
+  
+     
   
       res.status(200).json({
-        totalTickets,
+        // total:`${totalTickets} Tickets`,
+        total:totalTickets,  
         statusCounts: {
           openTickets,
           progressTickets,
-          blockedTickets,
           closedTickets,
           completedTickets,
         },
-        creationAnalytics,
+        percentageIncrease: percentageIncrease.toFixed(2), // Return percentage increase rounded to 2 decimal places
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   };
+  
   
   const getLaundryTicketAnalytics = async (req, res) => {
     try {
@@ -76,38 +91,15 @@ const getDateRangeFilter = (date) => {
       const inProgress = await LaundryTicket.countDocuments({ ...filter, status: 'IN_PROGRESS' });
       const delivered = await LaundryTicket.countDocuments({ ...filter, status: 'DELIVERED' });
   
-      const creationAnalytics = await LaundryTicket.aggregate([
-        {
-          $match: filter,
-        },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: "%Y-%m-%d",
-                date: "$createdAt",
-              },
-            },
-            count: {
-              $sum: 1,
-            },
-          },
-        },
-        {
-          $sort: {
-            _id: 1,
-          },
-        },
-      ]);
-  
+   
       res.status(200).json({
-        totalLaundryTickets,
+        // total:`${totalLaundryTickets} Tickets`,
+        total:totalLaundryTickets,
         statusCounts: {
           pickedUp,
           inProgress,
           delivered,
         },
-        creationAnalytics,
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -116,46 +108,25 @@ const getDateRangeFilter = (date) => {
   
   const getInventoryAnalytics = async (req, res) => {
     try {
+       const {id,role}=req.user
       const { startDate, endDate } = req.query;
       const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
-  
       const totalInventoryItems = await Inventory.countDocuments(filter);
       const inStock = await Inventory.countDocuments({ ...filter, status: 'In Stock' });
       const outOfStock = await Inventory.countDocuments({ ...filter, status: 'Out of Stock' });
       const lowStock = await Inventory.countDocuments({ ...filter, status: 'Low Stock' });
+     
   
-      const creationAnalytics = await Inventory.aggregate([
-        {
-          $match: filter,
-        },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: "%Y-%m-%d",
-                date: "$createdAt",
-              },
-            },
-            count: {
-              $sum: 1,
-            },
-          },
-        },
-        {
-          $sort: {
-            _id: 1,
-          },
-        },
-      ]);
   
       res.status(200).json({
-        totalInventoryItems,
+        // total:`${totalInventoryItems} Pieces`,
+        total:totalInventoryItems,
         statusCounts: {
           inStock,
           outOfStock,
           lowStock,
         },
-        creationAnalytics,
+        
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -169,7 +140,8 @@ const getUsersAnalytics = async (req, res) => {
       const users = await userModel.countDocuments({ role: USER });
   
       res.status(200).json({
-        totalUserItems,
+        // total:`${totalUserItems} Employees`,
+        total:totalUserItems,
         statusCounts: {
           managers,
           technicians,
@@ -180,10 +152,148 @@ const getUsersAnalytics = async (req, res) => {
       res.status(500).json({ message: err.message });
     }
   };
+  const getTicketAnalyticsForChart = async (req, res) => {
+    try {
+      const { role, id } = req.user;
+      const dateArray = req.body;
+      
+      // Helper function to get counts for date ranges
+      const getCountsForDates = async () => {
+        const counts = [];
+        
+        for (const { startDate, endDate } of dateArray) {
+          const startOfDay = new Date(startDate);
+          const endOfDay = new Date(endDate);
+  
+          // Build the match filter based on role
+          const matchFilter = { createdAt: { $gte: startOfDay, $lt: endOfDay } };
+  
+          if (role === TECHNICIAN) {
+            matchFilter.assignedTo = id;
+          } else if (role === USER) {
+            matchFilter.userId = id;
+          }
+          // No additional filter for 'manager'
+  
+          const result = await Ticket.aggregate([
+            { $match: matchFilter },
+            {
+              $group: {
+                _id: null,
+                openCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", "OPEN"] }, 1, 0]
+                  }
+                },
+                progressCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", "PROGRESS"] }, 1, 0]
+                  }
+                },
+                completedCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", "COMPLETED"] }, 1, 0]
+                  }
+                }
+              }
+            }
+          ]);
+  
+          // Add result to counts array
+          counts.push({
+            startDate,
+            endDate,
+            openCount: result[0]?.openCount || 0,
+            progressCount: result[0]?.progressCount || 0,
+            completedCount: result[0]?.completedCount || 0
+          });
+        }
+  
+        return counts;
+      };
+  
+      // Get counts for each status
+      const counts = await getCountsForDates();
+  
+      // Response
+      res.status(200).json({
+        statusCounts: counts
+      });
+  
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  };
+  const getLaundryTicketAnalyticsForChart = async (req, res) => {
+    try {
+      // Extract date ranges from the request body
+      const dateArray = req.body;
+  
+      // Helper function to get counts for date ranges
+      const getCountsForDates = async () => {
+        const counts = [];
+  
+        for (const { startDate, endDate } of dateArray) {
+          const startOfDay = new Date(startDate);
+          const endOfDay = new Date(endDate);
+  
+          const result = await LaundryTicket.aggregate([
+            { $match: { createdAt: { $gte: startOfDay, $lt: endOfDay } } },
+            {
+              $group: {
+                _id: null,
+                deliveredCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.DELIVERED] }, 1, 0]
+                  }
+                },
+                inProgressCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.IN_PROGRESS] }, 1, 0]
+                  }
+                },
+                pickedUpCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.PICKED_UP] }, 1, 0]
+                  }
+                }
+              }
+            }
+          ]);
+  
+          // Add result to counts array
+          counts.push({
+            startDate,
+            endDate,
+            deliveredCount: result[0]?.deliveredCount || 0,
+            inProgressCount: result[0]?.inProgressCount || 0,
+            pickedUpCount: result[0]?.pickedUpCount || 0
+          });
+        }
+  
+        return counts;
+      };
+  
+      // Get counts for each status
+      const counts = await getCountsForDates();
+  
+      // Response
+      res.status(200).json({
+        statusCounts: counts
+      });
+  
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  };
+  
+  
 
 module.exports = {
+  getTicketAnalyticsForChart,
     getUsersAnalytics,
   getTicketAnalytics,
   getLaundryTicketAnalytics,
-  getInventoryAnalytics
+  getInventoryAnalytics,
+  getLaundryTicketAnalyticsForChart
 };
