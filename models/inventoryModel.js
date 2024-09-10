@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const inventorySchema = new Schema(
   {
+    location: { type: Schema.Types.ObjectId, ref: "Location" },
     inventoryUsed:[{
       ticket:{ type: mongoose.Schema.Types.ObjectId,ref:"Ticket", unique: true, },
       ticketNo:{type:String},

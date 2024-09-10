@@ -57,7 +57,10 @@ const ticketSchema = new mongoose.Schema(
       unit:{type:Object},
       room:{type:String},
       extraDetail:{type:String}
+      
+
     },
+    room:{type: mongoose.Schema.Types.ObjectId, ref: "Room"},
     assignedTo: { type: mongoose.Schema.Types.Mixed, ref: "User", required: false },
     // assignedTo:  {id:{type: mongoose.Schema.Types.ObjectId},assignedName:{type:String} },
     issue: {

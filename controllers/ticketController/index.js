@@ -8,6 +8,8 @@ const {
   updateTicketAssignedMessage,
   technicianUpdateTicketAssignedMessage,
   updateStockStatus,
+  populateTickets,
+  ticketStructure,
 } = require("../../utils");
 const {
   TECHNICIAN,
@@ -49,46 +51,10 @@ const getAllTickets = async (req, res) => {
 const getTicketByUserId = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const tickets = await Ticket.find({ userId })
-      .populate("userId", "name email")
-      .populate({
-        path: "inventoryUsed.inventoryId",
-        model: "Inventory",
-        select: "productName productImage",
-      })
-      .sort({ createdAt: -1 });
-    // .populate("assignedTo","name email");
-    const populatedTickets = await Promise.all(
-      tickets.map(async (ticket) => {
-        const { name, email, _id } = ticket.userId;
-
-        if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
-          await ticket.populate("assignedTo", "name email");
-        }
-        const assignedTo =
-          ticket.assignedTo === "NotAssigned"
-            ? { name: NotAssigned, _id: "NotAssigned" }
-            : ticket.assignedTo;
-
-        const transformedInventoryUsed = ticket.inventoryUsed.map((item) => ({
-          _id: item.inventoryId._id,
-          productName: item.inventoryId.productName,
-          productImage: item.inventoryId.productImage,
-          quantityUsed: item.quantityUsed,
-        }));
-
-        return {
-          ...ticket.toObject(),
-          name,
-          email,
-          userId: _id,
-          assignedTo,
-          inventoryUsed: transformedInventoryUsed,
-        };
-      })
-    );
-
-    res.status(200).json(populatedTickets);
+    const tickets = Ticket.find({ userId })
+    const populatedTickets=await populateTickets(tickets)
+    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -97,51 +63,13 @@ const getFilterCompanyTickets = async (req, res) => {
   try {
     const { id, companyId } = req.user;
 
-    const tickets = await Ticket.find({
+    const tickets = Ticket.find({
       companyId: companyId,
       $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
     })
-      .populate("userId", "name email")
-      .populate({
-        path: "inventoryUsed.inventoryId",
-        model: "Inventory",
-        select: "productName productImage",
-      })
-      .sort({ createdAt: -1 });
-
-    // .populate("assignedTo","name email");
-    const populatedTickets = await Promise.all(
-      tickets.map(async (ticket) => {
-        const { name, email, _id } = ticket.userId;
-
-        if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
-          await ticket.populate("assignedTo", "name email");
-        }
-        const assignedTo =
-          ticket.assignedTo === NotAssignedId
-            ? { name: NotAssigned, _id: NotAssignedId }
-            : ticket.assignedTo;
-        const transformedInventoryUsed = ticket.inventoryUsed.map((item) => ({
-          _id: item.inventoryId._id,
-          productName: item.inventoryId.productName,
-          productImage: item.inventoryId.productImage,
-          quantityUsed: item.quantityUsed,
-        }));
-
-        // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
-        return {
-          ...ticket.toObject(),
-          name,
-          email,
-          userId: _id,
-          assignedTo,
-          inventoryUsed: transformedInventoryUsed,
-          assignedToColumn: assignedTo._id,
-        };
-      })
-    );
-    res.status(200).json(populatedTickets);
-    // res.status(200).json(restructureData);
+    const populatedTickets=await populateTickets(tickets)
+    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -268,6 +196,7 @@ const createTicket = async (req, res) => {
       status,
       assignedTo,
       images,
+      room
     } = req.body;
     // const payload=req.body
     const ticketNo = await getLastTicketNumber();
@@ -282,9 +211,10 @@ const createTicket = async (req, res) => {
       companyId,
       images,
       ticketNo,
+      room
     });
 
-    await ticket.save();
+       await ticket.save();
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
@@ -295,8 +225,20 @@ const createTicket = async (req, res) => {
     const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
     const managers = await getAllUsersByRole(companyId, MANAGER);
     handleTicketNotification(req, managers, technicians, ticket);
+    await  ticket.populate({
+      path: 'room',
+      populate: {
+        path: 'unit',
+        model: 'Unit',
+      },
+    })
+
+    const Room={roomName:ticket.room.roomName,_id:ticket.room._id}
+    const unit={name:ticket.room.unit.name,_id:ticket.room._id}
     res.status(201).json({
       ...ticket.toObject(),
+      room:Room,
+      unit,
       name,
       email,
       assignedTo: assignedToPayload,
@@ -418,47 +360,40 @@ const updateTicket = async (req, res) => {
         }
       }
 
-      const ticket = await Ticket.findByIdAndUpdate(ticketId, updates, {
+      const populatedTickets = await Ticket.findByIdAndUpdate(ticketId, updates, {
         new: true,
         session,
-      })
-        .populate("userId", "name email")
+      }).populate("userId", "name email")
         .populate({
           path: "inventoryUsed.inventoryId",
           model: "Inventory",
           select: "productName productImage",
-        });
-      const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
-        _id: item.inventoryId._id,
-        productName: item.inventoryId.productName,
-        productImage: item.inventoryId.productImage,
-        quantityUsed: item.quantityUsed,
-      }));
-
-      const { name, email, _id } = ticket.userId;
-      if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
-        await ticket.populate("assignedTo", "name email");
-      }
-      const assignedTo =
-        ticket.assignedTo === NotAssignedId
-          ? { name: NotAssigned, _id: NotAssignedId }
-          : ticket.assignedTo;
+        }).populate({
+          path: 'room',
+          populate: {
+            path: 'unit',
+            model: 'Unit',
+          },
+        })
+      // const populatedTickets=populateTickets(ticket)
+      const ticketStrcutureRes=await ticketStructure(populatedTickets)
       const users = await getAllUsersByRole(companyId, USER);
       const managers = await getAllUsersByRole(companyId, MANAGER);
       //  handleNotification(req,updates,managers,users,ticket)
       // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
-      const populatedTickets = {
-        ...ticket.toObject(),
-        name,
-        email,
-        userId: _id,
-        assignedTo,
-        inventoryUsed: transformedInventoryUsed?.length
-          ? transformedInventoryUsed
-          : [],
-        assignedToColumn: assignedTo._id,
-      };
-      res.status(200).json(populatedTickets);
+
+      // const populatedTickets = {
+      //   ...ticket.toObject(),
+      //   name,
+      //   email,
+      //   userId: _id,
+      //   assignedTo,
+      //   inventoryUsed: transformedInventoryUsed?.length
+      //     ? transformedInventoryUsed
+      //     : [],
+      //   assignedToColumn: assignedTo._id,}
+      
+      res.status(200).json(ticketStrcutureRes);
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

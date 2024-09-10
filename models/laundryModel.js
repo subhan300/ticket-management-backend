@@ -72,6 +72,8 @@ const LaundrySchema = new mongoose.Schema(
       room: { type: String },
       extraDetail: { type: String },
     },
+
+    room:{type:mongoose.Schema.Types.ObjectId, ref: "Room"},
     category: { type: String },
     assignedTo: {
       type: mongoose.Schema.Types.Mixed,

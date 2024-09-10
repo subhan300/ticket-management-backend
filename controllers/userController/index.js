@@ -6,7 +6,7 @@ const jwt=require("jsonwebtoken");
 const { RESIDENT } = require('../../utils/constants');
 // Function to create a new user
 const createUser = async (req, res) => {
-    const { name, email, role, password, companyId, livingLocation, locationName } = req.body;
+    const { name, email, role, password, companyId, livingLocation, locationName,locations } = req.body;
   
     try {
       // Check if user already exists
@@ -14,23 +14,17 @@ const createUser = async (req, res) => {
         return res.status(400).json({ message: 'User already exists with this email.' });
       }
   
-      // Check if living location is valid for RESIDENT role
-      if (role === 'RESIDENT' && (!livingLocation || !livingLocation.unit?._id)) {
-        return res.status(400).json({ message: 'Enter Valid Living Location' });
-      }
+      
   
-      // Check for duplicate living location for RESIDENT role
-      if (role === 'RESIDENT' && await User.findOne({ 'livingLocation.unit._id': livingLocation.unit._id, 'livingLocation.room': livingLocation.room })) {
-        return res.status(400).json({ message: 'Another resident is already assigned to this room.' });
-      }
+     
   
       // Hash password and create new user
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({ name, email, role, password: hashedPassword, livingLocation, locationName, companyId });
+      const newUser = new User({ name, email, role, password: hashedPassword, livingLocation, locationName, companyId,locations });
       const savedUser = await newUser.save();
   
       // Generate JWT token
-      const token = jwt.sign({ user: { id: savedUser._id, email, name, role, livingLocation, locationName } }, process.env.JWT_SECRET);
+      const token = jwt.sign({ user: { id: savedUser._id, email, name, role, livingLocation, locationName,locations } }, process.env.JWT_SECRET);
   
       // Send back token and user details
       res.status(201).json({ user: savedUser, token });
@@ -55,9 +49,9 @@ const login = async (req, res) => {
         }
 
         // Generate JWT token
-        const {role,companyId,name, livingLocation,locationName ,}=user
+        const {role,companyId,name, livingLocation,locationName ,locations}=user
         const token = jwt.sign(
-            { user: { id: user._id, email ,role,companyId,name,  livingLocation,locationName ,} },
+            { user: { id: user._id, email ,role,companyId,name,  livingLocation,locationName ,locations} },
             process.env.JWT_SECRET,
             // { expiresIn: '1h' }
         );
@@ -71,7 +65,7 @@ const login = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, role, password, companyId, livingLocation, locationName } = req.body;
+  const { name, email, role, password, companyId, livingLocation, locationName,locations } = req.body;
 
   try {
     const user = await User.findByIdAndUpdate(id, {
@@ -82,6 +76,7 @@ const updateUser = async (req, res) => {
       livingLocation,
       locationName,
       companyId,
+      locations
     }, { new: true });
 
     if (!user) {

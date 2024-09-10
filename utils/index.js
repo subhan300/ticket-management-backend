@@ -5,6 +5,8 @@ const { createCanvas } = require("canvas");
 const fs = require("fs");
 const JsBarcode = require("jsbarcode");
 const { updateStockStatus } = require("./inventoryUtils");
+const { default: mongoose } = require("mongoose");
+const { NotAssignedId, NotAssigned } = require("./constants");
 const { ObjectId } = require("mongoose").Types;
 
 const formatTicketNumber = (ticketNo) => {
@@ -97,6 +99,23 @@ function generateSKU(name) {
   console.log("hased ====", hashedSKU);
   return hashedSKU; // or incrementalSKU, or hashedSKU
 }
+const populateTickets = async (tickets) => {
+  return await tickets
+    .populate("userId", "name email")
+    .populate({
+      path: "inventoryUsed.inventoryId",
+      model: "Inventory",
+      select: "productName productImage",
+    })
+    .populate({
+      path: "room",
+      populate: {
+        path: "unit",
+        model: "Unit",
+      },
+    })
+    .sort({ createdAt: -1 });
+};
 const populateLaundryTickets = async (tickets) => {
   return await tickets
     .populate("userId", "name email")
@@ -104,7 +123,7 @@ const populateLaundryTickets = async (tickets) => {
       path: "userItems",
       model: "UserItem",
     })
-   
+
     // .populate("resident", "name email")
     .sort({ createdAt: -1 });
 };
@@ -122,7 +141,78 @@ const laundryTicketStructure = async (populatedTickets) => {
     })
   );
 };
+const ticketStructure = async (ticket) => {
+  console.log("tickets",ticket)
+   if(ticket.length){
+  return await Promise.all(
+    ticket.map(async (ticket) => {
+      const { name, email, _id } = ticket.userId;
+      const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
+        _id: item.inventoryId._id,
+        productName: item.inventoryId.productName,
+        productImage: item.inventoryId.productImage,
+        quantityUsed: item.quantityUsed,
+      }));
+      if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+        await ticket.populate("assignedTo", "name email");
+      }
+      const assignedTo =
+        ticket.assignedTo === NotAssignedId
+          ? { name: NotAssigned, _id: NotAssignedId }
+          : ticket.assignedTo;
+          // for now need to add ternary oprator as changing data ,but remove it after that 
+          const Room={roomName:ticket?.room?.roomName,_id:ticket.room?._id}
+        const unit={name:ticket?.room?.unit?.name,_id:ticket?.room?._id}
+      return {
+        ...ticket.toObject(),
+        name,
+        email,
+        userId: _id,
+        room:Room,
+        unit,
+        assignedTo,
+        inventoryUsed: transformedInventoryUsed?.length
+          ? transformedInventoryUsed
+          : [],
+        assignedToColumn: assignedTo._id,
+      };
+    })
+  );
+   }else{
+    const { name, email, _id } = ticket.userId;
+    const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
+      _id: item.inventoryId._id,
+      productName: item.inventoryId.productName,
+      productImage: item.inventoryId.productImage,
+      quantityUsed: item.quantityUsed,
+    }));
+    if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
+      await ticket.populate("assignedTo", "name email");
+    }
+    const assignedTo =
+      ticket.assignedTo === NotAssignedId
+        ? { name: NotAssigned, _id: NotAssignedId }
+        : ticket.assignedTo;
+        const Room={roomName:ticket.room.roomName,_id:ticket.room._id}
+        const unit={name:ticket.room.unit.name,_id:ticket.room._id}
+    return {
+      ...ticket.toObject(),
+      name,
+      email,
+      userId: _id,
+      assignedTo,
+      room:Room,
+      unit,
+      inventoryUsed: transformedInventoryUsed?.length
+        ? transformedInventoryUsed
+        : [],
+      assignedToColumn: assignedTo._id,
+    };
+   }
+};
 module.exports = {
+  ticketStructure,
+  populateTickets,
   updateStockStatus,
   laundryTicketStructure,
   populateLaundryTickets,
