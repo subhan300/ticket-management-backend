@@ -78,51 +78,12 @@ const getCompanyTickets = async (req, res) => {
   try {
     const { id, companyId } = req.user;
 
-    const tickets = await Ticket.find({
+    const tickets = Ticket.find({
       companyId: companyId,
     })
-      .populate("userId", "name email")
-      .populate({
-        path: "inventoryUsed.inventoryId",
-        model: "Inventory",
-        select: "productName productImage",
-      })
-      .sort({ createdAt: -1 });
-
-    // .populate("assignedTo","name email");
-    const populatedTickets = await Promise.all(
-      tickets.map(async (ticket) => {
-        const { name, email, _id } = ticket.userId;
-
-        if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
-          await ticket.populate("assignedTo", "name email");
-        }
-        const assignedTo =
-          ticket.assignedTo === NotAssignedId
-            ? { name: NotAssigned, _id: NotAssignedId }
-            : ticket.assignedTo;
-        const transformedInventoryUsed = ticket.inventoryUsed.map((item) => ({
-          _id: item.inventoryId._id,
-          productName: item.inventoryId.productName,
-          productImage: item.inventoryId.productImage,
-          quantityUsed: item.quantityUsed,
-        }));
-
-        // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
-        return {
-          ...ticket.toObject(),
-          name,
-          email,
-          userId: _id,
-          assignedTo,
-          inventoryUsed: transformedInventoryUsed,
-          assignedToColumn: assignedTo._id,
-        };
-      })
-    );
-
-    res.status(200).json(populatedTickets);
-    // res.status(200).json(restructureData);
+    const populatedTickets=await populateTickets(tickets)
+    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -134,53 +95,14 @@ const getUserTicket = async (req, res) => {
     //   const getResident=await userModel.findOne({SKU}).select("name locationName livingLocation email").lean();
     //  console.log("get resident ===== >",getResident);
 
-    const tickets = await Ticket.find({
+    const tickets =Ticket.find({
       companyId: companyId,
       "issueLocation.room": SKU,
     })
-      .populate("userId", "name email")
-      .populate({
-        path: "inventoryUsed.inventoryId",
-        model: "Inventory",
-        select: "productName productImage",
-      })
-      .sort({ createdAt: -1 });
-
-    // .populate("assignedTo","name email");
-    const populatedTickets = await Promise.all(
-      tickets.map(async (ticket) => {
-        const { name, email, _id } = ticket.userId;
-
-        if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
-          await ticket.populate("assignedTo", "name email");
-        }
-        const assignedTo =
-          ticket.assignedTo === NotAssignedId
-            ? { name: NotAssigned, _id: NotAssignedId }
-            : ticket.assignedTo;
-        const transformedInventoryUsed = ticket.inventoryUsed.map((item) => ({
-          _id: item.inventoryId._id,
-          productName: item.inventoryId.productName,
-          productImage: item.inventoryId.productImage,
-          quantityUsed: item.quantityUsed,
-        }));
-
-        // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
-        return {
-          ...ticket.toObject(),
-          name,
-          email,
-          userId: _id,
-          assignedTo,
-          inventoryUsed: transformedInventoryUsed,
-          assignedToColumn: assignedTo._id,
-          // resident:getResident
-        };
-      })
-    );
-
-    res.status(200).json(populatedTickets);
-    // res.status(200).json(restructureData);
+    const populatedTickets=await populateTickets(tickets)
+    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    res.status(200).json(ticketStrcutureRes);
+  
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -198,9 +120,7 @@ const createTicket = async (req, res) => {
       images,
       room
     } = req.body;
-    // const payload=req.body
     const ticketNo = await getLastTicketNumber();
-    // const ticket = new Ticket(payload);
     const ticket = new Ticket({
       userId,
       issue,
