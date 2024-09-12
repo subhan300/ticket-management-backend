@@ -176,20 +176,27 @@ const updateTicket = async (req, res) => {
         path: "userItems",
         model: "UserItem",
         // select: "",
-      });
-    // .populate("resident", "name email");
-    // const populatedTickets = await populateLaundryTickets(ticket);
-    const populatedTicketsStucture = await laundryTicketStructure([ticket]);
+      })
+      .populate({
+        path: "room",
+        populate: {
+          path: "unit",
+          model: "Unit",
+        },
+      })
+      .populate({ path: "location", model: "Location" }).lean()
+      .sort({ createdAt: -1 });
+    const populatedTicketsStucture = await laundryTicketStructure(ticket);
     const users = await getAllUsersByRole(companyId, USER);
     handleNotification(
       req,
       updates,
       managers,
       users,
-      populatedTicketsStucture[0]
+      populatedTicketsStucture
     );
-
-    res.status(200).json(populatedTicketsStucture[0]);
+   console.log("populatedTicketsStucture",populatedTicketsStucture)
+    res.status(200).json(populatedTicketsStucture);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -263,11 +270,13 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
     const item = await UserItem.find({ SKU: { $in: payload } })
       .select("itemName itemImage SKU room unit").populate("room")
       .lean();
-    // .populate("user", "name livingLocation locationName")
-    // .lean();
+      if(!item || !item.length){
+        return res.status(400).send("failed to get item and  location");
+      }
+    
       return res.status(200).send(item);
     
-    return res.status(400).send("failed to get item and  location");
+   
   } catch (error) {
     console.error(error);
     return res.status(400).send("failed to get location");
@@ -296,17 +305,52 @@ const getResidentHistory = async (req, res) => {
   try {
     const { SKU } = req.params;
      const room=await roomModel.findOne({SKU});
-     console.log("room",room)
-    const ticket = await LaundryTicket.find({ room:room._id })
+     console.log("room",room,SKU)
+
+      if (!room) {
+      return res
+        .status(404)
+        .json({ message: "room  not found with this sku " });
+    }
+      const ticket = await LaundryTicket.find({ room:room._id })
       .select("ticketNo updatedAt")
       .populate("userItems")
       .exec();
+      if (!ticket) {
+        return res
+          .status(404)
+          .json({ message: "Ticket not found with this resident id " });
+      }
+   
 
-    if (!ticket) {
+    // Send response with ticket details including updated date and userItems
+    res.json(ticket);
+  } catch (error) {
+    console.error(error);
+    console.log(error);
+    return res.status(400).send(error);
+  }
+};
+const getResidentHistoryByRoomId = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+     const room=await roomModel.findById(roomId);
+
+      if (!room) {
       return res
         .status(404)
-        .json({ message: "Ticket not found with this resident id " });
+        .json({ message: "room  not found with this sku " });
     }
+      const ticket = await LaundryTicket.find({ room:room._id })
+      .select("ticketNo updatedAt")
+      .populate("userItems")
+      .exec();
+      if (!ticket) {
+        return res
+          .status(404)
+          .json({ message: "Ticket not found with this resident id " });
+      }
+   
 
     // Send response with ticket details including updated date and userItems
     res.json(ticket);
@@ -328,5 +372,6 @@ module.exports = {
   getAllTickets,
   addComment,
   getCompanyTickets,
+  getResidentHistoryByRoomId,
   getFilterLocationTickets
 };

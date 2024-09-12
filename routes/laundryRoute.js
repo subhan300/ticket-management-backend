@@ -13,7 +13,7 @@ router.get('/getResidentItemLocation/:SKU',authenticateJWT,laundryController.get
 router.get('/getResidentHistory/:SKU',authenticateJWT,laundryController.getResidentHistory);
 router.post('/getResidentItemAndLocation',authenticateJWT,laundryController.getResidentProductsAndLocationBySkuList);
 router.get('/location/:locationId',authenticateJWT,laundryController.getFilterLocationTickets);
-
+router.post('/getResidentHistory/room/:roomId',authenticateJWT,laundryController.getResidentHistoryByRoomId);
 router.get('/byUserId', authenticateJWT,laundryController.getTicketByUserId);
 router.get('/company/usersByRole', authenticateJWT,getAllUsersCollectionByRole);
 
