@@ -146,7 +146,7 @@ const createTicket = async (req, res) => {
 
     const managers = await getAllUsersByRole(companyId, MANAGER);
 
-    handleTicketNotification(req, managers, laundryOperator, ticket);
+    handleTicketNotification(req, managers, laundryOperator, strcutureLaundaryRes);
 
     res.status(201)
       .json(strcutureLaundaryRes);
