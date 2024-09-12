@@ -52,12 +52,17 @@ const getInventoryItemsByCompany = async (req, res) => {
   const { companyId } = req.user;
 
   try {
-    const items = await Inventory.find({ companyId }).lean();
+    const items = await Inventory.find({ companyId }).populate({
+      path: 'inventoryUsed.room',
+      select: 'roomName unit', 
+    }).lean();
+    console.log("items",items)
     const transFormInventory = items.map((val) => ({
       ...val,
       // quantityUsed: 1,
       inventoryId: val._id,
-    }));
+    }))
+    console.log("rooms",transFormInventory)
     res.json(transFormInventory);
   } catch (err) {
     console.error("Error fetching inventory items:", err);
@@ -71,6 +76,7 @@ const getInventoryItemShortDetail = async (req, res) => {
     const items = await Inventory.find({ companyId })
       .select("productName productImage")
       .lean();
+      console.log("items===",items)
     const transFormInventory = items.map((val) => ({
       ...val,
       quantityUsed: 1,

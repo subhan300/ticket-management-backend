@@ -56,7 +56,21 @@ const getRoomById = async (req, res) => {
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
     }
-    res.status(200).json({ room });
+    res.status(200).json(room);
+  } catch (error) {
+    console.error('Error fetching room:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const getRoomsByUnitId = async (req, res) => {
+  try {
+    const { unitId } = req.params;
+    const room = await Room.find({unit:unitId}).populate('unit');
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+    res.status(200).json(room );
   } catch (error) {
     console.error('Error fetching room:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -70,7 +84,7 @@ const getRoomBySku = async (req, res) => {
       if (!room) {
         return res.status(404).json({ message: 'Room not found' });
       }
-      res.status(200).json(room );
+      res.status(200).json(room[0] );
     } catch (error) {
       console.error('Error fetching room:', error);
       res.status(500).json({ message: 'Internal server error' });
@@ -129,6 +143,7 @@ const deleteRoomsInBulk = async (req, res) => {
     }
   };
 module.exports = {
+  getRoomsByUnitId,
     deleteRoomsInBulk,
     getRoomBySku,
   createRoom,

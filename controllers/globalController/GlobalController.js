@@ -22,8 +22,8 @@ const getAllManagers = async (companyId) => {
   const getAllUsersCollectionByRole = async (req,res) => {
 
     try {
-      const {role}=req.params;
-      const {companyId}=req.user;
+      const {companyId,role}=req.user;
+
       const usersCollection = await userModel.find({ role, companyId }).select('_id name');
       return res.status(200).send(usersCollection)
     } catch (error) {

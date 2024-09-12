@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Ticket = require("../../models/ticketModel");
 const User = require("../../models/userModel");
+const Room = require("../../models/roomModel");
 const {
   ObjectId,
   formatTicketNumber,
@@ -92,12 +93,12 @@ const getUserTicket = async (req, res) => {
   try {
     const { id, companyId } = req.user;
     const { SKU } = req.params;
-    //   const getResident=await userModel.findOne({SKU}).select("name locationName livingLocation email").lean();
-    //  console.log("get resident ===== >",getResident);
+      const getRoom=await Room.findOne({SKU}).lean();
+      console.log("get rooms",getRoom)
 
     const tickets =Ticket.find({
       companyId: companyId,
-      "issueLocation.room": SKU,
+      room: getRoom._id
     })
     const populatedTickets=await populateTickets(tickets)
     const ticketStrcutureRes=await ticketStructure(populatedTickets)
@@ -118,6 +119,7 @@ const createTicket = async (req, res) => {
       status,
       assignedTo,
       images,
+      location,
       room
     } = req.body;
     const ticketNo = await getLastTicketNumber();
@@ -131,7 +133,8 @@ const createTicket = async (req, res) => {
       companyId,
       images,
       ticketNo,
-      room
+      room,
+      location,
     });
 
        await ticket.save();
@@ -154,7 +157,7 @@ const createTicket = async (req, res) => {
     })
 
     const Room={roomName:ticket.room.roomName,_id:ticket.room._id}
-    const unit={name:ticket.room.unit.name,_id:ticket.room._id}
+    const unit={name:ticket.room.unit.name,_id:ticket.room.unit._id}
     res.status(201).json({
       ...ticket.toObject(),
       room:Room,
@@ -187,6 +190,7 @@ const updateTicket = async (req, res) => {
           const getAvailableQty = await InventoryModel.findById(
             item.inventoryId
           ).lean();
+        
           if (
             getAvailableQty &&
             getAvailableQty.availableQty < item.quantityUsed
@@ -198,10 +202,9 @@ const updateTicket = async (req, res) => {
             let getStatus = {};
 
             if (item.quantityUsed) {
-        const filteredInventoryUsed = getAvailableQty.inventoryUsed.filter(usedItem => usedItem._id.toString() !== ticketId);
+        const filteredInventoryUsed = getAvailableQty.inventoryUsed?.filter(usedItem => usedItem._id.toString() !== ticketId);
 
-               const totalUsedItemQty = filteredInventoryUsed.reduce((total, usedItem) => total + usedItem.usedItemQty, 0);
-               console.log("totalUsedItemQty",totalUsedItemQty)
+               const totalUsedItemQty = filteredInventoryUsed?.reduce((total, usedItem) => total + usedItem.usedItemQty, 0);
               const usedItem = { usedItem: totalUsedItemQty  };
               getStatus = updateStockStatus({
                 ...getAvailableQty,
@@ -216,6 +219,7 @@ const updateTicket = async (req, res) => {
                 .status(400)
                 .send("Inventory is out of stock ,can't order that much");
             }
+            console.log("here ==",role)
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
               {
@@ -231,7 +235,7 @@ const updateTicket = async (req, res) => {
                 },
               }
             );
-
+             console.log("result======",result)
             if (result.modifiedCount === 0) {
               // If no document was updated, push a new entry to the array
               const res = await InventoryModel.updateOne(
@@ -254,7 +258,7 @@ const updateTicket = async (req, res) => {
                   },
                 }
               );
-              console.log("res====", res);
+              console.log("inventory res====", res);
             }
             const updatedInventory = await InventoryModel.findById(
               item.inventoryId

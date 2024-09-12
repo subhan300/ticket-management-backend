@@ -14,7 +14,9 @@ router.delete('/:locationId', unitController.deleteUnitsByLocation)
 
 router.get('/getAll', unitController.getAllUnits);
 router.get('/:locationId', unitController.getUnitsByLocationId)
+
 router.get('/company/:companyId', unitController.getUnitsByCompanyId);
+// i dont need thisone ,remove it 
 router.get('/company/unit/:unitId', unitController.getUnitRoomsByCompanyId);
 
 module.exports = router;

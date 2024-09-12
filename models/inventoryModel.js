@@ -9,9 +9,10 @@ const inventorySchema = new Schema(
       ticketNo:{type:String},
       updatedDate:{type:String},
       usedBy:{type:String},
-      room:{type:String},
+      room:{type: mongoose.Schema.Types.ObjectId,ref:"Room"},
       role:{type:String},
       usedItemQty:{type:Number,default:0},
+ 
      
     }],
     companyId: {

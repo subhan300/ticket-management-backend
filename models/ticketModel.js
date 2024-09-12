@@ -52,15 +52,16 @@ const ticketSchema = new mongoose.Schema(
     comments: [commentSchema], // Embed the comment schema
     inventoryUsed: [inventoryUsedSchema],
     externalInventory:{type:String,default:"Not Ordered anything Externally"},
-    issueLocation:{
-      locationName:{type:String},
-      unit:{type:Object},
-      room:{type:String},
-      extraDetail:{type:String}
+    // issueLocation:{
+    //   locationName:{type:String},
+    //   unit:{type:Object},
+    //   room:{type:String},
+    //   extraDetail:{type:String}
       
 
-    },
-    room:{type: mongoose.Schema.Types.ObjectId, ref: "Room"},
+    // },
+    room:{type: mongoose.Schema.Types.ObjectId, ref: "Room",required:true},
+    location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
     assignedTo: { type: mongoose.Schema.Types.Mixed, ref: "User", required: false },
     // assignedTo:  {id:{type: mongoose.Schema.Types.ObjectId},assignedName:{type:String} },
     issue: {

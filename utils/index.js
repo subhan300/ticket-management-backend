@@ -122,27 +122,62 @@ const populateLaundryTickets = async (tickets) => {
     .populate({
       path: "userItems",
       model: "UserItem",
+    }) 
+    .populate({
+      path: "room",
+      populate: {
+        path: "unit",
+        model: "Unit",
+      },
     })
-
-    // .populate("resident", "name email")
+    .populate({ path: "location", model: "Location" })
     .sort({ createdAt: -1 });
+
+};
+const extractRoomAndUnit = (ticketItems) => {
+  let ticket=ticketItems.length?ticketItems[0]:ticketItems
+ 
+  const room = {
+    roomName: ticket?.room?.roomName || null,
+    _id: ticket?.room?._id || null,
+  };
+  const unit = {
+    name: ticket?.room?.unit?.name || null,
+    _id: ticket?.room?.unit?._id || null,
+  };
+  const { name, email, _id } = ticket.userId;
+  return { room, unit,getName:name,getEmail:email,getId:_id };
 };
 const laundryTicketStructure = async (populatedTickets) => {
-  return await Promise.all(
-    populatedTickets.map(async (ticketItem) => {
-      const { name, email, _id } = ticketItem.userId;
-
-      return {
-        ...ticketItem.toObject(),
-        name,
-        email,
-        userId: _id,
-      };
-    })
-  );
+   const {room,unit,getName,getEmail,getId}=extractRoomAndUnit(populatedTickets)
+   if(populatedTickets.length){
+   return await Promise.all(
+      populatedTickets.map(async (ticketItem) => {
+        const { name, email, _id } = ticketItem.userId;
+  
+        return {
+          ...ticketItem,
+          name,
+          email,
+          userId: _id,
+          room,
+          unit
+        };
+      })
+    );
+  }else{
+    return {
+      ...populatedTickets,
+      name:getName,
+      email:getEmail,
+      userId:getId,
+      room,
+      unit
+    };
+  }
+  
 };
 const ticketStructure = async (ticket) => {
-  console.log("tickets",ticket)
    if(ticket.length){
   return await Promise.all(
     ticket.map(async (ticket) => {
@@ -162,7 +197,7 @@ const ticketStructure = async (ticket) => {
           : ticket.assignedTo;
           // for now need to add ternary oprator as changing data ,but remove it after that 
           const Room={roomName:ticket?.room?.roomName,_id:ticket.room?._id}
-        const unit={name:ticket?.room?.unit?.name,_id:ticket?.room?._id}
+        const unit={name:ticket?.room?.unit?.name,_id:ticket?.room?.unit?._id}
       return {
         ...ticket.toObject(),
         name,
@@ -193,8 +228,8 @@ const ticketStructure = async (ticket) => {
       ticket.assignedTo === NotAssignedId
         ? { name: NotAssigned, _id: NotAssignedId }
         : ticket.assignedTo;
-        const Room={roomName:ticket.room.roomName,_id:ticket.room._id}
-        const unit={name:ticket.room.unit.name,_id:ticket.room._id}
+        const Room={roomName:ticket?.room?.roomName,_id:ticket?.room?._id}
+        const unit={name:ticket?.room?.unit?.name,_id:ticket?.unit?._id}
     return {
       ...ticket.toObject(),
       name,

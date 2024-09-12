@@ -13,8 +13,7 @@ const {
   MANAGER,
   USER,
 } = require("../../utils/constants");
-const InventoryModel = require("../../models/inventoryModel");
-const connectedUsers = require("../../utils/store-data/connectedUsers");
+
 const {
   getAllManagers,
   getAllUsersByRole,
@@ -23,9 +22,9 @@ const {
   handleNotification,
   handleTicketNotification,
 } = require("../notificationController/notificationHelper");
-const userModel = require("../../models/userModel");
-const User = require("../../models/userModel");
+
 const UserItem = require("../../models/userItemsModel");
+const roomModel = require("../../models/roomModel");
 const getLastTicketNumber = async () => {
   const lastTicket = await LaundryTicket.findOne().sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
@@ -47,12 +46,11 @@ const getAllTickets = async (req, res) => {
 const getTicketByUserId = async (req, res) => {
   try {
     const { id: userId, role } = req.user;
-    LaundryTicket.find({ userId });
     let tickets;
     if (role === MANAGER) {
-      tickets = LaundryTicket.find({});
+      tickets = LaundryTicket.find({}).lean();
     } else {
-      tickets = LaundryTicket.find({ userId });
+      tickets = LaundryTicket.find({ userId }).lean();
     }
     const populatedTickets = await populateLaundryTickets(tickets);
     const populatedTicketsStucture = await laundryTicketStructure(
@@ -64,20 +62,25 @@ const getTicketByUserId = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-const getFilterCompanyTickets = async (req, res) => {
+const getFilterLocationTickets = async (req, res) => {
   try {
     const { id, companyId } = req.user;
-
-    const tickets = await LaundryTicket.find({
-      companyId: companyId,
-      $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
-    });
-    const populatedTickets = populateLaundryTickets(tickets);
+    const {locationId}=req.params;
+    console.log(locationId)
+    const tickets = LaundryTicket.find({
+      location: locationId,
+      // $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
+    }).lean();
+   if(tickets){
+    const populatedTickets = await populateLaundryTickets(tickets);
+    console.log(populatedTickets)
     const populatedTicketsStucture = await laundryTicketStructure(
       populatedTickets
     );
 
-    res.status(200).json(populatedTicketsStucture);
+    return res.status(200).json(populatedTicketsStucture);
+   }
+   return res.status(400).json("no ticket found");
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -101,32 +104,16 @@ const getCompanyTickets = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-const getUserTicket = async (req, res) => {
-  try {
-    const { companyId } = req.user;
-    const { room } = req.params;
 
-    const tickets = await LaundryTicket.find({
-      companyId: companyId,
-      "issueLocation.room":room ,
-    });
-    const populatedTickets = populateLaundryTickets(tickets);
-    const populatedTicketsStucture = await laundryTicketStructure(
-      populatedTickets
-    );
-    res.status(200).json(populatedTicketsStucture);
-    // res.status(200).json(restructureData);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
 const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
 
     const ticketNo = await getLastTicketNumber();
-    const generateSku = generateSKU(`${req.body.issueLocation.room}-${ticketNo}`);
+    const generateSku = generateSKU(
+      `${req.body.room}-${ticketNo}`
+    );
     const ticket = new LaundryTicket({
       userId,
       ticketNo,
@@ -134,25 +121,37 @@ const createTicket = async (req, res) => {
       companyId,
       archieve: false,
       comments: [],
+      room:req.body.room,
       ...req.body,
     });
     await ticket.save();
-    const getSelectedTicket = await LaundryTicket.findById(ticket._id)
+    const getSelectedTicket =await LaundryTicket.findById(ticket._id).lean()
       .populate("userId", "name email")
       .populate({
         path: "userItems",
         model: "UserItem",
       })
-      // .populate("resident", "name email");
-
+      .populate({
+        path: "room",
+        populate: {
+          path: "unit",
+          model: "Unit",
+        },
+      })
+      .sort({ createdAt: -1 });
+      // const populatedTickets=await populateLaundryTickets(getSelectedTicket)
+      // console.log("popuated==",populatedTickets)
+     const strcutureLaundaryRes=await laundryTicketStructure(getSelectedTicket)
     const laundryOperator = await getAllUsersByRole(companyId, LaundryOperator);
-   
+
     const managers = await getAllUsersByRole(companyId, MANAGER);
 
     handleTicketNotification(req, managers, laundryOperator, ticket);
 
-    res.status(201).json({ ...getSelectedTicket.toObject(), name, email });
+    res.status(201)
+      .json(strcutureLaundaryRes);
   } catch (err) {
+     console.log("err",err)
     res.status(500).json({ error: err.message });
   }
 };
@@ -177,8 +176,8 @@ const updateTicket = async (req, res) => {
         path: "userItems",
         model: "UserItem",
         // select: "",
-      })
-      // .populate("resident", "name email");
+      });
+    // .populate("resident", "name email");
     // const populatedTickets = await populateLaundryTickets(ticket);
     const populatedTicketsStucture = await laundryTicketStructure([ticket]);
     const users = await getAllUsersByRole(companyId, USER);
@@ -241,18 +240,10 @@ const addComment = async (req, res) => {
 const getResidentLocationByItemSku = async (req, res) => {
   try {
     const { SKU } = req.params;
-    const item = await UserItem.findOne({ SKU }).lean()
-     
+    const item = await UserItem.findOne({ SKU }).lean();
+
     if (item) {
-      const {
-        itemName,
-        itemImage,
-        color,
-        category,
-        size,
-        SKU,
-        _id,
-      } = item;
+      const { itemName, itemImage, color, category, size, SKU, _id } = item;
       const structureResponse = {
         product: { itemName, itemImage, color, category, size, SKU, _id },
       };
@@ -270,19 +261,12 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
   try {
     const payload = req.body;
     const item = await UserItem.find({ SKU: { $in: payload } })
-      .select("itemName itemImage SKU room unit").lean()
-      // .populate("user", "name livingLocation locationName")
-      // .lean();
-    console.log("item===", item);
-    if (item.length) {
-      const structureResponse = {
-        product: item,
-        room:item[0].room,
-        unit:item[0].unit
-      };
-
-      return res.status(200).send(structureResponse);
-    }
+      .select("itemName itemImage SKU room unit").populate("room")
+      .lean();
+    // .populate("user", "name livingLocation locationName")
+    // .lean();
+      return res.status(200).send(item);
+    
     return res.status(400).send("failed to get item and  location");
   } catch (error) {
     console.error(error);
@@ -307,26 +291,28 @@ const getResidentProductsAndLocationBySkuList = async (req, res) => {
 //   }
 // };
 
-//getting resident history from room 
+//getting resident history from room
 const getResidentHistory = async (req, res) => {
   try {
-    const { room } = req.params;
-    console.log("room",getResidentLocationByItemSku)
-    const ticket = await LaundryTicket.find({ "issueLocation.room":room }).select("ticketNo updatedAt")
+    const { SKU } = req.params;
+     const room=await roomModel.findOne({SKU});
+     console.log("room",room)
+    const ticket = await LaundryTicket.find({ room:room._id })
+      .select("ticketNo updatedAt")
       .populate("userItems")
-      .exec()
+      .exec();
 
     if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found with this resident id " });
+      return res
+        .status(404)
+        .json({ message: "Ticket not found with this resident id " });
     }
 
     // Send response with ticket details including updated date and userItems
-    res.json(
-      ticket
-    );
+    res.json(ticket);
   } catch (error) {
     console.error(error);
-    console.log(error)
+    console.log(error);
     return res.status(400).send(error);
   }
 };
@@ -338,10 +324,9 @@ module.exports = {
   createTicket,
   deleteTicket,
   getTicketByUserId,
-  getFilterCompanyTickets,
   updateTicket,
   getAllTickets,
   addComment,
   getCompanyTickets,
-  getUserTicket,
+  getFilterLocationTickets
 };
