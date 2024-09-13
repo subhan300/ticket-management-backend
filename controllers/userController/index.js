@@ -51,7 +51,7 @@ const login = async (req, res) => {
         // Generate JWT token
         const {role,companyId,name, livingLocation,locationName ,locations}=user
         const token = jwt.sign(
-            { user: { id: user._id, email ,role,companyId,name,  livingLocation,locationName ,locations} },
+            { user: { id: user._id, email ,role,companyId,name, locationName ,locations} },
             process.env.JWT_SECRET,
             // { expiresIn: '1h' }
         );
@@ -73,7 +73,6 @@ const updateUser = async (req, res) => {
       email,
       role,
       password: password ? await bcrypt.hash(password, 10) : undefined,
-      livingLocation,
       locationName,
       companyId,
       locations
@@ -88,8 +87,26 @@ const updateUser = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const getUsersByRole= async (req,res) => {
+
+  try {
+    const {role}=req.params
+    const {companyId,locations}=req.user;
+    console.log(locations,req.user)
+// location[0] because laundary operator will have only one location 
+   const usersCollection=  await User.find({
+      locations: locations[0],  // Checks if locationId is present in the locations array
+      role: role,            // Filters by the user's role
+    }).select("name _id");
+    return res.status(200).send(usersCollection)
+  } catch (error) {
+    console.error('Error fetching managers:', error);
+    res.status(400).send("failed to handle query")
+  }
+};
 
 module.exports={
+  getUsersByRole,
   updateUser,
     login,createUser
 }

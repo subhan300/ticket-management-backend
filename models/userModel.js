@@ -32,11 +32,7 @@ const UserSchema = new Schema({
   },
 // need to remove
   locationName: { type: String, required: false },
-  livingLocation: {
-    unit: { _id: { type: Schema.Types.ObjectId }, name: { type: String } },
-    room: { type: String },
-  },
-  location: { type: Schema.Types.ObjectId, ref: "Location" },
+
   locations: [{ type: Schema.Types.ObjectId, ref: "Location" }],
 });
 

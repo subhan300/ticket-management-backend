@@ -48,9 +48,9 @@ const getTicketByUserId = async (req, res) => {
     const { id: userId, role } = req.user;
     let tickets;
     if (role === MANAGER) {
-      tickets = LaundryTicket.find({}).lean();
+      tickets = LaundryTicket.find({});
     } else {
-      tickets = LaundryTicket.find({ userId }).lean();
+      tickets = LaundryTicket.find({ userId });
     }
     const populatedTickets = await populateLaundryTickets(tickets);
     const populatedTicketsStucture = await laundryTicketStructure(
@@ -70,7 +70,7 @@ const getFilterLocationTickets = async (req, res) => {
     const tickets = LaundryTicket.find({
       location: locationId,
       // $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
-    }).lean();
+    });
    if(tickets){
     const populatedTickets = await populateLaundryTickets(tickets);
     console.log(populatedTickets)
@@ -125,7 +125,7 @@ const createTicket = async (req, res) => {
       ...req.body,
     });
     await ticket.save();
-    const getSelectedTicket =await LaundryTicket.findById(ticket._id).lean()
+    const getSelectedTicket =await LaundryTicket.findById(ticket._id)
       .populate("userId", "name email")
       .populate({
         path: "userItems",
@@ -139,6 +139,7 @@ const createTicket = async (req, res) => {
         },
       })
       .sort({ createdAt: -1 });
+
       // const populatedTickets=await populateLaundryTickets(getSelectedTicket)
       // console.log("popuated==",populatedTickets)
      const strcutureLaundaryRes=await laundryTicketStructure(getSelectedTicket)
@@ -184,7 +185,7 @@ const updateTicket = async (req, res) => {
           model: "Unit",
         },
       })
-      .populate({ path: "location", model: "Location" }).lean()
+      .populate({ path: "location", model: "Location" })
       .sort({ createdAt: -1 });
     const populatedTicketsStucture = await laundryTicketStructure(ticket);
     const users = await getAllUsersByRole(companyId, USER);

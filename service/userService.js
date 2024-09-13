@@ -9,7 +9,9 @@ const createUser = async (userData) => {
   return await user.save();
 };
 
+
 module.exports = {
   getAllUsers,
+
   createUser,
 };
