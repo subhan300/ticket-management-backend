@@ -110,10 +110,11 @@ const getUserTicket = async (req, res) => {
 const searchTicket = async (req, res) => {
   try {
     const { query } = req.body;
-
-    if (!query) {
-      return res.status(400).send({ message: "Query parameter is required" });
+    console.log("query===",query)
+    if (!query || query.trim() === '') {
+      return res.status(200).json([]);
     }
+    
     const tickets = await Ticket.find({
       $or: [
         { issue: { $regex: query, $options: "i" } },
@@ -122,27 +123,25 @@ const searchTicket = async (req, res) => {
         { description: { $regex: query, $options: "i" } },
       ],
     })
-    .populate("userId", "name email")
-    .populate({
-      path: "inventoryUsed.inventoryId",
-      model: "Inventory",
-      select: "productName productImage",
-    })
     .populate({
       path: "room",
       populate: {
         path: "unit",
         model: "Unit",
       },
-    })
-    .sort({ createdAt: -1 });
+    }).select("ticketNo room issue description")
+    .sort({ createdAt: -1 }).lean();
 
     if(!tickets.length){
-      return res.status(404).json({ message: "No tickets found" });
+      return res.status(200).json([]);
     }
-
-    const ticketStrcutureRes = await ticketStructure(tickets);
-    res.status(200).json(ticketStrcutureRes);
+    const ticketsRes=tickets.map(ticket=>{
+      const Room = { roomName: ticket?.room?.roomName, _id: ticket?.room?._id };
+    const unit = { name: ticket?.room?.unit?.name, _id: ticket?.room?.unit?._id };
+    return {...ticket,room:Room,unit}
+    })
+    
+    res.status(200).json(ticketsRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -200,7 +199,7 @@ const createTicket = async (req, res) => {
       },
     });
 
-    const Room = { roomName: ticket.room.roomName, _id: ticket.room._id };
+    const Room = { roomName: ticket.room.roomName, _id: ticket.room._id ,sku:ticket.room.SKU};
     const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
     res.status(201).json({
       ...ticket.toObject(),

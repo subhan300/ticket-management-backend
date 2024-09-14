@@ -222,9 +222,11 @@ const ticketStructure = async (ticket) => {
             ? { name: NotAssigned, _id: NotAssignedId }
             : ticket.assignedTo;
         // for now need to add ternary oprator as changing data ,but remove it after that
+          console.log("ticket===",ticket.r)
         const Room = {
           roomName: ticket?.room?.roomName,
           _id: ticket.room?._id,
+          sku:ticket.room.SKU
         };
         const unit = {
           name: ticket?.room?.unit?.name,
@@ -261,7 +263,7 @@ const ticketStructure = async (ticket) => {
         ? { name: NotAssigned, _id: NotAssignedId }
         : ticket.assignedTo;
     const Room = { roomName: ticket?.room?.roomName, _id: ticket?.room?._id };
-    const unit = { name: ticket?.room?.unit?.name, _id: ticket?.unit?._id };
+    const unit = { name: ticket?.room?.unit?.name, _id: ticket?.room?.unit?._id };
     return {
       ...ticket.toObject(),
       name,
