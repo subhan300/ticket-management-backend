@@ -11,7 +11,7 @@ const productSchema = new Schema(
     },
     productImage: {
       type: String,
-      required: true,
+      required: false,
     },
 
     quantity: {
@@ -19,7 +19,11 @@ const productSchema = new Schema(
       required: true,
       default: 0,
     },
-
+    status: {
+      type: "string",
+      required: false,
+    },
+    location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
 
     category: {
       type: String,
@@ -27,7 +31,8 @@ const productSchema = new Schema(
     },
 
   },
-  { timestamps: true }
+  { timestamps: true },
+  
 );
 
 

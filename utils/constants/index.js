@@ -31,6 +31,7 @@ const LAUNDRY_STATUS = {
   DRYING_COMPLETED: "Drying completed",
   LAUNDRY_COMPLETED: "Laundry completed",
   DELIVERED_TO_RESIDENT: "Laundry delivered to resident",
+  STREAM_PRESS:"Stream-Press",
   CLOSED: "Closed",
 };
 

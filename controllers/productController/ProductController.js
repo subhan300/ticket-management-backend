@@ -1,23 +1,27 @@
 // stockItemController.js
 
 const Product= require("../../models/productsModel");
+const { generateSKU } = require("../../utils");
 
 const createProduct = async (req, res) => {
   const {
     productName,
     productImage,
     category,
-    SKU,
-    Price,
+    price,location,status
   } = req.body;
 
   try {
+    const generateSku = generateSKU(
+      status
+    );
     const item = new Product({
         productName,
         productImage,
         category,
-        SKU,
-        Price,
+        price,
+        SKU:generateSku,
+        location,status,
     });
     const savedItem = await item.save();
     res.status(201).json(savedItem);
@@ -41,7 +45,9 @@ const getProductById = async (req, res) => {
 
   try {
     const items = await Product.findOne({ SKU });
-   
+    if(!items){
+      return res.status(404).json({ message: "Product not found" });
+    }
     res.json(items);
   } catch (err) {
     console.error("Error fetching inventory items:", err);
