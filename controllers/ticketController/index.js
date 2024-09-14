@@ -52,9 +52,9 @@ const getAllTickets = async (req, res) => {
 const getTicketByUserId = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    const tickets = Ticket.find({ userId })
-    const populatedTickets=await populateTickets(tickets)
-    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    const tickets = Ticket.find({ userId });
+    const populatedTickets = await populateTickets(tickets);
+    const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -67,9 +67,9 @@ const getFilterCompanyTickets = async (req, res) => {
     const tickets = Ticket.find({
       companyId: companyId,
       $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
-    })
-    const populatedTickets=await populateTickets(tickets)
-    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    });
+    const populatedTickets = await populateTickets(tickets);
+    const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -81,9 +81,9 @@ const getCompanyTickets = async (req, res) => {
 
     const tickets = Ticket.find({
       companyId: companyId,
-    })
-    const populatedTickets=await populateTickets(tickets)
-    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+    });
+    const populatedTickets = await populateTickets(tickets);
+    const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -93,22 +93,60 @@ const getUserTicket = async (req, res) => {
   try {
     const { id, companyId } = req.user;
     const { SKU } = req.params;
-      const getRoom=await Room.findOne({SKU}).lean();
-      console.log("get rooms",getRoom)
+    const getRoom = await Room.findOne({ SKU }).lean();
+    console.log("get rooms", getRoom);
 
-    const tickets =Ticket.find({
+    const tickets = Ticket.find({
       companyId: companyId,
-      room: getRoom._id
-    })
-    const populatedTickets=await populateTickets(tickets)
-    const ticketStrcutureRes=await ticketStructure(populatedTickets)
+      room: getRoom._id,
+    });
+    const populatedTickets = await populateTickets(tickets);
+    const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
-  
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+const searchTicket = async (req, res) => {
+  try {
+    const { query } = req.body;
 
+    if (!query) {
+      return res.status(400).send({ message: "Query parameter is required" });
+    }
+    const tickets = await Ticket.find({
+      $or: [
+        { issue: { $regex: query, $options: "i" } },
+        { issueItem: { $regex: query, $options: "i" } },
+        { issueItemDescription: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+      ],
+    })
+    .populate("userId", "name email")
+    .populate({
+      path: "inventoryUsed.inventoryId",
+      model: "Inventory",
+      select: "productName productImage",
+    })
+    .populate({
+      path: "room",
+      populate: {
+        path: "unit",
+        model: "Unit",
+      },
+    })
+    .sort({ createdAt: -1 });
+
+    if(!tickets.length){
+      return res.status(404).json({ message: "No tickets found" });
+    }
+
+    const ticketStrcutureRes = await ticketStructure(tickets);
+    res.status(200).json(ticketStrcutureRes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
@@ -120,7 +158,10 @@ const createTicket = async (req, res) => {
       assignedTo,
       images,
       location,
-      room
+      room,
+      issueItem,
+      issueItemDescription,
+      audit,
     } = req.body;
     const ticketNo = await getLastTicketNumber();
     const ticket = new Ticket({
@@ -135,9 +176,12 @@ const createTicket = async (req, res) => {
       ticketNo,
       room,
       location,
+      issueItem,
+      issueItemDescription,
+      audit,
     });
 
-       await ticket.save();
+    await ticket.save();
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
@@ -148,19 +192,19 @@ const createTicket = async (req, res) => {
     const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
     const managers = await getAllUsersByRole(companyId, MANAGER);
     handleTicketNotification(req, managers, technicians, ticket);
-    await  ticket.populate({
-      path: 'room',
+    await ticket.populate({
+      path: "room",
       populate: {
-        path: 'unit',
-        model: 'Unit',
+        path: "unit",
+        model: "Unit",
       },
-    })
+    });
 
-    const Room={roomName:ticket.room.roomName,_id:ticket.room._id}
-    const unit={name:ticket.room.unit.name,_id:ticket.room.unit._id}
+    const Room = { roomName: ticket.room.roomName, _id: ticket.room._id };
+    const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
     res.status(201).json({
       ...ticket.toObject(),
-      room:Room,
+      room: Room,
       unit,
       name,
       email,
@@ -190,7 +234,7 @@ const updateTicket = async (req, res) => {
           const getAvailableQty = await InventoryModel.findById(
             item.inventoryId
           ).lean();
-        
+
           if (
             getAvailableQty &&
             getAvailableQty.availableQty < item.quantityUsed
@@ -202,10 +246,15 @@ const updateTicket = async (req, res) => {
             let getStatus = {};
 
             if (item.quantityUsed) {
-        const filteredInventoryUsed = getAvailableQty.inventoryUsed?.filter(usedItem => usedItem._id.toString() !== ticketId);
+              const filteredInventoryUsed = getAvailableQty.inventoryUsed?.filter(
+                (usedItem) => usedItem._id.toString() !== ticketId
+              );
 
-               const totalUsedItemQty = filteredInventoryUsed?.reduce((total, usedItem) => total + usedItem.usedItemQty, 0);
-              const usedItem = { usedItem: totalUsedItemQty  };
+              const totalUsedItemQty = filteredInventoryUsed?.reduce(
+                (total, usedItem) => total + usedItem.usedItemQty,
+                0
+              );
+              const usedItem = { usedItem: totalUsedItemQty };
               getStatus = updateStockStatus({
                 ...getAvailableQty,
                 ...usedItem,
@@ -219,7 +268,7 @@ const updateTicket = async (req, res) => {
                 .status(400)
                 .send("Inventory is out of stock ,can't order that much");
             }
-            console.log("here ==",role)
+            console.log("here ==", role);
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
               {
@@ -235,7 +284,7 @@ const updateTicket = async (req, res) => {
                 },
               }
             );
-             console.log("result======",result)
+            console.log("result======", result);
             if (result.modifiedCount === 0) {
               // If no document was updated, push a new entry to the array
               const res = await InventoryModel.updateOne(
@@ -284,23 +333,29 @@ const updateTicket = async (req, res) => {
         }
       }
 
-      const populatedTickets = await Ticket.findByIdAndUpdate(ticketId, updates, {
-        new: true,
-        session,
-      }).populate("userId", "name email")
+      const populatedTickets = await Ticket.findByIdAndUpdate(
+        ticketId,
+        updates,
+        {
+          new: true,
+          session,
+        }
+      )
+        .populate("userId", "name email")
         .populate({
           path: "inventoryUsed.inventoryId",
           model: "Inventory",
           select: "productName productImage",
-        }).populate({
-          path: 'room',
-          populate: {
-            path: 'unit',
-            model: 'Unit',
-          },
         })
+        .populate({
+          path: "room",
+          populate: {
+            path: "unit",
+            model: "Unit",
+          },
+        });
       // const populatedTickets=populateTickets(ticket)
-      const ticketStrcutureRes=await ticketStructure(populatedTickets)
+      const ticketStrcutureRes = await ticketStructure(populatedTickets);
       const users = await getAllUsersByRole(companyId, USER);
       const managers = await getAllUsersByRole(companyId, MANAGER);
       //  handleNotification(req,updates,managers,users,ticket)
@@ -316,7 +371,7 @@ const updateTicket = async (req, res) => {
       //     ? transformedInventoryUsed
       //     : [],
       //   assignedToColumn: assignedTo._id,}
-      
+
       res.status(200).json(ticketStrcutureRes);
     });
   } catch (err) {
@@ -375,4 +430,5 @@ module.exports = {
   addComment,
   getCompanyTickets,
   getUserTicket,
+  searchTicket
 };

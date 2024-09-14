@@ -5,7 +5,8 @@ const ticketController = require('../controllers/ticketController');
 const { adminAuthenticateJWT } = require('../middleware/adminAuthMiddleware');
 const { authenticateJWT } = require('../middleware/authMiddleware');
 
-router.get('/getAll',ticketController.getAllTickets);
+router.get('/getAll',authenticateJWT,ticketController.getAllTickets);
+router.post('/search',authenticateJWT,ticketController.searchTicket);
 router.get('/getCompanyTicket',authenticateJWT,ticketController.getCompanyTickets);
 
 router.get('/getFilteredCompanyTickets',authenticateJWT,ticketController.getFilterCompanyTickets);
