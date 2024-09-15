@@ -1,5 +1,5 @@
 
-const { TECHNICIAN, } = require("../../utils/constants");
+const { TECHNICIAN, LaundryOperator, } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");
@@ -12,7 +12,7 @@ const notifyAssignedUser = async (ticket, req) => {
   
     const socketId = connectedUsers[assignedTo._id];
     const message =
-      role === TECHNICIAN
+      role === TECHNICIAN  || role === LaundryOperator
         ? `You have been assigned a new ticket`
         : `Ticket is assigned by ${
             role === "MANAGER" ? "Manager" : "Technician"

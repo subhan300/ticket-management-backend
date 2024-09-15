@@ -1,6 +1,9 @@
 const updateTicketAssignedMessage = (name, assignedTo) => {
   return `${name} have  assigned a  ticket to ${assignedTo}`;
 };
+const messageToAssignedUser=(ticketNo)=>{
+  return `Ticket # ${ticketNo} is assigned to you `
+}
 const managerUpdateTicketAssignedMessage = (name, assignedTo) => {
   return `Ticket is assigned to ${assignedTo} by Manager ${name}`;
 };
@@ -23,6 +26,7 @@ const ticketUnAssignedMessage = (name, role) => {
 
 module.exports={
     ticketCreateMessage,
-    updateTicketStatusMessage
+    updateTicketStatusMessage,
+    messageToAssignedUser
     
 }
