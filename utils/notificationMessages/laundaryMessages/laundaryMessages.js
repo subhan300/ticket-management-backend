@@ -1,5 +1,8 @@
-const updateTicketAssignedMessage = (name, assignedTo) => {
-  return `${name} have  assigned a  ticket to ${assignedTo}`;
+const broadcastAssignedMessage = (name, assignedTo) => {
+  return `${name} have  assigned a  Laundary ticket to ${assignedTo}`;
+};
+const broadcastUnAssignedMessage = (name, role) => {
+  return `Ticket is UnAssigned  by ${role} ${name}`;
 };
 const messageToAssignedUser=(ticketNo)=>{
   return `Ticket # ${ticketNo} is assigned to you `
@@ -27,6 +30,8 @@ const ticketUnAssignedMessage = (name, role) => {
 module.exports={
     ticketCreateMessage,
     updateTicketStatusMessage,
-    messageToAssignedUser
+    messageToAssignedUser,
+    broadcastAssignedMessage,
+    broadcastUnAssignedMessage
     
 }

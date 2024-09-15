@@ -4,14 +4,15 @@ const {
   technicianUpdateTicketAssignedMessage,
   ticketUnAssignedMessage,
 } = require("../../utils");
-const { TECHNICIAN, NotAssignedId, MANAGER, } = require("../../utils/constants");
-const { messageToAssignedUser } = require("../../utils/notificationMessages");
+const { TECHNICIAN, NotAssignedId, MANAGER, LaundryOperator, } = require("../../utils/constants");
+const { messageToAssignedUser, broadcastAssignedMessage, broadcastUnAssignedMessage } = require("../../utils/notificationMessages");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { notifyAssignedUser } = require("./notifyAssignedUsers");
 const { notifyAssignedUser2 } = require("./notifyAssignedUsers2");
 const { notifyManagers } = require("./notifyManagers");
 const { notifyUsers } = require("./notifyUser");
+const { notifyUsers2 } = require("./notifyUsers2");
 const { sendSocketNotification } = require("./sendSocketNotification");
 
 
@@ -24,7 +25,7 @@ const handleAssignedNotifications = async (
     ticket,
   
   ) => {
-      // console.log("ticket===",ticket)
+      console.log("ticket===",ticket)
     const { assignedTo, status } = updates;
     const technicianSocketId = connectedUsers[assignedTo];
     const { role, name } = req.user;
@@ -107,6 +108,48 @@ const handleAssignedNotifications = async (
       }
       
      }
+
+     if (role === LaundryOperator) {
+     if(assignedTo){
+      const userSocketId = connectedUsers[assignedTo];
+      const notifyRes = await createNotification(
+         assignedTo,
+         messageToAssignedUser(ticket.ticketNo),
+        updates._id
+      );
+      sendSocketNotification(req, userSocketId, notifyRes);
+     }
+      
+      const message=assignedTo !== NotAssignedId?broadcastAssignedMessage(name,ticket.assignedTo.name):broadcastUnAssignedMessage(name,"Laundary Operator");
+      if (managersCollection.length)
+       
+        await notifyUsers2(
+          req,
+          name,
+          ticket,
+          managersCollection,
+          message
+          
+        );
+    }
+    // if (role === LaundryOperator && assignedTo === NotAssignedId) {
+    //   if(managersCollection.length){
+    //       await notifyUsers(req,
+    //        name,
+    //        ticket,
+    //        managersCollection,
+    //        ticketUnAssignedMessage);
+    //   }
+    //   if(usersCollection.length){
+    //       await notifyUsers(req,
+    //        name,
+    //        ticket,
+    //        usersCollection,
+    //        ticketUnAssignedMessage);
+    //   }
+      
+    //  }
+     
   };
 
   module.exports={handleAssignedNotifications}
