@@ -160,7 +160,7 @@ const createTicket = async (req, res) => {
       room,
       issueItem,
       issueItemDescription,
-      audit,
+      audit,dueDate
     } = req.body;
     const ticketNo = await getLastTicketNumber();
     const ticket = new Ticket({
@@ -177,6 +177,7 @@ const createTicket = async (req, res) => {
       location,
       issueItem,
       issueItemDescription,
+      dueDate,
       audit,
     });
 
@@ -199,7 +200,7 @@ const createTicket = async (req, res) => {
       },
     });
 
-    const Room = { roomName: ticket.room.roomName, _id: ticket.room._id ,sku:ticket.room.SKU};
+    const Room = { roomName: ticket.room.roomName, _id: ticket.room._id ,SKU:ticket.room.SKU};
     const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
     res.status(201).json({
       ...ticket.toObject(),

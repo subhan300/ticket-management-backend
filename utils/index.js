@@ -144,6 +144,7 @@ const populateLaundryTickets = async (tickets) => {
     .sort({ createdAt: -1 });
 };
 const extractRoomAndUnit = (ticketItems) => {
+   console.log("ticket item=--=",ticketItems)
   let ticket = ticketItems.length ? ticketItems[0] : ticketItems;
 
   const room = {
@@ -185,6 +186,7 @@ const laundryTicketStructure = async (populatedTickets) => {
       })
     );
   } else {
+    
     if (mongoose.Types.ObjectId.isValid(populatedTickets.assignedTo)) {
       await populatedTickets.populate("assignedTo", "name email");
     }
@@ -226,7 +228,7 @@ const ticketStructure = async (ticket) => {
         const Room = {
           roomName: ticket?.room?.roomName,
           _id: ticket.room?._id,
-          sku:ticket.room.SKU
+          SKU:ticket.room.SKU
         };
         const unit = {
           name: ticket?.room?.unit?.name,

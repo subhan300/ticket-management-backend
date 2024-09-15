@@ -50,13 +50,16 @@ const getTicketByUserId = async (req, res) => {
     if (role === MANAGER) {
       tickets = LaundryTicket.find({});
     } else {
-      tickets = LaundryTicket.find({ userId });
+      // for now show all tickets
+      tickets = LaundryTicket.find({ });
     }
     const populatedTickets = await populateLaundryTickets(tickets);
+    if(!populatedTickets.length){
+      res.status(200).json({message:"No tickets founf"});
+    }
     const populatedTicketsStucture = await laundryTicketStructure(
       populatedTickets
     );
-
     res.status(200).json(populatedTicketsStucture);
   } catch (err) {
     res.status(500).json({ error: err.message });
