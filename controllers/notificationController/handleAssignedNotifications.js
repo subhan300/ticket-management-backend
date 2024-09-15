@@ -98,4 +98,4 @@ const handleAssignedNotifications = async (
      }
   };
 
-  module.exprts={handleAssignedNotifications}
+  module.exports={handleAssignedNotifications}

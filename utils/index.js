@@ -44,7 +44,6 @@ const generateQRCode = async () => {
   }
 };
 function generateBarcode(text) {
-  console.log("text==", text);
   const options = {
     format: "CODE128",
     text,
@@ -106,7 +105,6 @@ function generateSKU(name) {
   const uniqueName = `${name}-${getDate}`;
   const hash = crypto.createHash("md5").update(uniqueName).digest("hex");
   const hashedSKU = parseInt(hash.substring(0, 5), 16);
-  console.log("hased ====", hashedSKU);
   return hashedSKU; // or incrementalSKU, or hashedSKU
 }
 const populateTickets = async (tickets) => {
@@ -144,7 +142,6 @@ const populateLaundryTickets = async (tickets) => {
     .sort({ createdAt: -1 });
 };
 const extractRoomAndUnit = (ticketItems) => {
-   console.log("ticket item=--=",ticketItems)
   let ticket = ticketItems.length ? ticketItems[0] : ticketItems;
 
   const room = {
@@ -167,7 +164,6 @@ const laundryTicketStructure = async (populatedTickets) => {
       populatedTickets.map(async (ticketItem) => {
         const { name, email, _id } = ticketItem.userId;
         if (mongoose.Types.ObjectId.isValid(ticketItem.assignedTo)) {
-          console.log("ticketItem.assignedTo", ticketItem.assignedTo);
           await ticketItem.populate("assignedTo", "name email");
         }
         const assignedTo =
@@ -224,7 +220,6 @@ const ticketStructure = async (ticket) => {
             ? { name: NotAssigned, _id: NotAssignedId }
             : ticket.assignedTo;
         // for now need to add ternary oprator as changing data ,but remove it after that
-          console.log("ticket===",ticket.r)
         const Room = {
           roomName: ticket?.room?.roomName,
           _id: ticket.room?._id,

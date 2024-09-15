@@ -2,11 +2,15 @@
 const {
   updateTicketAssignedMessage,
   updateStatusMessage,
+  updateTicketStatusMessage,
 
 } = require("../../utils");
 const { NotAssignedId,  } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
-
+const { createNotification } = require("./createNotification");
+const { sendSocketNotification } = require("./sendSocketNotification");
+const {notifyAssignedUserAboutStatus} =require("./notifyAssignedUsersAboutStatus")
+const {notifyManagersAboutStatus} =require("./notifyManagersAboutStatus")
 
 
 const handleStatusNotification = async (
@@ -46,7 +50,7 @@ const handleStatusNotification = async (
       // );
       const notifyRes = await await createNotification(
         ticket.userId._id,
-        updateStatusMessage(name, ticket.status),
+        updateTicketStatusMessage(name, ticket.status),
         updates._id
       );
       sendSocketNotification(req, userSocketId, notifyRes);
@@ -65,4 +69,6 @@ const handleStatusNotification = async (
         await notifyManagersAboutStatus(req, name, ticket, managersCollection);
     }
   };
+  
+  
   module.exports={handleStatusNotification}

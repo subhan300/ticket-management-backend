@@ -25,6 +25,8 @@ const {
 
 const UserItem = require("../../models/userItemsModel");
 const roomModel = require("../../models/roomModel");
+const { handleLaundaryTicketNotification } = require("../notificationController/handleLaundaryNotification");
+const { handleLaundaryUpdateTicketNotification } = require("../notificationController/handleLaundaryUpdateNotifications");
 const getLastTicketNumber = async () => {
   const lastTicket = await LaundryTicket.findOne().sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
@@ -150,7 +152,7 @@ const createTicket = async (req, res) => {
 
     const managers = await getAllUsersByRole(companyId, MANAGER);
 
-    handleTicketNotification(req, managers, laundryOperator, strcutureLaundaryRes);
+    handleLaundaryTicketNotification(req, managers, laundryOperator, strcutureLaundaryRes);
 
     res.status(201)
       .json(strcutureLaundaryRes);
@@ -191,8 +193,8 @@ const updateTicket = async (req, res) => {
       .populate({ path: "location", model: "Location" })
       .sort({ createdAt: -1 });
     const populatedTicketsStucture = await laundryTicketStructure(ticket);
-    const users = await getAllUsersByRole(companyId, USER);
-    handleNotification(
+    const users = await getAllUsersByRole(companyId, LaundryOperator);
+    handleLaundaryUpdateTicketNotification(
       req,
       updates,
       managers,
