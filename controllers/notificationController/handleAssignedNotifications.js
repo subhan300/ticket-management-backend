@@ -7,6 +7,7 @@ const {
 const { TECHNICIAN, NotAssignedId, MANAGER, LaundryOperator, } = require("../../utils/constants");
 const { messageToAssignedUser, broadcastAssignedMessage, broadcastUnAssignedMessage } = require("../../utils/notificationMessages");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
+const { getAllUsersByRole } = require("../globalController/GlobalController");
 const { createNotification } = require("./createNotification");
 const { notifyAssignedUser } = require("./notifyAssignedUsers");
 const { notifyAssignedUser2 } = require("./notifyAssignedUsers2");
@@ -63,11 +64,13 @@ const handleAssignedNotifications = async (
       // sendSocketNotification(req, userSocketId, notifyRes);
     }
     if (role === MANAGER && assignedTo === NotAssignedId) {
-     if(usersCollection.length){
+      console.log("here",usersCollection)
+      const technicians = await getAllUsersByRole(ticket.companyId, TECHNICIAN);
+     if(technicians.length){
          await notifyUsers(req,
           name,
           ticket,
-          usersCollection,
+          technicians,
           ticketUnAssignedMessage);
      }
      

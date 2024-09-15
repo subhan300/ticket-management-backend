@@ -355,19 +355,7 @@ const updateTicket = async (req, res) => {
       const ticketStrcutureRes = await ticketStructure(populatedTickets);
       const users = await getAllUsersByRole(companyId, USER);
       const managers = await getAllUsersByRole(companyId, MANAGER);
-      //  handleNotification(req,updates,managers,users,ticket)
-      // return ({...ticket.toObject(),name,email,userId:_id,assignedTo,assignedDetail:ticket.assignedTo});
-
-      // const populatedTickets = {
-      //   ...ticket.toObject(),
-      //   name,
-      //   email,
-      //   userId: _id,
-      //   assignedTo,
-      //   inventoryUsed: transformedInventoryUsed?.length
-      //     ? transformedInventoryUsed
-      //     : [],
-      //   assignedToColumn: assignedTo._id,}
+       handleNotification(req,updates,managers,users,populatedTickets)
 
       res.status(200).json(ticketStrcutureRes);
     });

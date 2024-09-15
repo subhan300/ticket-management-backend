@@ -5,7 +5,7 @@ const {
   updateTicketStatusMessage,
 
 } = require("../../utils");
-const { NotAssignedId,  } = require("../../utils/constants");
+const { NotAssignedId, MANAGER,  } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");
@@ -19,9 +19,9 @@ const handleStatusNotification = async (
     managersCollection,
     ticket
   ) => {
-    const { status } = updates;
-    const { assignedTo } = ticket;
-    const { role, name } = req.user;
+    const { status, } = updates;
+    const assignedTo=ticket.assignedTo._id
+    const { role, name,id } = req.user;
     if (role === "USER" && status) {
      
       if (assignedTo._id !== NotAssignedId) {
@@ -36,24 +36,33 @@ const handleStatusNotification = async (
           updateTicketAssignedMessage
         );
     }
-  
-    if (role === "MANAGER" && assignedTo !== NotAssignedId) {
+  console.log("assinged to",assignedTo)
+    if (role === MANAGER && assignedTo !== NotAssignedId) {
+      console.log("here right ")
       await notifyAssignedUserAboutStatus(ticket, req);
-      const userSocketId = connectedUsers[ticket.userId._id];
-      // console.log(
-      //   "user socket",
-      //   userSocketId,
-      //   "connected",
-      //   connectedUsers,
-      //   "ticket suer",
-      //   ticket.userId._id
-      // );
-      const notifyRes = await await createNotification(
-        ticket.userId._id,
-        updateTicketStatusMessage(name, ticket.status),
-        updates._id
-      );
-      sendSocketNotification(req, userSocketId, notifyRes);
+       
+      if(ticket.userId._id.toString() !== id ){
+        console.log("here come userdi ====>",ticket.userId._id.toString(),"---",id)
+        const userSocketId = connectedUsers[ticket.userId._id];
+        const notifyRes = await await createNotification(
+          ticket.userId._id,
+          updateTicketStatusMessage(name, ticket.status,ticket.ticketNo),
+          updates._id
+        );
+        sendSocketNotification(req, userSocketId, notifyRes);
+      }
+    }
+    if (role === MANAGER && assignedTo === NotAssignedId) {
+      console.log("here NOT ASSIGNED right ")
+      if(ticket.userId._id.toString() !== id){
+        const userSocketId = connectedUsers[ticket.userId._id];
+        const notifyRes = await await createNotification(
+          ticket.userId._id,
+          updateTicketStatusMessage(name, ticket.status,ticket.ticketNo),
+          updates._id
+        );
+        sendSocketNotification(req, userSocketId, notifyRes);
+      }
     }
   
     if (role === "TECHNICIAN" && assignedTo !== NotAssignedId) {

@@ -79,15 +79,5 @@ const handleTicketNotification = async (
     );
   }
 
-  if (role === LaundryOperator) {
-    if (managersCollection.length)
-      await notifyUsers(
-        req,
-        name,
-        ticket,
-        managersCollection,
-        ticketCreateMessage
-      );
-  }
 };
 module.exports = { handleNotification, handleTicketNotification };
