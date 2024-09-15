@@ -2,7 +2,6 @@ const Inventory = require('../models/inventoryModel'); // Path to your Inventory
 
 const updateStockStatus = (inventoryItem) => {
   const availableQty = inventoryItem.quantity - inventoryItem.usedItem ;
-  console.log(inventoryItem,"avaulable",availableQty,"inventoryItem.threshold",inventoryItem?.threshold)
   if (availableQty <= 0) {
     return {status:"Out of Stock",availableQty};
   } else if (availableQty < inventoryItem.threshold) {

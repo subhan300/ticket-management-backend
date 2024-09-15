@@ -83,7 +83,6 @@ const deleteProduct= async (req, res) => {
 const createBulkProduct = async (req, res) => {
   try {
     const items = req.body;
-    console.log("items", items);
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Invalid items array" });
     }

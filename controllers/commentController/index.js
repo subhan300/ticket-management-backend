@@ -14,7 +14,6 @@ const addComment = async (req, res) => {
     commentCollectionName,
     role,
   } = req.body;
-  console.log("is system", commentCollectionName);
 
   try {
     let ticket;
@@ -56,7 +55,6 @@ const editComment = async (req, res) => {
   const { userId, text, files, createdAt,commentCollectionName } = req.body;
 
   try {
-    console.log("working=====");
     let ticket;
     if (commentCollectionName === "laundryTicket") {
       ticket = await LaundryTicket.findOneAndUpdate(

@@ -71,14 +71,12 @@ const getFilterLocationTickets = async (req, res) => {
   try {
     const { id, companyId } = req.user;
     const {locationId}=req.params;
-    console.log(locationId)
     const tickets = LaundryTicket.find({
       location: locationId,
       // $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
     });
    if(tickets){
     const populatedTickets = await populateLaundryTickets(tickets);
-    console.log(populatedTickets)
     const populatedTicketsStucture = await laundryTicketStructure(
       populatedTickets
     );
@@ -201,7 +199,6 @@ const updateTicket = async (req, res) => {
       users,
       populatedTicketsStucture
     );
-   console.log("populatedTicketsStucture",populatedTicketsStucture)
     res.status(200).json(populatedTicketsStucture);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -311,7 +308,6 @@ const getResidentHistory = async (req, res) => {
   try {
     const { SKU } = req.params;
      const room=await roomModel.findOne({SKU});
-     console.log("room",room,SKU)
 
       if (!room) {
       return res

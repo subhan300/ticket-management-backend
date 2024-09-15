@@ -92,7 +92,6 @@ const getUsersByRole= async (req,res) => {
   try {
     const {role}=req.params
     const {companyId,locations}=req.user;
-    console.log(locations,req.user)
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       locations: locations[0],  // Checks if locationId is present in the locations array

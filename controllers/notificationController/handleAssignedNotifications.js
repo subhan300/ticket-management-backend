@@ -40,6 +40,7 @@ const handleAssignedNotifications = async (
     }
     
     if (role === "MANAGER" && assignedTo !== NotAssignedId) {
+      console.log("manger====")
       await notifyAssignedUser(ticket, req);
       const userSocketId = connectedUsers[ticket.userId._id];
       console.log("user===", userSocketId < "ticket.userId", ticket.userId);

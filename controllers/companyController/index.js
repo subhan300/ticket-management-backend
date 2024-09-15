@@ -54,7 +54,6 @@ const addUnit = async (req, res) => {
     try {
         const { companyId } = req.params;
         const unitDataReq = req.body;
-          console.log("unitDataReq",unitDataReq.name)
         // Ensure all required fields are present in req.body
         if (!unitDataReq.name) {
             return res.status(400).json({ error: "Unit name and location are required" });

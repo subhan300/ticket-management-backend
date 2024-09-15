@@ -13,7 +13,6 @@ const notifyUsers = async (
     messageHandler
   ) => {
       const { role, } = req.user;
-      console.log("role===",role)
     const { ticketNo, _id: ticketId, assignedTo } = ticket;
     for (const userId of usersCollection) {
       console.log("notify func run =====user====",userId)

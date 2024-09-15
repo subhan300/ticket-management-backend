@@ -41,7 +41,6 @@ const getUserItemsByRoom = async (req, res) => {
 const getItemById = async (req, res) => {
     try {
         const {SKU}=req.params
-        console.log("sku",SKU)
         const item = await UserItem.findOne({SKU });
         if (!item) return res.status(404).json({ message: 'Item not found' });
         res.status(200).json(item);

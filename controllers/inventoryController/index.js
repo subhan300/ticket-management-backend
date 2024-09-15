@@ -56,13 +56,11 @@ const getInventoryItemsByCompany = async (req, res) => {
       path: 'inventoryUsed.room',
       select: 'roomName unit', 
     }).lean();
-    console.log("items",items)
     const transFormInventory = items.map((val) => ({
       ...val,
       // quantityUsed: 1,
       inventoryId: val._id,
     }))
-    console.log("rooms",transFormInventory)
     res.json(transFormInventory);
   } catch (err) {
     console.error("Error fetching inventory items:", err);
@@ -76,7 +74,6 @@ const getInventoryItemShortDetail = async (req, res) => {
     const items = await Inventory.find({ companyId })
       .select("productName productImage")
       .lean();
-      console.log("items===",items)
     const transFormInventory = items.map((val) => ({
       ...val,
       quantityUsed: 1,
@@ -141,11 +138,9 @@ const updateInventoryItem = async (req, res) => {
 const deleteInventoryItem = async (req, res) => {
   try {
     const {inventoryId}=  req.params
-    console.log("onventory===",req.params)
     const deletedItem = await Inventory.findByIdAndDelete(
       inventoryId
     );
-    console.log("delet item",deletedItem)
     
     res.status(200).json("deleted");
   } catch (err) {

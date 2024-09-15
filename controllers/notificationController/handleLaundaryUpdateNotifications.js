@@ -13,8 +13,9 @@ const handleLaundaryUpdateTicketNotification = async (
     ticket
   ) => {
     const { assignedTo, status } = updates;
-    //   console.log("udpates====",updates,"",status)
+      console.log("udpates====",assignedTo,"----",status)
     if (assignedTo && status) {
+        console.log("shoul not reach")
     handleLaundaryStatusNotification(req, updates, managersCollection,roleBasedUserCollection,ticket);
       handleAssignedNotifications(
         req,
@@ -25,6 +26,7 @@ const handleLaundaryUpdateTicketNotification = async (
       );
       return;
     } else if (assignedTo) {
+        console.log("assinged to manger====")
       handleAssignedNotifications(
         req,
         updates,

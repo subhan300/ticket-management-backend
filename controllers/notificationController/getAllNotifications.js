@@ -4,8 +4,6 @@ const Notification = require("../../models/notificationModel");
 
 const getAllNotifications=async (req, res) => {
     const { id:userId } = req.user;
-    console.log(req.user)
-    console.log("user",userId)
   
     try {
       const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });

@@ -94,7 +94,6 @@ const getUserTicket = async (req, res) => {
     const { id, companyId } = req.user;
     const { SKU } = req.params;
     const getRoom = await Room.findOne({ SKU }).lean();
-    console.log("get rooms", getRoom);
 
     const tickets = Ticket.find({
       companyId: companyId,
@@ -110,7 +109,6 @@ const getUserTicket = async (req, res) => {
 const searchTicket = async (req, res) => {
   try {
     const { query } = req.body;
-    console.log("query===",query)
     if (!query || query.trim() === '') {
       return res.status(200).json([]);
     }
@@ -284,7 +282,6 @@ const updateTicket = async (req, res) => {
                 },
               }
             );
-            console.log("result======", result);
             if (result.modifiedCount === 0) {
               // If no document was updated, push a new entry to the array
               const res = await InventoryModel.updateOne(
