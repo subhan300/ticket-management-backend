@@ -74,7 +74,7 @@ const updateTicketStatusMessage = (name, status, ticketNo) => {
 const updateStatusMessage = (name, status,ticketNo) => {
   return `Ticket # ${ticketNo} Status is updated to ${status} by ${name}`;
 };
-const ticketCreateMessage = (name,ticketNo) => {
+const ticketCreateMessage = (name,_,ticketNo) => {
   return `Ticket # ${ticketNo} is created by ${name}`;
 };
 const ticketUnAssignedMessage = (name, role,ticketNo) => {
