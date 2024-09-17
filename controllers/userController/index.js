@@ -65,7 +65,7 @@ const login = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, role, password, companyId, livingLocation, locationName,locations } = req.body;
+  const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl } = req.body;
 
   try {
     const user = await User.findByIdAndUpdate(id, {
@@ -75,7 +75,8 @@ const updateUser = async (req, res) => {
       password: password ? await bcrypt.hash(password, 10) : undefined,
       locationName,
       companyId,
-      locations
+      locations,
+      imageUrl
     }, { new: true });
 
     if (!user) {

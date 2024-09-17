@@ -32,6 +32,7 @@ const UserSchema = new Schema({
   },
 // need to remove
   locationName: { type: String, required: false },
+  imageUrl:{type:String,},
 
   locations: [{ type: Schema.Types.ObjectId, ref: "Location" }],
 });
