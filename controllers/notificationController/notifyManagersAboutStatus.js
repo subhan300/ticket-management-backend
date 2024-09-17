@@ -14,7 +14,7 @@ const notifyManagersAboutStatus = async (
     const { ticketNo, _id: ticketId, assignedTo } = ticket;
     for (const managerId of managersCollection) {
       const socketId = connectedUsers[managerId];
-      const message = updateStatusMessage(name, ticket.status);
+      const message = updateStatusMessage(name, ticket.status,ticketNo);
       // console.log("manager", socketId, "managerid", managerId);
       const notifyRes = await createNotification(managerId, message, ticketId);
       sendSocketNotification(req, socketId, notifyRes);

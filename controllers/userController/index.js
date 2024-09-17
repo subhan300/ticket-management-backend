@@ -95,7 +95,7 @@ const getUsersByRole= async (req,res) => {
     const {companyId,locations}=req.user;
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
-      locations: locations[0],  // Checks if locationId is present in the locations array
+      // locations: locations[0], 
       role: role,            // Filters by the user's role
     }).select("name _id");
     return res.status(200).send(usersCollection)

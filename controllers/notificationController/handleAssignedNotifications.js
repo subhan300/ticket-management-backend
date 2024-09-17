@@ -1,5 +1,4 @@
 const {
-  managerUpdateTicketAssignedMessage,
   updateTicketAssignedMessage,
   technicianUpdateTicketAssignedMessage,
   ticketUnAssignedMessage,
@@ -46,22 +45,7 @@ const handleAssignedNotifications = async (
     if (role === "MANAGER" && assignedTo !== NotAssignedId) {
       console.log("manger====",ticket)
       await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo));
-      // const userSocketId = connectedUsers[ticket.userId._id];
-      // console.log("user===", userSocketId < "ticket.userId", ticket.userId);
-      // const notifyRes = await createNotification(
-      //   ticket.userId._id,
-      //   managerUpdateTicketAssignedMessage(name, ticket.assignedTo.name),
-      //   updates._id
-      // );
-      // const {assignedTo}=ticket
-      // const userSocketId = connectedUsers[assignedTo._id];
-      // console.log("user===", userSocketId < "ticket.userId", ticket.userId,"assignedTo._id",assignedTo._id);
-      // const notifyRes = await createNotification(
-      //   assignedTo._id,
-      //   messageToAssignedUser(ticket.ticketNo),
-      //   updates._id
-      // );
-      // sendSocketNotification(req, userSocketId, notifyRes);
+     
     }
     if (role === MANAGER && assignedTo === NotAssignedId) {
       console.log("here",usersCollection)
@@ -81,7 +65,7 @@ const handleAssignedNotifications = async (
       const userSocketId = connectedUsers[ticket.userId._id];
       const notifyRes = await createNotification(
         ticket.userId._id,
-        technicianUpdateTicketAssignedMessage(name),
+        technicianUpdateTicketAssignedMessage(name,ticket.ticketNo),
         updates._id
       );
       sendSocketNotification(req, userSocketId, notifyRes);
@@ -123,7 +107,7 @@ const handleAssignedNotifications = async (
       sendSocketNotification(req, userSocketId, notifyRes);
      }
       
-      const message=assignedTo !== NotAssignedId?broadcastAssignedMessage(name,ticket.assignedTo.name):broadcastUnAssignedMessage(name,"Laundary Operator");
+      const message=assignedTo !== NotAssignedId?broadcastAssignedMessage(name,ticket.assignedTo.name,ticket.ticketNo):broadcastUnAssignedMessage(name,"Laundary Operator",ticket.ticketNo);
       if (managersCollection.length)
        
         await notifyUsers2(
@@ -135,23 +119,7 @@ const handleAssignedNotifications = async (
           
         );
     }
-    // if (role === LaundryOperator && assignedTo === NotAssignedId) {
-    //   if(managersCollection.length){
-    //       await notifyUsers(req,
-    //        name,
-    //        ticket,
-    //        managersCollection,
-    //        ticketUnAssignedMessage);
-    //   }
-    //   if(usersCollection.length){
-    //       await notifyUsers(req,
-    //        name,
-    //        ticket,
-    //        usersCollection,
-    //        ticketUnAssignedMessage);
-    //   }
-      
-    //  }
+   
      
   };
 

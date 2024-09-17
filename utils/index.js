@@ -59,26 +59,26 @@ function generateBarcode(text) {
   return canvas.toBuffer();
 }
 
-const updateTicketAssignedMessage = (name, assignedTo) => {
-  return `${name} have  assigned a  ticket to ${assignedTo}`;
+const updateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
+  return `${name} have  assigned a  ticket # ${ticketNo} to ${assignedTo}`;
 };
-const managerUpdateTicketAssignedMessage = (name, assignedTo) => {
-  return `Ticket is assigned to ${assignedTo} by Manager ${name}`;
+const managerUpdateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
+  return `Ticket # ${ticketNo} is assigned to ${assignedTo} by Manager ${name}`;
 };
-const technicianUpdateTicketAssignedMessage = (name, assignedTo) => {
-  return `Ticket is assigned by technician to himself ${name}`;
+const technicianUpdateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
+  return `Ticket # ${ticketNo} is assigned by technician to himself ${name}`;
 };
 const updateTicketStatusMessage = (name, status, ticketNo) => {
-  return `Ticket #${ticketNo} is update to  ${status} by ${name}`;
+  return `Ticket # ${ticketNo} is update to  ${status} by ${name}`;
 };
-const updateStatusMessage = (name, status) => {
-  return `Ticket Status is updated to ${status} by ${name}`;
+const updateStatusMessage = (name, status,ticketNo) => {
+  return `Ticket # ${ticketNo} Status is updated to ${status} by ${name}`;
 };
-const ticketCreateMessage = (name) => {
-  return `Ticket is created by ${name}`;
+const ticketCreateMessage = (name,ticketNo) => {
+  return `Ticket # ${ticketNo} is created by ${name}`;
 };
-const ticketUnAssignedMessage = (name, role) => {
-  return `Ticket is UnAssigned  by ${role} ${name}`;
+const ticketUnAssignedMessage = (name, role,ticketNo) => {
+  return `Ticket # ${ticketNo} is UnAssigned  by ${role} ${name}`;
 };
 
 // export const selectMessage = (messageName, name, status) => {

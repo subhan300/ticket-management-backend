@@ -8,7 +8,7 @@ const notifyAssignedUserAboutStatus = async (ticket, req) => {
   const { role, name } = req.user;
   const { assignedTo, _id: ticketId } = ticket;
   const socketId = connectedUsers[assignedTo?._id];
-  const message = updateStatusMessage(name, ticket.status);
+  const message = updateStatusMessage(name, ticket.status,ticket.ticketNo);
 
   const notifyRes = await createNotification(
     assignedTo?._id,

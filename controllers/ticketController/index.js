@@ -5,9 +5,6 @@ const Room = require("../../models/roomModel");
 const {
   ObjectId,
   formatTicketNumber,
-  updateTicketStatusMessage,
-  updateTicketAssignedMessage,
-  technicianUpdateTicketAssignedMessage,
   updateStockStatus,
   populateTickets,
   ticketStructure,
@@ -94,12 +91,13 @@ const getUserTicket = async (req, res) => {
     const { id, companyId } = req.user;
     const { SKU } = req.params;
     const getRoom = await Room.findOne({ SKU }).lean();
-
+    console.log("get room",getRoom)
     const tickets = Ticket.find({
       companyId: companyId,
       room: getRoom._id,
     });
     const populatedTickets = await populateTickets(tickets);
+    console.log(populatedTickets)
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
@@ -266,7 +264,6 @@ const updateTicket = async (req, res) => {
                 .status(400)
                 .send("Inventory is out of stock ,can't order that much");
             }
-            console.log("here ==", role);
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
               {

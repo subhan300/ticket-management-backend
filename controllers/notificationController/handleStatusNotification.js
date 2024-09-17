@@ -69,7 +69,7 @@ const handleStatusNotification = async (
       const userSocketId = connectedUsers[ticket.userId._id];
       const notifyRes = await createNotification(
         ticket.userId._id,
-        updateStatusMessage(name, ticket.status),
+        updateStatusMessage(name, ticket.status,ticket.ticketNo),
         updates._id
       );
       sendSocketNotification(req, userSocketId, notifyRes);

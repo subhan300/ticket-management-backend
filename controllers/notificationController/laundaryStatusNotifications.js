@@ -1,10 +1,9 @@
 const {
   updateTicketStatusMessage,
-  updateStatusMessage,
-  updateTicketAssignedMessage,
+ 
 } = require("../../utils");
 const { LaundryOperator } = require("../../utils/constants");
-const { createNotification } = require("./createNotification");
+
 const {
   notifyAssignedUserAboutStatus,
 } = require("./notifyAssignedUsersAboutStatus");
