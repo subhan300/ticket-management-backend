@@ -25,7 +25,7 @@ const updateNotification = async (req, res) => {
     try {
       await Notification.updateMany(
         { _id: { $in: notificationIds },userId },
-        { $set: { isRead: false } }
+        { $set: { isRead: true } }
       );
   
       res.status(200).json({ message: 'Notifications marked as read successfully' });
