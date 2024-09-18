@@ -2,7 +2,7 @@ const {
   updateTicketStatusMessage,
  
 } = require("../../utils");
-const { LaundryOperator } = require("../../utils/constants");
+const { LaundryOperator, laundaryCategory } = require("../../utils/constants");
 
 const {
   notifyAssignedUserAboutStatus,
@@ -20,6 +20,7 @@ const handleLaundaryStatusNotification = async (
   ticket
 ) => {
   const { status } = updates;
+  
   const { role, name ,id} = req.user;
    const filterUser=roleBasedUserCollection.filter(val=>val._id !== id)
   if (role === LaundryOperator && status) {
@@ -28,7 +29,7 @@ const handleLaundaryStatusNotification = async (
         name,
         ticket,
         filterUser,
-        updateTicketStatusMessage(name,status,ticket.ticketNo)
+        updateTicketStatusMessage(name,status,ticket.ticketNo),laundaryCategory
         
       );
     
@@ -38,7 +39,7 @@ const handleLaundaryStatusNotification = async (
         name,
         ticket,
         managersCollection,
-        updateTicketStatusMessage(name,status,ticket.ticketNo)
+        updateTicketStatusMessage(name,status,ticket.ticketNo),laundaryCategory
       );
   }
 
@@ -48,7 +49,7 @@ const handleLaundaryStatusNotification = async (
         name,
         ticket,
         roleBasedUserCollection,
-        updateTicketStatusMessage(name,status,ticket.ticketNo)
+        updateTicketStatusMessage(name,status,ticket.ticketNo),laundaryCategory
       );
   }
 

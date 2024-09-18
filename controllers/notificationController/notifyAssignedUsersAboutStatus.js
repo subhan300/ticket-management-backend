@@ -4,7 +4,7 @@ const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");
 
-const notifyAssignedUserAboutStatus = async (ticket, req) => {
+const notifyAssignedUserAboutStatus = async (ticket, req,category) => {
   const { role, name } = req.user;
   const { assignedTo, _id: ticketId } = ticket;
   const socketId = connectedUsers[assignedTo?._id];
@@ -12,8 +12,8 @@ const notifyAssignedUserAboutStatus = async (ticket, req) => {
 
   const notifyRes = await createNotification(
     assignedTo?._id,
-    message,
-    ticketId
+    message
+    ,category
   );
   sendSocketNotification(req, socketId, notifyRes);
 };

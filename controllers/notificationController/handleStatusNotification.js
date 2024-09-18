@@ -17,7 +17,7 @@ const handleStatusNotification = async (
     req,
     updates,
     managersCollection,
-    ticket
+    ticket,category
   ) => {
     const { status, } = updates;
     const assignedTo=ticket.assignedTo._id
@@ -25,7 +25,7 @@ const handleStatusNotification = async (
     if (role === "USER" && status) {
      
       if (assignedTo._id !== NotAssignedId) {
-        await notifyAssignedUserAboutStatus(ticket, req);
+        await notifyAssignedUserAboutStatus(ticket, req,category);
       }
       if (managersCollection.length)
         await notifyManagersAboutStatus(
@@ -33,13 +33,13 @@ const handleStatusNotification = async (
           name,
           ticket,
           managersCollection,
-          updateTicketAssignedMessage
+          updateTicketAssignedMessage,category
         );
     }
   console.log("assinged to",assignedTo)
     if (role === MANAGER && assignedTo !== NotAssignedId) {
       console.log("here right ")
-      await notifyAssignedUserAboutStatus(ticket, req);
+      await notifyAssignedUserAboutStatus(ticket, req,category);
        
       if(ticket.userId._id.toString() !== id ){
         console.log("here come userdi ====>",ticket.userId._id.toString(),"---",id)
@@ -47,7 +47,7 @@ const handleStatusNotification = async (
         const notifyRes = await await createNotification(
           ticket.userId._id,
           updateTicketStatusMessage(name, ticket.status,ticket.ticketNo),
-          updates._id
+          updates._id,category
         );
         sendSocketNotification(req, userSocketId, notifyRes);
       }
@@ -59,7 +59,7 @@ const handleStatusNotification = async (
         const notifyRes = await await createNotification(
           ticket.userId._id,
           updateTicketStatusMessage(name, ticket.status,ticket.ticketNo),
-          updates._id
+          updates._id,category
         );
         sendSocketNotification(req, userSocketId, notifyRes);
       }
@@ -70,12 +70,12 @@ const handleStatusNotification = async (
       const notifyRes = await createNotification(
         ticket.userId._id,
         updateStatusMessage(name, ticket.status,ticket.ticketNo),
-        updates._id
+        updates._id,category
       );
       sendSocketNotification(req, userSocketId, notifyRes);
   
       if (managersCollection.length)
-        await notifyManagersAboutStatus(req, name, ticket, managersCollection);
+        await notifyManagersAboutStatus(req, name, ticket, managersCollection,category);
     }
   };
   

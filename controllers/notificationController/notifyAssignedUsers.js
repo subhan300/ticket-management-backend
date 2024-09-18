@@ -6,7 +6,7 @@ const { sendSocketNotification } = require("./sendSocketNotification");
 
 
 
-const notifyAssignedUser = async (ticket, req) => {
+const notifyAssignedUser = async (ticket, req,category) => {
     const { role, name } = req.user;
     const { assignedTo, _id: ticketId } = ticket;
   
@@ -19,7 +19,7 @@ const notifyAssignedUser = async (ticket, req) => {
           } ${name} to ${assignedTo.name}`;
     console.log("assigngedto====", assignedTo._id, "sockt==", socketId);
   
-    const notifyRes = await createNotification(assignedTo._id, message, ticketId);
+    const notifyRes = await createNotification(assignedTo._id, message, ticketId,category);
     sendSocketNotification(req, socketId, notifyRes);
   };
 

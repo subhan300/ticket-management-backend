@@ -10,7 +10,7 @@ const notifyUsers = async (
     name,
     ticket,
     usersCollection,
-    messageHandler
+    messageHandler,category
   ) => {
       const { role, } = req.user;
     const { ticketNo, _id: ticketId, assignedTo } = ticket;
@@ -19,7 +19,7 @@ const notifyUsers = async (
       console.log("notify func run =====user====",userId)
       const socketId = connectedUsers[userId];
       const message = messageHandler(name,role,ticketNo);
-      const notifyRes = await createNotification(userId, message, ticketId);
+      const notifyRes = await createNotification(userId, message, ticketId,category);
       sendSocketNotification(req, socketId, notifyRes);
     }
   };

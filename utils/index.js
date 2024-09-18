@@ -202,9 +202,11 @@ const laundryTicketStructure = async (populatedTickets) => {
   }
 };
 const ticketStructure = async (ticket) => {
-  if (ticket.length) {
+  console.log("ticket==>000",ticket?.length)
+  if (ticket?.length) {
     return await Promise.all(
       ticket.map(async (ticket) => {
+        console.log("tixket-----------",ticket)
         const { name, email, _id } = ticket.userId;
         const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
           _id: item.inventoryId._id,

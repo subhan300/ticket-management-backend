@@ -1,4 +1,4 @@
-const { LaundryOperator } = require("../../utils/constants");
+const { LaundryOperator, laundaryCategory } = require("../../utils/constants");
 const { ticketCreateMessage } = require("../../utils/notificationMessages");
 const { notifyUsers } = require("./notifyUser");
 const {handleStatusNotification} =require("./handleStatusNotification")
@@ -10,8 +10,9 @@ const handleLaundaryUpdateTicketNotification = async (
     updates,
     managersCollection,
     roleBasedUserCollection,
-    ticket
+    ticket,
   ) => {
+     const category=laundaryCategory
     const { assignedTo, status } = updates;
       console.log("udpates====",assignedTo,"----",status)
     if (assignedTo && status) {
@@ -22,7 +23,7 @@ const handleLaundaryUpdateTicketNotification = async (
         updates,
         managersCollection,
         roleBasedUserCollection,
-        ticket
+        ticket,category
       );
       return;
     } else if (assignedTo) {
@@ -32,7 +33,7 @@ const handleLaundaryUpdateTicketNotification = async (
         updates,
         managersCollection,
         roleBasedUserCollection,
-        ticket
+        ticket,category
       );
       return;
     } else if (status) {

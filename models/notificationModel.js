@@ -6,7 +6,8 @@ const notificationSchema = new mongoose.Schema({
   ticketId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ticket' },
   isRead: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
-  archieve:{type:Boolean,default:false}
+  archieve:{type:Boolean,default:false},
+  category:{type:String,required:true}
 });
 
 const Notification = mongoose.model('Notification', notificationSchema);

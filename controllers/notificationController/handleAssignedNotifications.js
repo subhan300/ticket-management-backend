@@ -23,6 +23,7 @@ const handleAssignedNotifications = async (
     managersCollection,
     usersCollection,
     ticket,
+    category
   
   ) => {
       console.log("ticket===",ticket)
@@ -31,20 +32,20 @@ const handleAssignedNotifications = async (
     const { role, name } = req.user;
     if (role === "USER" && assignedTo) {
       const technicianSocketId = connectedUsers[assignedTo];
-      await notifyAssignedUser(ticket, req);
+      await notifyAssignedUser(ticket, req,category);
       if (managersCollection.length)
         await notifyManagers(
           req,
           name,
           ticket,
           managersCollection,
-          updateTicketAssignedMessage
+          updateTicketAssignedMessage,category
         );
     }
     
     if (role === "MANAGER" && assignedTo !== NotAssignedId) {
       console.log("manger====",ticket)
-      await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo));
+      await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo),category);
      
     }
     if (role === MANAGER && assignedTo === NotAssignedId) {
@@ -55,7 +56,7 @@ const handleAssignedNotifications = async (
           name,
           ticket,
           technicians,
-          ticketUnAssignedMessage);
+          ticketUnAssignedMessage,category);
      }
      
     }
@@ -65,8 +66,8 @@ const handleAssignedNotifications = async (
       const userSocketId = connectedUsers[ticket.userId._id];
       const notifyRes = await createNotification(
         ticket.userId._id,
-        technicianUpdateTicketAssignedMessage(name,ticket.ticketNo),
-        updates._id
+        technicianUpdateTicketAssignedMessage(name,"",ticket.ticketNo),
+        updates._id,category
       );
       sendSocketNotification(req, userSocketId, notifyRes);
       if (managersCollection.length)
@@ -75,7 +76,7 @@ const handleAssignedNotifications = async (
           name,
           ticket,
           managersCollection,
-          technicianUpdateTicketAssignedMessage
+          technicianUpdateTicketAssignedMessage,category
         );
     }
     if (role === TECHNICIAN && assignedTo === NotAssignedId) {
@@ -84,14 +85,14 @@ const handleAssignedNotifications = async (
            name,
            ticket,
            managersCollection,
-           ticketUnAssignedMessage);
+           ticketUnAssignedMessage,category);
       }
       if(usersCollection.length){
           await notifyUsers(req,
            name,
            ticket,
            usersCollection,
-           ticketUnAssignedMessage);
+           ticketUnAssignedMessage,category);
       }
       
      }
@@ -102,7 +103,7 @@ const handleAssignedNotifications = async (
       const notifyRes = await createNotification(
          assignedTo,
          messageToAssignedUser(ticket.ticketNo),
-        updates._id
+        updates._id,category
       );
       sendSocketNotification(req, userSocketId, notifyRes);
      }
@@ -115,7 +116,7 @@ const handleAssignedNotifications = async (
           name,
           ticket,
           managersCollection,
-          message
+          message,category
           
         );
     }

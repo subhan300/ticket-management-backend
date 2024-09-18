@@ -16,6 +16,10 @@ const LaundryOperator = "LaundryOperator";
 const HIGH = "HIGH";
 const MEDIUM = "MEDIUM";
 const LOW = "LOW";
+
+ const laundaryCategory="laundary"
+ const maintenanceCategory="tickets"
+ const inventoryCategory="inventory"
 const LAUNDRY_PRIORITY = {
   HIGH: "MEDIUM",
   LOW: "LOW",
@@ -36,6 +40,7 @@ const LAUNDRY_STATUS = {
 };
 
 module.exports = {
+  laundaryCategory,maintenanceCategory,inventoryCategory,
   LAUNDRY_PRIORITY,
   LAUNDRY_STATUS,
   HIGH,
