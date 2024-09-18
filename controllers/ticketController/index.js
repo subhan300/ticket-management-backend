@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Ticket = require("../../models/ticketModel");
+const LaundaryTicket = require("../../models/laundryModel");
 const User = require("../../models/userModel");
 const Room = require("../../models/roomModel");
 const {
@@ -8,6 +9,8 @@ const {
   updateStockStatus,
   populateTickets,
   ticketStructure,
+  populateLaundryTickets,
+  laundryTicketStructure,
 } = require("../../utils");
 const {
   TECHNICIAN,
@@ -48,10 +51,40 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId } = req.user;
-    const tickets = Ticket.find({ userId });
+    const { id: userId ,role} = req.user;
+    let tickets ;
+     if(role===MANAGER){
+      // add lcoation as well 
+      tickets= Ticket.find({ });
+     }else{
+      tickets= Ticket.find({ userId });
+     }
     const populatedTickets = await populateTickets(tickets);
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
+    res.status(200).json(ticketStrcutureRes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const getTicketById = async (req, res) => {
+  try {
+    const {role} = req.user;
+    const {id}=req.params
+    const {category}=req.body
+    let tickets;
+    let ticketStrcutureRes;
+     if(category==="laundary"){
+      tickets= LaundaryTicket.findById(id);
+      const populatedTickets = await populateLaundryTickets(tickets);
+      ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
+     }else{
+     tickets= Ticket.findById(id);
+     const populatedTickets = await populateTickets(tickets);
+     ticketStrcutureRes = await ticketStructure(populatedTickets);
+     }
+     console.log("tickets>>>>>>>>>",tickets)
+    // const populatedTickets = await populateTickets(tickets);
+    //  ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -334,8 +367,7 @@ const updateTicket = async (req, res) => {
           new: true,
           session,
         }
-      )
-        .populate("userId", "name email")
+      ).populate("userId", "name email")
         .populate({
           path: "inventoryUsed.inventoryId",
           model: "Inventory",
@@ -357,6 +389,7 @@ const updateTicket = async (req, res) => {
       res.status(200).json(ticketStrcutureRes);
     });
   } catch (err) {
+
     res.status(500).json({ message: err.message });
   }
 };
@@ -412,5 +445,6 @@ module.exports = {
   addComment,
   getCompanyTickets,
   getUserTicket,
-  searchTicket
+  searchTicket,
+  getTicketById
 };
