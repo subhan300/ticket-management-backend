@@ -10,19 +10,20 @@ const {
   deleteRoomsInBulk,
   getRoomsByUnitId
 } = require("../controllers/roomController/roomController");
+const { authenticateJWT } = require("../middleware/authMiddleware");
 
 // Route to create a new room
-router.post("/", createRoom);
-router.post("/create-inbulk", createRoomsInBulk);
+router.post("/",authenticateJWT, createRoom);
+router.post("/create-inbulk",authenticateJWT, createRoomsInBulk);
 
-router.get("/", getAllRooms);
-router.get("/unit/:unitId", getRoomsByUnitId);
-router.get("/id/:id", getRoomById);
-router.get("/:SKU", getRoomBySku);
+router.get("/",authenticateJWT, getAllRooms);
+router.get("/unit/:unitId",authenticateJWT, getRoomsByUnitId);
+router.get("/id/:id",authenticateJWT, getRoomById);
+router.get("/:SKU",authenticateJWT, getRoomBySku);
 
-router.put("/:id", updateRoom);
+router.put("/:id",authenticateJWT,updateRoom);
 
-router.delete("/:id", deleteRoom);
-router.delete("/inbulk/:unitId", deleteRoomsInBulk);
+router.delete("/:id",authenticateJWT, deleteRoom);
+router.delete("/inbulk/:unitId",authenticateJWT, deleteRoomsInBulk);
 
 module.exports = router;

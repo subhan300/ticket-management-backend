@@ -51,14 +51,14 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId ,role} = req.user;
-    let tickets ;
-     if(role===MANAGER){
-      // add lcoation as well 
-      tickets= Ticket.find({ });
-     }else{
-      tickets= Ticket.find({ userId });
-     }
+    const { id: userId, role } = req.user;
+    let tickets;
+    if (role === MANAGER) {
+      // add lcoation as well
+      tickets = Ticket.find({});
+    } else {
+      tickets = Ticket.find({ userId });
+    }
     const populatedTickets = await populateTickets(tickets);
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
@@ -68,21 +68,21 @@ const getTicketByUserId = async (req, res) => {
 };
 const getTicketById = async (req, res) => {
   try {
-    const {role} = req.user;
-    const {id}=req.params
-    const {category}=req.body
+    const { role } = req.user;
+    const { id } = req.params;
+    const { category } = req.body;
     let tickets;
     let ticketStrcutureRes;
-     if(category==="laundary"){
-      tickets= LaundaryTicket.findById(id);
+    if (category === "laundary") {
+      tickets = LaundaryTicket.findById(id);
       const populatedTickets = await populateLaundryTickets(tickets);
       ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
-     }else{
-     tickets= Ticket.findById(id);
-     const populatedTickets = await populateTickets(tickets);
-     ticketStrcutureRes = await ticketStructure(populatedTickets);
-     }
-     console.log("tickets>>>>>>>>>",tickets)
+    } else {
+      tickets = Ticket.findById(id);
+      const populatedTickets = await populateTickets(tickets);
+      ticketStrcutureRes = await ticketStructure(populatedTickets);
+    }
+    console.log("tickets>>>>>>>>>", tickets);
     // const populatedTickets = await populateTickets(tickets);
     //  ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
@@ -121,16 +121,23 @@ const getCompanyTickets = async (req, res) => {
 };
 const getUserTicket = async (req, res) => {
   try {
-    const { id, companyId } = req.user;
+    const { id, companyId,locations } = req.user;
+    // console.log("location",locations)
     const { SKU } = req.params;
-    const getRoom = await Room.findOne({ SKU }).lean();
-    console.log("get room",getRoom)
+    const getRoom = await Room.findOne({
+      // locations: { $in: locationArray },
+      $or: [
+        { SKU: SKU }, 
+        { roomName: SKU }, 
+      ],
+    }).lean();
+ 
     const tickets = Ticket.find({
       companyId: companyId,
       room: getRoom._id,
     });
     const populatedTickets = await populateTickets(tickets);
-    console.log(populatedTickets)
+    console.log(populatedTickets);
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
@@ -140,10 +147,10 @@ const getUserTicket = async (req, res) => {
 const searchTicket = async (req, res) => {
   try {
     const { query } = req.body;
-    if (!query || query.trim() === '') {
+    if (!query || query.trim() === "") {
       return res.status(200).json([]);
     }
-    
+
     const tickets = await Ticket.find({
       $or: [
         { issue: { $regex: query, $options: "i" } },
@@ -152,24 +159,29 @@ const searchTicket = async (req, res) => {
         { description: { $regex: query, $options: "i" } },
       ],
     })
-    .populate({
-      path: "room",
-      populate: {
-        path: "unit",
-        model: "Unit",
-      },
-    }).select("ticketNo room issue description")
-    .sort({ createdAt: -1 }).lean();
+      .populate({
+        path: "room",
+        populate: {
+          path: "unit",
+          model: "Unit",
+        },
+      })
+      .select("ticketNo room issue description")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if(!tickets.length){
+    if (!tickets.length) {
       return res.status(200).json([]);
     }
-    const ticketsRes=tickets.map(ticket=>{
+    const ticketsRes = tickets.map((ticket) => {
       const Room = { roomName: ticket?.room?.roomName, _id: ticket?.room?._id };
-    const unit = { name: ticket?.room?.unit?.name, _id: ticket?.room?.unit?._id };
-    return {...ticket,room:Room,unit}
-    })
-    
+      const unit = {
+        name: ticket?.room?.unit?.name,
+        _id: ticket?.room?.unit?._id,
+      };
+      return { ...ticket, room: Room, unit };
+    });
+
     res.status(200).json(ticketsRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -189,7 +201,8 @@ const createTicket = async (req, res) => {
       room,
       issueItem,
       issueItemDescription,
-      audit,dueDate
+      audit,
+      dueDate,
     } = req.body;
     const ticketNo = await getLastTicketNumber();
     const ticket = new Ticket({
@@ -229,7 +242,11 @@ const createTicket = async (req, res) => {
       },
     });
 
-    const Room = { roomName: ticket.room.roomName, _id: ticket.room._id ,SKU:ticket.room.SKU};
+    const Room = {
+      roomName: ticket.room.roomName,
+      _id: ticket.room._id,
+      SKU: ticket.room.SKU,
+    };
     const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
     res.status(201).json({
       ...ticket.toObject(),
@@ -367,7 +384,8 @@ const updateTicket = async (req, res) => {
           new: true,
           session,
         }
-      ).populate("userId", "name email")
+      )
+        .populate("userId", "name email")
         .populate({
           path: "inventoryUsed.inventoryId",
           model: "Inventory",
@@ -384,12 +402,11 @@ const updateTicket = async (req, res) => {
       const ticketStrcutureRes = await ticketStructure(populatedTickets);
       const users = await getAllUsersByRole(companyId, USER);
       const managers = await getAllUsersByRole(companyId, MANAGER);
-       handleNotification(req,updates,managers,users,populatedTickets)
+      handleNotification(req, updates, managers, users, populatedTickets);
 
       res.status(200).json(ticketStrcutureRes);
     });
   } catch (err) {
-
     res.status(500).json({ message: err.message });
   }
 };
@@ -446,5 +463,5 @@ module.exports = {
   getCompanyTickets,
   getUserTicket,
   searchTicket,
-  getTicketById
+  getTicketById,
 };

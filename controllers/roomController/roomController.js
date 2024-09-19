@@ -79,8 +79,14 @@ const getRoomsByUnitId = async (req, res) => {
 
 const getRoomBySku = async (req, res) => {
     try {
+      // const {locations}=req.user
+      console.log("location>>",req.user)
       const { SKU} = req.params;
-      const room = await Room.find({SKU}).populate('unit');
+    
+      const room = await Room.find({$or: [
+        { SKU: SKU }, 
+        { roomName: SKU }, 
+      ],}).populate('unit');
       if (!room) {
         return res.status(404).json({ message: 'Room not found' });
       }
