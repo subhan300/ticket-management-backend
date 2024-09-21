@@ -379,7 +379,7 @@ const updateTicket = async (req, res) => {
 
       const populatedTickets = await Ticket.findByIdAndUpdate(
         ticketId,
-        updates,
+        {...updates,updatedBy:userId},
         {
           new: true,
           session,
@@ -390,7 +390,7 @@ const updateTicket = async (req, res) => {
           path: "inventoryUsed.inventoryId",
           model: "Inventory",
           select: "productName productImage",
-        })
+        }).populate("updatedBy","name email")
         .populate({
           path: "room",
           populate: {

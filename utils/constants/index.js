@@ -21,7 +21,7 @@ const LOW = "LOW";
  const maintenanceCategory="tickets"
  const inventoryCategory="inventory"
 const LAUNDRY_PRIORITY = {
-  HIGH: "MEDIUM",
+  MEDIUM: "MEDIUM",
   LOW: "LOW",
   HIGH: "HIGH",
 };

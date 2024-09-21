@@ -162,7 +162,7 @@ const createTicket = async (req, res) => {
 
 const updateTicket = async (req, res) => {
   try {
-    const { role, companyId } = req.user;
+    const { role, companyId ,name,id} = req.user;
     const { ticketId } = req.params;
     const updates = req.body;
     const inventoryUsed = updates?.userItems;
@@ -172,10 +172,10 @@ const updateTicket = async (req, res) => {
       return res.status(400).json({ error: "Invalid ticketId" });
     }
 
-    const ticket = await LaundryTicket.findByIdAndUpdate(ticketId, updates, {
+    const ticket = await LaundryTicket.findByIdAndUpdate(ticketId, {...updates,updatedBy:id}, {
       new: true,
     })
-      .populate("userId", "name email")
+      .populate("userId", "name email").populate("updatedBy","name email")
       .populate({
         path: "userItems",
         model: "UserItem",

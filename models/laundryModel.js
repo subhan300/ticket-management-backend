@@ -41,6 +41,8 @@ const LaundrySchema = new mongoose.Schema(
     location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
     ticketNo: { type: String },
     SKU: { type: String },
+    updatedBy:{ type: mongoose.Schema.Types.ObjectId,
+      ref: "User",},
     userItems: [{ type: mongoose.Schema.Types.ObjectId,
       ref: "UserItem",
       required: true,}],

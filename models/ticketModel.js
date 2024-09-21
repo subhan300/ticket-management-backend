@@ -43,6 +43,8 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    updatedBy:{type: mongoose.Schema.Types.ObjectId,
+      ref: "User",},
     companyId:{
       type: mongoose.Schema.Types.ObjectId,
       ref:"company",
