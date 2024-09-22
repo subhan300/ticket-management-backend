@@ -6,18 +6,18 @@ const inventorySchema = new Schema(
     location: { type: Schema.Types.ObjectId, ref: "Location" },
     inventoryUsed: [
       {
-        // ticket: {
-        //   type: mongoose.Schema.Types.ObjectId,
-        //   ref: "Ticket",
-        //   // unique: true,
-        // },
-        // ticketNo: { type: String },
-        // updatedDate: { type: String },
-        // usedBy: { type: String },
-        // room: { type: mongoose.Schema.Types.ObjectId, ref: "Room" },
+        ticket: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Ticket",
+          // unique: true,
+        },
+        ticketNo: { type: String },
+        updatedDate: { type: String },
+        usedBy: { type: String },
+        room: { type: mongoose.Schema.Types.ObjectId, ref: "Room" },
  
-        // role: { type: String },
-        // usedItemQty: { type: Number, default: 0 },
+        role: { type: String },
+        usedItemQty: { type: Number, default: 0 },
       },
     ],
     companyId: {

@@ -1,6 +1,7 @@
 // stockItemController.js
 
 const Inventory = require("../../models/inventoryModel");
+const productsModel = require("../../models/productsModel");
 const { updateStockStatus } = require("../../utils");
 const createInventoryItem = async (req, res) => {
   const { companyId } = req.user;
@@ -26,7 +27,7 @@ const createInventoryItem = async (req, res) => {
     warranty,
     threshold,
     purchaseDate,
-    unit
+    unit,
   } = req.body;
 
   try {
@@ -57,10 +58,12 @@ const createInventoryItem = async (req, res) => {
       purchaseDate,
     });
     const savedItem = await item.save();
+
     const populatedItem = await Inventory.findById(savedItem._id)
-  .populate("room")
-  .populate("location").populate("unit")
-  .lean();
+      .populate("room")
+      .populate("location")
+      .populate("unit")
+      .lean();
     res.status(201).json(populatedItem);
   } catch (err) {
     console.error("Error creating inventory item:", err);
@@ -70,10 +73,30 @@ const createInventoryItem = async (req, res) => {
 
 const getAllItems = async (req, res) => {
   try {
-    const items = await Inventory.find().populate("unit").populate("room").populate("location").lean();
+    const items = await Inventory.find()
+      .populate("unit")
+      .populate("room")
+      .populate("location")
+      .lean();
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+const getProductBySku = async (req, res) => {
+  const { SKU } = req.params;
+
+  try {
+    const items = await Inventory.findOne({ SKU }).populate(
+      "unit"
+    ).populate("room").populate("location");
+    if(!items){
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(items);
+  } catch (err) {
+    console.error("Error fetching inventory items:", err);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -82,15 +105,20 @@ const getInventoryItemsByCompany = async (req, res) => {
   const { companyId } = req.user;
 
   try {
-    const items = await Inventory.find({ companyId }).populate({
-      path: 'inventoryUsed.room',
-      select: 'roomName unit', 
-    }).populate("unit").populate("room").populate("location").lean();
+    const items = await Inventory.find({ companyId })
+      .populate({
+        path: "inventoryUsed.room",
+        select: "roomName unit",
+      })
+      .populate("unit")
+      .populate("room")
+      .populate("location")
+      .lean();
     const transFormInventory = items.map((val) => ({
       ...val,
       // quantityUsed: 1,
       inventoryId: val._id,
-    }))
+    }));
     res.json(transFormInventory);
   } catch (err) {
     console.error("Error fetching inventory items:", err);
@@ -122,21 +150,27 @@ const updateInventoryItem = async (req, res) => {
     const payload = req.body;
 
     const item = await Inventory.findById(productId).lean();
-    console.log("item==",item)
+    console.log("item==", item);
     if (!item) return res.status(404).json({ error: "Item not found" });
-    
+
     // Update stock status using the utility function
-     getStatus={}
-    if(payload.usedItem){
-      getStatus = updateStockStatus({...item,...payload});
-      payload.status=getStatus.status
-      
+    getStatus = {};
+    if (payload.usedItem) {
+      getStatus = updateStockStatus({ ...item, ...payload });
+      payload.status = getStatus.status;
     }
-   if(payload.status==="Out of Stock" && getStatus.availableQty < 0){
-     return res.status(400).send("Inventory is out of stock ,can't order that much")
-   }
+    if (payload.status === "Out of Stock" && getStatus.availableQty < 0) {
+      return res
+        .status(400)
+        .send("Inventory is out of stock ,can't order that much");
+    }
     // Update the inventory item
-    const updatedItem = await Inventory.findByIdAndUpdate(productId, payload, { new: true }).populate("room").populate("unit").populate("location");
+    const updatedItem = await Inventory.findByIdAndUpdate(productId, payload, {
+      new: true,
+    })
+      .populate("room")
+      .populate("unit")
+      .populate("location");
     res.json(updatedItem);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -168,21 +202,19 @@ const updateInventoryItem = async (req, res) => {
 // Delete an inventory item
 const deleteInventoryItem = async (req, res) => {
   try {
-    const {inventoryId}=  req.params
-    const deletedItem = await Inventory.findByIdAndDelete(
-      inventoryId
-    );
-    
+    const { inventoryId } = req.params;
+    const deletedItem = await Inventory.findByIdAndDelete(inventoryId);
+
     res.status(200).json("deleted");
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const deleteInventory= async (req, res) => {
+const deleteInventory = async (req, res) => {
   try {
     await Inventory.deleteMany({});
-    
+
     res.status(200).json("deleted");
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -207,6 +239,7 @@ const createBulkInventoryItem = async (req, res) => {
 };
 
 module.exports = {
+  getProductBySku,
   getInventoryItemsByCompany,
   createInventoryItem,
   updateInventoryItem,
@@ -214,5 +247,5 @@ module.exports = {
   getAllItems,
   createBulkInventoryItem,
   getInventoryItemShortDetail,
-  deleteInventory
+  deleteInventory,
 };

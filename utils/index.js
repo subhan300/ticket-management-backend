@@ -206,13 +206,13 @@ const ticketStructure = async (ticket) => {
   if (ticket?.length) {
     return await Promise.all(
       ticket.map(async (ticket) => {
-        console.log("tixket-----------",ticket)
         const { name, email, _id } = ticket.userId;
+        console.log("ticket?.inventoryUsed",ticket?.inventoryUsed,"tocket id ",ticket._id)
         const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
-          _id: item.inventoryId._id,
-          productName: item.inventoryId.productName,
-          productImage: item.inventoryId.productImage,
-          quantityUsed: item.quantityUsed,
+          _id: item.inventoryId?._id,
+          productName: item?.inventoryId?.productName,
+          productImage: item?.inventoryId?.productImage,
+          quantityUsed: item?.quantityUsed,
         }));
         if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
           await ticket.populate("assignedTo", "name email");

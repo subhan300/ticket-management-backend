@@ -257,6 +257,7 @@ const createTicket = async (req, res) => {
       assignedTo: assignedToPayload,
     });
   } catch (err) {
+    consol.log("err",err)
     res.status(500).json({ error: err.message });
   }
 };
