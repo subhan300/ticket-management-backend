@@ -31,6 +31,17 @@ const inventorySchema = new Schema(
       type: String,
       required: true,
     },
+    receivingHistory: [
+      {
+        receivedDate: { type: Date, required: true },
+        receivedQty: { type: Number, required: true }, 
+        receivedBy: { type: String, required: true }, 
+        price:{type:Number},
+        warrant:{type:String},
+        room: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true },
+
+      },
+    ],
     productImage: {
       type: String,
       required: false,

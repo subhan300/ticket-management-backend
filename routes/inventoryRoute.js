@@ -14,7 +14,7 @@ router.put('/update/:productId', authenticateJWT, inventoryController.updateInve
 router.delete('/:inventoryId', authenticateJWT, inventoryController.deleteInventoryItem );
 router.delete('/', authenticateJWT, inventoryController.deleteInventory );
 router.get('/:SKU', authenticateJWT, inventoryController.getProductBySku);
+router.post('/recieveInventory', authenticateJWT, inventoryController.receiveInventory);
 
-// Other routes like POST /stockitems (create stock item), GET /stockitems/:stockItemId, PUT /stockitems/:stockItemId, DELETE /stockitems/:stockItemId, etc.
 
 module.exports = router;
