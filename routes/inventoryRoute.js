@@ -12,6 +12,7 @@ router.post('/create/:companyId', authenticateJWT, inventoryController.createInv
 router.post('/createInBulk/:companyId', authenticateJWT, inventoryController.createBulkInventoryItem);
 router.put('/update/:productId', authenticateJWT, inventoryController.updateInventoryItem );
 router.delete('/:inventoryId', authenticateJWT, inventoryController.deleteInventoryItem );
+router.delete('/', authenticateJWT, inventoryController.deleteInventory );
 
 // Other routes like POST /stockitems (create stock item), GET /stockitems/:stockItemId, PUT /stockitems/:stockItemId, DELETE /stockitems/:stockItemId, etc.
 

@@ -7,6 +7,8 @@ const { authenticateJWT } = require('../middleware/authMiddleware');
 
 // Create a new location
 router.post('/', authenticateJWT,locationController.createLocation);
+router.post('/getLocationsByIds', authenticateJWT,locationController.getLocationsByIds);
+
 
 // Get all locations
 router.get('/', authenticateJWT,locationController.getLocations);

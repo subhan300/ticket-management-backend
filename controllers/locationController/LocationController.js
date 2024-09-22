@@ -34,6 +34,25 @@ const getLocations = async (req, res) => {
     }
 };
 
+const getLocationsByIds = async (req, res) => {
+    try {
+        const {locations}=req.user
+        // const locationsIds = req.body;
+        console.log("locations",locations)
+        if (!Array.isArray(locations) || locations.length === 0) {
+            return res.status(400).json({ error: "Invalid or empty IDs array." });
+        }
+        const getLocations = await Location.find({ _id: { $in: locations } });
+        if (!getLocations.length) {
+            return res.status(404).json({ message: "No locations found for the provided IDs." });
+        }
+
+        res.status(200).json(getLocations);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 // Get a single location by ID
 const getLocationById = async (req, res) => {
     try {
@@ -80,4 +99,5 @@ module.exports = {
     getLocationById,
     updateLocation,
     deleteLocation,
+    getLocationsByIds
 };

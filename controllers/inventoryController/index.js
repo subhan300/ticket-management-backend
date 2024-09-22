@@ -15,10 +15,23 @@ const createInventoryItem = async (req, res) => {
     usedItem,
     SKU,
     price,
+    brand,
+    modelNo,
+    size,
+    room,
+    condition,
+    supplierName,
+    supplierContactNo,
+    expireDate,
+    warranty,
+    threshold,
+    purchaseDate,
+    unit
   } = req.body;
 
   try {
     const item = new Inventory({
+      unit,
       productName,
       productImage,
       description,
@@ -30,17 +43,34 @@ const createInventoryItem = async (req, res) => {
       companyId,
       SKU,
       price,
+      brand,
+      modelNo,
+      size,
+      room,
+      condition,
+      supplierName,
+      supplierContactNo,
+      expireDate,
+      warranty,
+      threshold,
+      // inventoryUsed:[],
+      purchaseDate,
     });
     const savedItem = await item.save();
-    res.status(201).json(savedItem);
+    const populatedItem = await Inventory.findById(savedItem._id)
+  .populate("room")
+  .populate("location").populate("unit")
+  .lean();
+    res.status(201).json(populatedItem);
   } catch (err) {
-    console.error("Error creating stock item:", err);
+    console.error("Error creating inventory item:", err);
     res.status(500).json({ message: "Internal server error." });
   }
 };
+
 const getAllItems = async (req, res) => {
   try {
-    const items = await Inventory.find();
+    const items = await Inventory.find().populate("unit").populate("room").populate("location").lean();
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -55,7 +85,7 @@ const getInventoryItemsByCompany = async (req, res) => {
     const items = await Inventory.find({ companyId }).populate({
       path: 'inventoryUsed.room',
       select: 'roomName unit', 
-    }).lean();
+    }).populate("unit").populate("room").populate("location").lean();
     const transFormInventory = items.map((val) => ({
       ...val,
       // quantityUsed: 1,
@@ -92,6 +122,7 @@ const updateInventoryItem = async (req, res) => {
     const payload = req.body;
 
     const item = await Inventory.findById(productId).lean();
+    console.log("item==",item)
     if (!item) return res.status(404).json({ error: "Item not found" });
     
     // Update stock status using the utility function
@@ -105,7 +136,7 @@ const updateInventoryItem = async (req, res) => {
      return res.status(400).send("Inventory is out of stock ,can't order that much")
    }
     // Update the inventory item
-    const updatedItem = await Inventory.findByIdAndUpdate(productId, payload, { new: true });
+    const updatedItem = await Inventory.findByIdAndUpdate(productId, payload, { new: true }).populate("room").populate("unit").populate("location");
     res.json(updatedItem);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -148,6 +179,16 @@ const deleteInventoryItem = async (req, res) => {
   }
 };
 
+const deleteInventory= async (req, res) => {
+  try {
+    await Inventory.deleteMany({});
+    
+    res.status(200).json("deleted");
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 const createBulkInventoryItem = async (req, res) => {
   try {
     const items = req.body;
@@ -173,4 +214,5 @@ module.exports = {
   getAllItems,
   createBulkInventoryItem,
   getInventoryItemShortDetail,
+  deleteInventory
 };
