@@ -207,7 +207,6 @@ const ticketStructure = async (ticket) => {
     return await Promise.all(
       ticket.map(async (ticket) => {
         const { name, email, _id } = ticket.userId;
-        console.log("ticket?.inventoryUsed",ticket?.inventoryUsed,"tocket id ",ticket._id)
         const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
           _id: item.inventoryId?._id,
           productName: item?.inventoryId?.productName,

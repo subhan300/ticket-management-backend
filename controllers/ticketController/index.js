@@ -190,6 +190,7 @@ const searchTicket = async (req, res) => {
 const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
+    console.log("-------------------------------------")
     const {
       issue,
       description,
@@ -221,9 +222,11 @@ const createTicket = async (req, res) => {
       issueItemDescription,
       dueDate,
       audit,
+
     });
 
     await ticket.save();
+    console.log("ticket----------------",ticket)
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
@@ -257,7 +260,7 @@ const createTicket = async (req, res) => {
       assignedTo: assignedToPayload,
     });
   } catch (err) {
-    consol.log("err",err)
+    consol.log("err--------------------",err)
     res.status(500).json({ error: err.message });
   }
 };
