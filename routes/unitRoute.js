@@ -8,6 +8,7 @@ const { authenticateJWT } = require('../middleware/authMiddleware');
 router.post('/', unitController.createUnit)
 
 router.post('/create-inbulk', unitController.createUnitsInBulk)
+router.post('/create-unit-rooms',authenticateJWT, unitController.createUnitAndRooms)
 router.put('/:unitId', unitController.updateUnit)
 
 router.delete('/:locationId', unitController.deleteUnitsByLocation)

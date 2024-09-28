@@ -8,6 +8,7 @@ const UserItemSchema = new Schema({
   color: String,
   itemImage:String,
   room:{type:Schema.Types.ObjectId,ref:"Room",required:true},
+  location:{type:Schema.Types.ObjectId,ref: "Location", required: true},
   // unit:{type: Schema.Types.ObjectId, ref: 'Unit',required:true },
   // locationName:{type:String},
   SKU:String

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Unit = require('../../models/unitModel');
 const User = require('../../models/userModel');
-const { ObjectId } = require('../../utils');
+const { generateSKU } = require('../../utils');
+const roomModel = require('../../models/roomModel');
 
 const getAllUnits = async (req, res) => {
   try {
@@ -122,7 +123,56 @@ const getUnitRoomsByCompanyId = async (req, res) => {
     }
   };
 
+
+
+const createUnitAndRooms = async (req, res) => {
+  try {
+    const { unitName, rooms,existingUnit } = req.body; // Expect unitName and an array of rooms in the request body
+    const { locations } = req.user; // Assuming location comes from req.user
+    const location=locations[0]
+    if (!rooms || !rooms.length) {
+      return res.status(400).json({ message: "Unit name and rooms are required" });
+    }
+    let unit ;
+   if(!existingUnit){
+    unit = await Unit.findOne({ name: unitName });
+    
+    if (unit) {
+      return res.status(400).json({ message: "Name Already Exist" });
+    }
+    unit = new Unit({
+      name: unitName,
+      location, 
+    });
+    await unit.save();
+   }else{
+    unit={_id:existingUnit}
+   }
+    
+    const roomData = rooms.map(room => ({
+      roomName: room,
+      SKU: generateSKU(`${room}`),
+      unit: unit._id, // Link the room to the unit
+    }));
+
+    const createdRooms = await roomModel.insertMany(roomData); // Batch create rooms
+
+    return res.status(201).json({
+      message: "Unit and rooms created successfully",
+      unit,
+      rooms: createdRooms,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+
+module.exports = {  };
+
+
 module.exports={ deleteUnitsByLocation,
+  createUnitAndRooms,
   getUnitsByLocationId,
   getUnitRoomsByCompanyId,
   createUnitsInBulk,

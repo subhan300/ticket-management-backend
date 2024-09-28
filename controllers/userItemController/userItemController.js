@@ -1,5 +1,7 @@
+const { default: mongoose } = require('mongoose');
 const UserItem = require('../../models/userItemsModel');
 const { generateSKU } = require('../../utils');
+const { getItemsGroupedByRoom, getItemsGroupedByRoomForIds } = require('./getItemsGroupedByRoom');
 
 // Create a new item
 const createItem = async (req, res) => {
@@ -15,16 +17,35 @@ const createItem = async (req, res) => {
 
 const createBulkItem = async (req, res) => {
     try {
-        // Ensure each item in the request body includes the user ID
+
         const itemsWithUser=req.body
-       
         const addSkuInTtems=itemsWithUser.map(val=>({...val,SKU:generateSKU(`${val.itemName}-${val.category}`)}))
-        const savedItems = await UserItem.insertMany(addSkuInTtems);
-        res.status(201).json(savedItems);
+         await UserItem.insertMany(addSkuInTtems);
+        const room=new mongoose.Types.ObjectId(itemsWithUser[0].room);
+        const itemsGroupedByRoom = await getItemsGroupedByRoomForIds(room)
+        res.status(201).json(itemsGroupedByRoom[0]);
     } catch (err) {
+        console.log("err",err)
         res.status(500).json({ message: err.message });
     }
 }
+const updateBulkItem = async (req, res) => {
+    try {
+        const { locations } = req.user;
+        // const location = locations[0]; 
+
+        const updateItem = req.body; 
+       
+        const filter = {}; // An empty filter will update all documents
+
+        const savedItems = await UserItem.updateMany(filter, { $set: updateItem });
+        
+        res.status(201).json(savedItems); // Send back the updated items
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 
 // Get all items for a user
 const getUserItemsByRoom = async (req, res) => {
@@ -36,6 +57,20 @@ const getUserItemsByRoom = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+const getUserItems =  async (req, res) => {
+    try {
+        const { locations } = req.user;
+        const location = locations[0]; 
+        const locationObjectId = new mongoose.Types.ObjectId(location);
+        
+        const itemsGroupedByRoom = await getItemsGroupedByRoom(locationObjectId)
+       
+        res.status(200).json(itemsGroupedByRoom)
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  };
 
 // Get a specific item
 const getItemById = async (req, res) => {
@@ -55,7 +90,10 @@ const updateItem = async (req, res) => {
         const {itemId}=req.params
         const updatedItem = await UserItem.findByIdAndUpdate(itemId, req.body, { new: true });
         if (!updatedItem) return res.status(404).json({ message: 'Item not found' });
-        res.status(200).json(updatedItem);
+        const room=new mongoose.Types.ObjectId(updatedItem.room);
+        const itemsGroupedByRoom = await getItemsGroupedByRoomForIds(room)
+        return  res.status(201).json(itemsGroupedByRoom[0]);
+      
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -75,9 +113,11 @@ const deleteItem = async (req, res) => {
 
 module.exports = {
     getUserItemsByRoom,
+    getUserItems,
     createItem,
     getItemById,
     updateItem,
     deleteItem,
-    createBulkItem
+    createBulkItem,
+    updateBulkItem
 };

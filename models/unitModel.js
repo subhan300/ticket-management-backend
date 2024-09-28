@@ -6,7 +6,6 @@ const UnitSchema = new Schema({
     type: String,
     required: true,
   },
-  // rooms:[{ type: Schema.Types.ObjectId, ref: "room" }],
   location: { type: Schema.Types.ObjectId, ref: "Location", required: true },
 });
 
