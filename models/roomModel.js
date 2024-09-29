@@ -13,6 +13,7 @@ const roomSchema = new Schema({
     ref: "Unit",
     required: true,
   },
+  location: { type: Schema.Types.ObjectId, ref: "Location", required: true },
   userItems:[{type:Schema.Types.ObjectId,ref:"UserItem"}],
   tickets:[{type:Schema.Types.ObjectId,ref:"Ticket"}],
   laundaryTickets:[{type:Schema.Types.ObjectId,ref:"LaundryTicket"}]

@@ -8,16 +8,18 @@ const {
   deleteRoom,
   getRoomBySku,createRoomsInBulk,
   deleteRoomsInBulk,
-  getRoomsByUnitId
+  getRoomsByUnitId,getRoomsByLocationId,updateBulkRooms
 } = require("../controllers/roomController/roomController");
 const { authenticateJWT } = require("../middleware/authMiddleware");
 
 // Route to create a new room
 router.post("/",authenticateJWT, createRoom);
 router.post("/create-inbulk",authenticateJWT, createRoomsInBulk);
+router.put("/update-inbulk",authenticateJWT, updateBulkRooms);
 
 router.get("/",authenticateJWT, getAllRooms);
 router.get("/unit/:unitId",authenticateJWT, getRoomsByUnitId);
+router.get("/location/:locationId",authenticateJWT, getRoomsByLocationId);
 router.get("/id/:id",authenticateJWT, getRoomById);
 router.get("/:SKU",authenticateJWT, getRoomBySku);
 

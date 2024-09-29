@@ -277,7 +277,11 @@ const ticketStructure = async (ticket) => {
     };
   }
 };
+const covertId=(id)=>{
+  return new mongoose.Types.ObjectId(id)
+}
 module.exports = {
+  covertId,
   ticketStructure,
   populateTickets,
   updateStockStatus,
