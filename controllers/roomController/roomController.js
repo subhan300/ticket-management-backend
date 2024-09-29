@@ -83,7 +83,6 @@ const getRoomsByUnitId = async (req, res) => {
 const getRoomsByLocationId = async (req, res) => {
   try {
     const { locationId } = req.params;
-    console.log("lcoation",locationId)
     const groupedRooms = await Room.aggregate([
       {
           $match: {
@@ -114,10 +113,12 @@ const getRoomsByLocationId = async (req, res) => {
               unit: 1,
               rooms: 1
           }
+      },
+      {
+        $sort: { 'unit.name': 1 } // Sort by unit name in ascending order (A-Z)
       }
   ]);
   
-  console.log(groupedRooms);
   
     if (!groupedRooms) {
       return res.status(404).json({ message: 'Room not found' });
