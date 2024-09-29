@@ -94,7 +94,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
       }
   
       // Respond with the updated unit
-      res.status(200).json({ message: 'Unit updated successfully', unit: updatedUnit });
+      res.status(200).json(updatedUnit );
     } catch (error) {
       console.error('Error updating unit:', error);
       res.status(500).json({ message: 'Internal server error' });
