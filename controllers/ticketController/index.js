@@ -121,26 +121,45 @@ const getCompanyTickets = async (req, res) => {
 };
 const getUserTicket = async (req, res) => {
   try {
-    const { id, companyId,locations } = req.user;
+    const { id, companyId,locations ,role} = req.user;
     // console.log("location",locations)
     const { SKU } = req.params;
     const getRoom = await Room.findOne({
-      // locations: { $in: locationArray },
+      location: { $in: locations },
       $or: [
         { SKU: SKU }, 
         { roomName: SKU }, 
       ],
     }).lean();
  
-    const tickets = Ticket.find({
-      companyId: companyId,
-      room: getRoom._id,
-    });
+    let tickets ;
+    if(role===MANAGER){
+     tickets= Ticket.find({
+        companyId: companyId,
+        room: getRoom._id,
+        
+      });
+    }else{
+      tickets= Ticket.find({
+        companyId: companyId,
+        room: getRoom._id,
+        $or: [
+          { userId: id },
+          { assignedTo: id }
+        ]
+        
+      });
+    }
+     console.log("tickets",tickets)
     const populatedTickets = await populateTickets(tickets);
     console.log(populatedTickets);
+    if(!populatedTickets.length){
+      return res.status(200).json([]);
+    }
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
+    console.log(err)
     res.status(500).json({ error: err.message });
   }
 };
