@@ -18,13 +18,13 @@ const createRoom = async (req, res) => {
 const createRoomsInBulk = async (req, res) => {
     try {
       const {locations}=req.user;
-      const location=location[0]
+      const location=locations[0]
       const rooms = req.body; // Expecting an array of room objects
   
       if (!Array.isArray(rooms) || rooms.length === 0) {
         return res.status(400).json({ message: 'Invalid data format. Please provide an array of room objects.' });
       }
-  
+      console.log("location--->",location)
       // Ensure that each room object has SKU, roomName, and unit fields
       const validRooms = rooms.map(room => {
         const {  roomName, unit } = room;

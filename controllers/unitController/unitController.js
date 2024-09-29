@@ -153,6 +153,7 @@ const createUnitAndRooms = async (req, res) => {
       roomName: room,
       SKU: generateSKU(`${room}`),
       unit: unit._id, // Link the room to the unit
+      location
     }));
 
     const createdRooms = await roomModel.insertMany(roomData); // Batch create rooms
