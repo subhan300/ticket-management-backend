@@ -159,8 +159,10 @@ const getAllItems = async (req, res) => {
     const items = await Inventory.find()
       .populate("unit")
       .populate("room")
-      .populate("location")
-      .lean();
+      .populate("location"
+
+      )
+      console.log("items===",items)
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -197,9 +199,8 @@ const getInventoryItemsByCompany = async (req, res) => {
       .populate("unit")
       .populate("room")
       .populate("location")
-      .lean();
     const transFormInventory = items.map((val) => ({
-      ...val,
+      ...val.toObject(),
       // quantityUsed: 1,
       inventoryId: val._id,
     }));
@@ -215,7 +216,7 @@ const getInventoryItemShortDetail = async (req, res) => {
   try {
     const items = await Inventory.find({ companyId })
       .select("productName productImage")
-      .lean();
+      // .lean();
     const transFormInventory = items.map((val) => ({
       ...val,
       quantityUsed: 1,

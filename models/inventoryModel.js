@@ -112,7 +112,7 @@ inventorySchema.virtual("availableQty").get(function () {
 });
 
 //   // Ensure virtual fields are included in toJSON and toObject outputs
-//   inventorySchema.set('toJSON', { virtuals: true });
-//   inventorySchema.set('toObject', { virtuals: true });
+  inventorySchema.set('toJSON', { virtuals: true });
+  inventorySchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model("Inventory", inventorySchema);
