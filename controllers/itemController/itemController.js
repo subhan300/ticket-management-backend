@@ -2,7 +2,7 @@ const Item = require("../../models/itemModel"); // Assuming your model is named 
 
 const getAllItems = async (req, res) => {
   try {
-    const items = await Item.find();
+    const items = await Item.find().sort({ item: 1 });
     res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ message: "Error retrieving items", error });
