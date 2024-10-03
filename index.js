@@ -17,7 +17,7 @@ const laundryRoute = require("./routes/laundryRoute");
 const analyticsRoute = require("./routes/analyticsRoute");
 const roomsRoute=require("./routes/roomRoute");
 const itemRoute=require("./routes/itemRoute");
-
+const supplierRoute=require("./routes/supplierRoute")
 const connectDB = require("./config/db");
 const path = require("path");
 const cors = require("cors");
@@ -94,6 +94,7 @@ app.use("/api/laundryTicket", laundryRoute);
 app.use("/api/analytics",analyticsRoute);
 app.use("/api/rooms",roomsRoute);
 app.use("/api/item",itemRoute);
+app.use("/api/supplier",supplierRoute);
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
 
