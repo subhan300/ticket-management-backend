@@ -8,7 +8,7 @@ const {
   deleteRoom,
   getRoomBySku,createRoomsInBulk,
   deleteRoomsInBulk,
-  getRoomsByUnitId,getRoomsByLocationId,updateBulkRooms
+  getRoomsByUnitId,getRoomsByLocationId,updateBulkRooms,getStorageRooms
 } = require("../controllers/roomController/roomController");
 const { authenticateJWT } = require("../middleware/authMiddleware");
 
@@ -20,6 +20,7 @@ router.put("/update-inbulk",authenticateJWT, updateBulkRooms);
 router.get("/",authenticateJWT, getAllRooms);
 router.get("/unit/:unitId",authenticateJWT, getRoomsByUnitId);
 router.get("/location/:locationId",authenticateJWT, getRoomsByLocationId);
+router.get("/storageRooms",authenticateJWT, getStorageRooms);
 router.get("/id/:id",authenticateJWT, getRoomById);
 router.get("/:SKU",authenticateJWT, getRoomBySku);
 

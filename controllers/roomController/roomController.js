@@ -24,7 +24,7 @@ const createRoomsInBulk = async (req, res) => {
       if (!Array.isArray(rooms) || rooms.length === 0) {
         return res.status(400).json({ message: 'Invalid data format. Please provide an array of room objects.' });
       }
-      console.log("location--->",location)
+  
       // Ensure that each room object has SKU, roomName, and unit fields
       const validRooms = rooms.map(room => {
         const {  roomName, unit } = room;
@@ -130,6 +130,18 @@ const getRoomsByLocationId = async (req, res) => {
   }
 };
 
+const getStorageRooms = async (req, res) => {
+  try {
+    const {locations}=req.user;
+    const location=locations[0]
+    const rooms = await Room.find({location,type:"storageRoom"}).populate('unit'); // Populate unit reference
+    res.status(200).json(rooms);
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 const getRoomBySku = async (req, res) => {
     try {
       // const {locations}=req.user
@@ -159,7 +171,7 @@ const updateRoom = async (req, res) => {
     if (!updatedRoom) {
       return res.status(404).json({ message: 'Room not found' });
     }
-    res.status(200).json( updatedRoom );
+    res.status(200).json(updatedRoom);
   } catch (error) {
     console.error('Error updating room:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -229,5 +241,6 @@ module.exports = {
   updateRoom,
   deleteRoom,
   createRoomsInBulk,
-  getRoomsByLocationId
+  getRoomsByLocationId,
+  getStorageRooms
 };
