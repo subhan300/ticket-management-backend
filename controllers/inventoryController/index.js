@@ -2,7 +2,26 @@
 
 const Inventory = require("../../models/inventoryModel");
 const { updateStockStatus } = require("../../utils");
+const populateInventory=async(item)=>{
+  return await  item.populate({
+     path: "inventoryUsed.room",
+     select: "roomName unit",
+   })
+   .populate("unit")
+   .populate("location").populate({
+     path: 'selectedRooms.room', // Populate the 'room' field inside the array
+     model: 'Room', // The model you're referencing
+   })
+ }
+ 
+const handleSelectedRoomResSet=(val)=>{
 
+  return val.selectedRooms.map(({room,id,quantity})=>{
+    console.log("id",id,room)
+    return {room:room._id,roomName:room.roomName,quantity}
+  })
+
+}
 const createInventoryItem = async (req, res) => {
   const { companyId, name } = req.user;
   const {
@@ -19,23 +38,26 @@ const createInventoryItem = async (req, res) => {
     brand,
     modelNo,
     size,
-    room,
+    selectedRooms,
     condition,
     supplierName,
     supplierContactNo,
     expireDate,
     warranty,
-    threshold,
     purchaseDate,
+    threshold,
     unit,
+    warrantyPeriod
   } = req.body;
 
   try {
     const item = new Inventory({
       unit,
+      warrantyPeriod,
       productName,
       productImage,
       description,
+      selectedRooms,
       quantity,
       location,
       category,
@@ -47,14 +69,12 @@ const createInventoryItem = async (req, res) => {
       brand,
       modelNo,
       size,
-      room,
       condition,
       supplierName,
       supplierContactNo,
       expireDate,
       warranty,
       threshold,
-      // inventoryUsed:[],
       purchaseDate,
       receivingHistory: [
         {
@@ -63,18 +83,20 @@ const createInventoryItem = async (req, res) => {
           receivedBy: name,
           price,
           warranty,
-          room,
+          selectedRooms,
         },
       ],
     });
     const savedItem = await item.save();
 
-    const populatedItem = await Inventory.findById(savedItem._id)
-      .populate("room")
-      .populate("location")
-      .populate("unit")
-      .lean();
-    res.status(201).json(populatedItem);
+    const populatedItem =  Inventory.findById(savedItem._id)
+    const invetoryPopulated=await populateInventory(populatedItem)
+    const transFormInventory = invetoryPopulated.map((val) => ({
+      ...val.toObject(),
+       selectedRooms:handleSelectedRoomResSet(val),
+      inventoryId: val._id,
+    }));
+    res.status(201).json(transFormInventory);
   } catch (err) {
     console.error("Error creating inventory item:", err);
     res.status(500).json({ message: "Internal server error." });
@@ -112,9 +134,14 @@ const receiveInventory = async (req, res) => {
 
     // Save the updated inventory
     await inventory.save()
-    const getInventory = await Inventory.findById(_id).populate("unit").populate("room").populate("location").lean();;
-    res.status(200).json(
-      getInventory);
+    const items = Inventory.findById(_id)
+    const invetoryPopulated=await populateInventory(items)
+    const transFormInventory = invetoryPopulated.map((val) => ({
+      ...val.toObject(),
+       selectedRooms:handleSelectedRoomResSet(val),
+      inventoryId: val._id,
+    }));
+    res.status(200).json(transFormInventory);
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: "Failed to receive inventory", error });
@@ -142,13 +169,18 @@ const updateInventoryItem = async (req, res) => {
         .send("Inventory is out of stock ,can't order that much");
     }
     // Update the inventory item
-    const updatedItem = await Inventory.findByIdAndUpdate(productId, payload, {
+    const itemsUpdated =await Inventory.findByIdAndUpdate(productId, payload, {
       new: true,
     })
-      .populate("room")
-      .populate("unit")
-      .populate("location");
-    res.json(updatedItem);
+    console.log("----0",itemsUpdated)
+    const items = Inventory.findById(itemsUpdated._id)
+    const invetoryPopulated=await populateInventory(items)
+    console.log("inventory",invetoryPopulated)
+    const transFormInventory =  { ...invetoryPopulated.toObject(),
+       selectedRooms:handleSelectedRoomResSet(invetoryPopulated),
+      inventoryId: invetoryPopulated._id,
+    }
+    res.json(transFormInventory);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -186,22 +218,17 @@ const getProductBySku = async (req, res) => {
   }
 };
 
-// Function to get stock items by company ID
+
 const getInventoryItemsByCompany = async (req, res) => {
   const { companyId } = req.user;
 
   try {
-    const items = await Inventory.find({ companyId })
-      .populate({
-        path: "inventoryUsed.room",
-        select: "roomName unit",
-      })
-      .populate("unit")
-      .populate("room")
-      .populate("location")
-    const transFormInventory = items.map((val) => ({
+    const items =  Inventory.find({ companyId })
+     const invetoryPopulated=await populateInventory(items)
+     console.log("inventory",invetoryPopulated.map(val=>val.selectedRooms.map(item=>item.room)))
+    const transFormInventory = invetoryPopulated.map((val) => ({
       ...val.toObject(),
-      // quantityUsed: 1,
+       selectedRooms:handleSelectedRoomResSet(val),
       inventoryId: val._id,
     }));
     res.json(transFormInventory);

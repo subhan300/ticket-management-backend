@@ -38,7 +38,12 @@ const inventorySchema = new Schema(
         receivedBy: { type: String, required: true }, 
         price:{type:Number},
         warrant:{type:String},
-        room: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true },
+        selectedRooms:[ {
+          room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' }, // Reference to Room model
+          roomName: String, // To store room name, but it's optional since we can populate it
+          quantity: Number, // Quantity for the room
+        }],
+        // room: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true },
 
       },
     ],
@@ -74,7 +79,11 @@ const inventorySchema = new Schema(
       default: 0,
     },
 
-    room: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true },
+    selectedRooms:[ {
+      room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' }, // Reference to Room model
+      roomName: String, // To store room name, but it's optional since we can populate it
+      quantity: Number, // Quantity for the room
+    }],
     location: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Location",
@@ -93,6 +102,7 @@ const inventorySchema = new Schema(
     supplierName: { type: String },
     supplierCotactNo: { type: String },
     expireDate: { type: Date },
+    warrantyPeriod: { type: Date },
     warranty: { type: String },
 
     threshold: {
