@@ -11,7 +11,7 @@ const populateInventory=async(item)=>{
    .populate("location").populate({
      path: 'selectedRooms.room', // Populate the 'room' field inside the array
      model: 'Room', // The model you're referencing
-   })
+   }).populate("supplier")
  }
  
 const handleSelectedRoomResSet=(val)=>{
@@ -25,6 +25,7 @@ const handleSelectedRoomResSet=(val)=>{
 const createInventoryItem = async (req, res) => {
   const { companyId, name } = req.user;
   const {
+    supplier,
     productName,
     productImage,
     description,
@@ -40,13 +41,10 @@ const createInventoryItem = async (req, res) => {
     size,
     selectedRooms,
     condition,
-    supplierName,
-    supplierContactNo,
     expireDate,
     warranty,
     purchaseDate,
     threshold,
-    unit,
     warrantyPeriod
   } = req.body;
   const existingItem = await Inventory.findOne({ SKU });
@@ -56,7 +54,7 @@ const createInventoryItem = async (req, res) => {
 
   try {
     const item = new Inventory({
-      unit,
+      supplier,
       warrantyPeriod,
       productName,
       productImage,
@@ -74,8 +72,6 @@ const createInventoryItem = async (req, res) => {
       modelNo,
       size,
       condition,
-      supplierName,
-      supplierContactNo,
       expireDate,
       warranty,
       threshold,
