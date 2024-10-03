@@ -49,6 +49,10 @@ const createInventoryItem = async (req, res) => {
     unit,
     warrantyPeriod
   } = req.body;
+  const existingItem = await Inventory.findOne({ SKU });
+    if (existingItem) {
+      return res.status(400).json({ error: 'SKU must be unique. This SKU already exists.' });
+    }
 
   try {
     const item = new Inventory({
@@ -91,11 +95,11 @@ const createInventoryItem = async (req, res) => {
 
     const populatedItem =  Inventory.findById(savedItem._id)
     const invetoryPopulated=await populateInventory(populatedItem)
-    const transFormInventory = invetoryPopulated.map((val) => ({
-      ...val.toObject(),
-       selectedRooms:handleSelectedRoomResSet(val),
-      inventoryId: val._id,
-    }));
+    const transFormInventory = {
+      ...invetoryPopulated.toObject(),
+       selectedRooms:handleSelectedRoomResSet(invetoryPopulated),
+      inventoryId: invetoryPopulated._id,
+    };
     res.status(201).json(transFormInventory);
   } catch (err) {
     console.error("Error creating inventory item:", err);
@@ -172,10 +176,8 @@ const updateInventoryItem = async (req, res) => {
     const itemsUpdated =await Inventory.findByIdAndUpdate(productId, payload, {
       new: true,
     })
-    console.log("----0",itemsUpdated)
     const items = Inventory.findById(itemsUpdated._id)
     const invetoryPopulated=await populateInventory(items)
-    console.log("inventory",invetoryPopulated)
     const transFormInventory =  { ...invetoryPopulated.toObject(),
        selectedRooms:handleSelectedRoomResSet(invetoryPopulated),
       inventoryId: invetoryPopulated._id,
