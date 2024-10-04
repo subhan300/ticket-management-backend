@@ -9,6 +9,7 @@ router.post('/create', supplierController.createSupplier);
 // Get all suppliers
 router.get('/', supplierController.getAllSuppliers);
 
+
 // Get a single supplier by ID
 router.get('/:id', supplierController.getSupplierById);
 

@@ -1,5 +1,6 @@
 // stockItemController.js
 
+const categories = require("../../models/categories");
 const Inventory = require("../../models/inventoryModel");
 const { updateStockStatus } = require("../../utils");
 const populateInventory=async(item)=>{
@@ -40,6 +41,7 @@ const createInventoryItem = async (req, res) => {
     modelNo,
     size,
     selectedRooms,
+    customCategory,
     condition,
     expireDate,
     warranty,
@@ -51,7 +53,11 @@ const createInventoryItem = async (req, res) => {
     if (existingItem) {
       return res.status(400).json({ error: 'SKU must be unique. This SKU already exists.' });
     }
-
+  if(category==="OTHER"){
+    const newCategory = new categories({type:"Inventory",category:customCategory,size:size});
+    await newCategory.save()
+    console.log("new cateogry",newCategory)
+  }
   try {
     const item = new Inventory({
       supplier,
@@ -62,7 +68,7 @@ const createInventoryItem = async (req, res) => {
       selectedRooms,
       quantity,
       location,
-      category,
+      category:category==="OTHER"?customCategory:category,
       status,
       usedItem,
       companyId,
