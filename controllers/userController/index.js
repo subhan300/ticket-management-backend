@@ -104,9 +104,48 @@ const getUsersByRole= async (req,res) => {
     res.status(400).send("failed to handle query")
   }
 };
+const getUsers= async (req,res) => {
+
+  try {
+    const {role}=req.params
+    const {companyId,locations}=req.user;
+// location[0] because laundary operator will have only one location 
+   const usersCollection=  await User.find({
+      locations: locations[0], 
+    }).select("name _id companyId locations imageUrl role email").populate("companyId").populate("locations");
+    return res.status(200).send(usersCollection)
+  } catch (error) {
+    console.error('Error fetching managers:', error);
+    res.status(400).send("failed to handle query")
+  }
+};
+
+
+const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const deletedItem = await User.findByIdAndDelete(userId);
+
+    res.status(200).json("deleted");
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const deleteUsers = async (req, res) => {
+  try {
+    await Inventory.deleteMany({});
+
+    res.status(200).json("deleted");
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 module.exports={
+  getUsers,
   getUsersByRole,
   updateUser,
-    login,createUser
+    login,createUser,deleteUser
 }
