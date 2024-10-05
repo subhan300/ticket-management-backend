@@ -12,6 +12,7 @@ const {
   NotAssignedId,
   MANAGER,
   USER,
+  LAUNDRY_STATUS,
 } = require("../../utils/constants");
 
 const {
@@ -112,23 +113,39 @@ const getCompanyTickets = async (req, res) => {
 const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
+    const { userItems } = req.body; // Assuming `userItems` are passed in req.body
 
+    // Step 1: Check if any of the userItems are already in a laundry ticket that is not completed or delivered to the resident
+    const existingTicket = await LaundryTicket.findOne({
+      userItems: { $in: userItems }, // Check if any of the userItems are in existing tickets
+      status: { $nin: [LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
+    });
+
+    if (existingTicket) {
+      // Step 2: If such a ticket exists, return an error
+      return res.status(400).json({
+        message: 'Some of the items are already in an active laundry process and cannot be added to a new ticket.'
+      });
+    }
+
+    // Step 3: Proceed with creating a new ticket if no conflicting ticket is found
     const ticketNo = await getLastTicketNumber();
-    const generateSku = generateSKU(
-      `${req.body.room}-${ticketNo}`
-    );
+    const generateSku = generateSKU(`${req.body.room}-${ticketNo}`);
+
     const ticket = new LaundryTicket({
       userId,
       ticketNo,
-      SKU: generateSku, // Initialize SKU as empty string
+      SKU: generateSku, // Generate SKU for the ticket
       companyId,
       archieve: false,
       comments: [],
-      room:req.body.room,
-      ...req.body,
+      room: req.body.room,
+      ...req.body, // Spread remaining fields from req.body (such as userItems)
     });
+
     await ticket.save();
-    const getSelectedTicket =await LaundryTicket.findById(ticket._id)
+
+    const getSelectedTicket = await LaundryTicket.findById(ticket._id)
       .populate("userId", "name email")
       .populate({
         path: "userItems",
@@ -143,23 +160,19 @@ const createTicket = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
-      // const populatedTickets=await populateLaundryTickets(getSelectedTicket)
-      // console.log("popuated==",populatedTickets)
-     const strcutureLaundaryRes=await laundryTicketStructure(getSelectedTicket)
+    const structuredLaundaryRes = await laundryTicketStructure(getSelectedTicket);
     const laundryOperator = await getAllUsersByRole(companyId, LaundryOperator);
-
     const managers = await getAllUsersByRole(companyId, MANAGER);
 
-    handleLaundaryTicketNotification(req, managers, laundryOperator, strcutureLaundaryRes);
+    handleLaundaryTicketNotification(req, managers, laundryOperator, structuredLaundaryRes);
 
-    res.status(201)
-      .json(strcutureLaundaryRes);
+    return res.status(201).json(structuredLaundaryRes);
+
   } catch (err) {
-     console.log("err",err)
-    res.status(500).json({ error: err.message });
+    console.log("Error:", err);
+    return res.status(500).json({ error: "Failed To Create Laundary Ticket" });
   }
 };
-
 
 
 const deleteTicket = async (req, res) => {

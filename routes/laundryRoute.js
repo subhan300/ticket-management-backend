@@ -5,15 +5,17 @@ const laundryController = require('../controllers/laundryController/LaundryContr
 const { adminAuthenticateJWT } = require('../middleware/adminAuthMiddleware');
 const { authenticateJWT } = require('../middleware/authMiddleware');
 const { getAllUsersCollectionByRole } = require('../controllers/globalController/GlobalController');
-const { updateTicket, getTicketsInProcess } = require('../controllers/laundryController/LaundaryCycleController');
+const { updateTicket, getTicketsInProcess, confirmLaundaryItems } = require('../controllers/laundryController/LaundaryCycleController');
 
 router.get('/getAll',authenticateJWT,laundryController.getAllTickets);
 router.get('/getCompanyTicket',authenticateJWT,laundryController.getCompanyTickets);
 router.get('/getLaundaryInProcess',authenticateJWT,getTicketsInProcess);
+
 router.get('/getResidentItemLocation/:SKU',authenticateJWT,laundryController.getResidentLocationByItemSku);
 
 router.get('/getResidentHistory/:SKU',authenticateJWT,laundryController.getResidentHistory);
 router.post('/getResidentItemAndLocation',authenticateJWT,laundryController.getResidentProductsAndLocationBySkuList);
+router.put('/confirmLaundaryItems',authenticateJWT,confirmLaundaryItems);
 router.get('/location/:locationId',authenticateJWT,laundryController.getFilterLocationTickets);
 router.post('/getResidentHistory/room/:roomId',authenticateJWT,laundryController.getResidentHistoryByRoomId);
 router.get('/byUserId', authenticateJWT,laundryController.getTicketByUserId);
