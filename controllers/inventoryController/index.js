@@ -1,8 +1,8 @@
 // stockItemController.js
 
-const categories = require("../../models/categories");
+const Categories = require("../../models/categories");
 const Inventory = require("../../models/inventoryModel");
-const { updateStockStatus } = require("../../utils");
+const { updateStockStatus, generateSKU } = require("../../utils");
 const populateInventory=async(item)=>{
   return await  item.populate({
      path: "inventoryUsed.room",
@@ -49,14 +49,20 @@ const createInventoryItem = async (req, res) => {
     threshold,
     warrantyPeriod
   } = req.body;
-  const existingItem = await Inventory.findOne({ SKU });
-    if (existingItem) {
-      return res.status(400).json({ error: 'SKU must be unique. This SKU already exists.' });
-    }
+  let sku=SKU
+  if(sku){
+   const existingItem = await Inventory.findOne({ sku });
+   if (existingItem) {
+     return res.status(400).json({ error: 'SKU must be unique. This SKU already exists.' });
+   }
+  }else{
+    sku=generateSKU(`${supplier}-${productName}`)
+  }
+   
   if(category==="OTHER"){
-    const newCategory = new categories({type:"Inventory",category:customCategory,size:size});
+    const newCategory = new Categories({type:"inventory",category:customCategory,sizes:[size]});
     await newCategory.save()
-    console.log("new cateogry",newCategory)
+    console.log("new cateogry====",newCategory)
   }
   try {
     const item = new Inventory({
@@ -72,7 +78,7 @@ const createInventoryItem = async (req, res) => {
       status,
       usedItem,
       companyId,
-      SKU,
+      SKU:sku,
       price,
       brand,
       modelNo,
@@ -122,12 +128,10 @@ const receiveInventory = async (req, res) => {
 
     // Find the inventory item
     const inventory = await Inventory.findById(_id)
-   console.log("room",room,purchaseDate)
     if (!inventory) {
       return res.status(404).json({ message: "Inventory not found" });
     }
 
-    // Update the quantity and add an entry to receivingHistory
     inventory.quantity += quantity;
     inventory.receivingHistory.push({
       receivedDate:purchaseDate,
