@@ -59,7 +59,7 @@ const createInventoryItem = async (req, res) => {
     sku=generateSKU(`${supplier}-${productName}`)
   }
    
-  if(category==="OTHER"){
+  if(category==="Other"){
     const newCategory = new Categories({type:"inventory",category:customCategory,sizes:[size]});
     await newCategory.save()
     console.log("new cateogry====",newCategory)
@@ -74,7 +74,7 @@ const createInventoryItem = async (req, res) => {
       selectedRooms,
       quantity,
       location,
-      category:category==="OTHER"?customCategory:category,
+      category:category==="Other"?customCategory:category,
       status,
       usedItem,
       companyId,
@@ -162,11 +162,15 @@ const updateInventoryItem = async (req, res) => {
   try {
     const { productId } = req.params;
     const payload = req.body;
-
+    const {customCategory,category,size}=req.body
     const item = await Inventory.findById(productId).lean();
-    console.log("item==", item);
+    
     if (!item) return res.status(404).json({ error: "Item not found" });
-
+    if(category && category==="Other"){
+      const newCategory = new Categories({type:"inventory",category:customCategory,sizes:[size]});
+      await newCategory.save()
+      console.log("new cateogry====",newCategory)
+    }
     // Update stock status using the utility function
     getStatus = {};
     if (payload.usedItem) {
@@ -179,7 +183,7 @@ const updateInventoryItem = async (req, res) => {
         .send("Inventory is out of stock ,can't order that much");
     }
     // Update the inventory item
-    const itemsUpdated =await Inventory.findByIdAndUpdate(productId, payload, {
+    const itemsUpdated =await Inventory.findByIdAndUpdate(productId, {...payload,category:category==="Other"?customCategory:category,}, {
       new: true,
     })
     const items = Inventory.findById(itemsUpdated._id)
