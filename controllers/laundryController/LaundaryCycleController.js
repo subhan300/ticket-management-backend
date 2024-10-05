@@ -4,6 +4,7 @@ const { getAllManagers, getAllUsersByRole } = require("../globalController/Globa
 const { handleLaundaryUpdateTicketNotification } = require("../notificationController/handleLaundaryUpdateNotifications");
 const { laundryTicketStructure, populateLaundryTickets } = require("../../utils");
 const { LaundryOperator, LAUNDRY_STATUS } = require("../../utils/constants");
+const UserItem = require("../../models/userItemsModel");
 
 const confirmCompleteStatus=[LAUNDRY_STATUS.WASH_COMPLETED, LAUNDRY_STATUS.DRYING_COMPLETED, LAUNDRY_STATUS.STREAM_PRESS]
 const getTicketsInProcess = async (req, res) => {
@@ -27,8 +28,11 @@ const getTicketsInProcess = async (req, res) => {
 const confirmLaundaryItems = async (req, res) => {
   try {
     const { id } = req.user; // Extract user ID from req.user
-    const { laundaryItem } = req.body; // Get the laundary item to confirm
-
+    const { SKU} = req.body; // Get the laundary item to confirm
+    console.log("sku",SKU)
+   const  userItem=await UserItem.findOne({ SKU })
+   console.log("laudnary item",userItem)
+   const laundaryItem=userItem._id
     // Step 1: Find the ticket that contains the laundaryItem in userItems and status not LAUNDRY_COMPLETED
     const getTicket = await LaundryTicket.findOne({
       userItems: laundaryItem, 
