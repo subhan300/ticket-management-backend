@@ -6,7 +6,8 @@ const jwt=require("jsonwebtoken");
 const { RESIDENT } = require('../../utils/constants');
 // Function to create a new user
 const createUser = async (req, res) => {
-    const { name, email, role, password, companyId, livingLocation, locationName,locations } = req.body;
+    const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl
+    } = req.body;
   
     try {
       // Check if user already exists
@@ -20,14 +21,14 @@ const createUser = async (req, res) => {
   
       // Hash password and create new user
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({ name, email, role, password: hashedPassword, livingLocation, locationName, companyId,locations });
+      const newUser = new User({ imageUrl, name, email, role, password: hashedPassword, livingLocation, locationName, companyId,locations });
       const savedUser = await newUser.save();
-  
+      const getUser=await User.findById(savedUser._id).populate("companyId").populate("locations");
       // Generate JWT token
       const token = jwt.sign({ user: { id: savedUser._id, email, name, role, livingLocation, locationName,locations } }, process.env.JWT_SECRET);
-  
+      
       // Send back token and user details
-      res.status(201).json({ user: savedUser, token });
+      res.status(201).json(getUser);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -82,8 +83,8 @@ const updateUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    res.status(200).json({ user });
+     const getUser=await User.findById(user._id).populate("companyId").populate("locations");
+    res.status(200).json(getUser);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -112,7 +113,7 @@ const getUsers= async (req,res) => {
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       locations: locations[0], 
-    }).select("name _id companyId locations imageUrl role email").populate("companyId").populate("locations");
+    }).populate("companyId").populate("locations");
     return res.status(200).send(usersCollection)
   } catch (error) {
     console.error('Error fetching managers:', error);
