@@ -160,50 +160,7 @@ const createTicket = async (req, res) => {
   }
 };
 
-const updateTicket = async (req, res) => {
-  try {
-    const { role, companyId ,name,id} = req.user;
-    const { ticketId } = req.params;
-    const updates = req.body;
-    const inventoryUsed = updates?.userItems;
 
-    const managers = await getAllManagers(companyId);
-    if (!mongoose.Types.ObjectId.isValid(ticketId)) {
-      return res.status(400).json({ error: "Invalid ticketId" });
-    }
-
-    const ticket = await LaundryTicket.findByIdAndUpdate(ticketId, {...updates,updatedBy:id}, {
-      new: true,
-    })
-      .populate("userId", "name email").populate("updatedBy","name email")
-      .populate({
-        path: "userItems",
-        model: "UserItem",
-        // select: "",
-      })
-      .populate({
-        path: "room",
-        populate: {
-          path: "unit",
-          model: "Unit",
-        },
-      })
-      .populate({ path: "location", model: "Location" })
-      .sort({ createdAt: -1 });
-    const populatedTicketsStucture = await laundryTicketStructure(ticket);
-    const users = await getAllUsersByRole(companyId, LaundryOperator);
-    handleLaundaryUpdateTicketNotification(
-      req,
-      updates,
-      managers,
-      users,
-      populatedTicketsStucture
-    );
-    res.status(200).json(populatedTicketsStucture);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
 
 const deleteTicket = async (req, res) => {
   try {
@@ -370,7 +327,6 @@ module.exports = {
   createTicket,
   deleteTicket,
   getTicketByUserId,
-  updateTicket,
   getAllTickets,
   addComment,
   getCompanyTickets,

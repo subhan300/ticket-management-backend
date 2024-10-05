@@ -34,20 +34,28 @@ const commentSchema = new mongoose.Schema({
   },
 });
 
-
 const LaundrySchema = new mongoose.Schema(
   {
-    room:{type:mongoose.Schema.Types.ObjectId, ref: "Room",required:true},
-    location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
+    room: { type: mongoose.Schema.Types.ObjectId, ref: "Room", required: true },
+    location: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Location",
+      required: true,
+    },
     ticketNo: { type: String },
     SKU: { type: String },
-    updatedBy:{ type: mongoose.Schema.Types.ObjectId,
-      ref: "User",},
-    userItems: [{ type: mongoose.Schema.Types.ObjectId,
-      ref: "UserItem",
-      required: true,}],
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    userItems: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "UserItem", required: true },
+    ],
+    confirmRecieve: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "UserItem" }
+    ],
+    confirmCompleted: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "UserItem" } 
+    ],
     quantity: { type: Number, default: 0 },
-    
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -66,8 +74,6 @@ const LaundrySchema = new mongoose.Schema(
     archieve: { type: Boolean, default: false },
     comments: [commentSchema], // Embed the comment schema
 
-
-  
     category: { type: String },
     assignedTo: {
       type: mongoose.Schema.Types.Mixed,

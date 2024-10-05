@@ -64,6 +64,7 @@ const inventorySchema = new Schema(
       type: String,
       required: false,
     },
+
     size: {
       type: String,
       required: false,
@@ -102,8 +103,6 @@ const inventorySchema = new Schema(
     supplier:{  type: mongoose.Schema.Types.ObjectId,
       ref: "Supplier",
       required: true,},
-    supplierName: { type: String },
-    supplierCotactNo: { type: String },
     expireDate: { type: Date },
     warrantyPeriod: { type: Date },
     warranty: { type: String },
