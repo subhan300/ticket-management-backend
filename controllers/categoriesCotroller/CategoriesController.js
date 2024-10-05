@@ -54,7 +54,7 @@ exports.createCategoriesInBulk = async (req, res) => {
 exports.getAllCategories = async (req, res) => {
   try {
      const {type}=req.params
-    const categories = await Category.find({type});
+    const categories = await Category.find({type}).sort({ category: 1 });
     res.status(200).json(categories);
   } catch (error) {
     res.status(400).json({ error: error.message });
