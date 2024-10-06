@@ -92,7 +92,7 @@ const confirmLaundaryItems = async (req, res) => {
       getTicket._id, 
       updatePayload, 
       { new: true }
-    )
+    ).populate("room")
     // .populate("userId", "name email")
     //  .populate("updatedBy", "name email")
      .select("userItems confirmRecieve confirmCompleted status");
