@@ -133,8 +133,22 @@ const updateTicket = async (req, res) => {
       const { role, companyId ,name,id} = req.user;
       const { ticketId } = req.params;
       const updates = req.body;
+      const {userItems}=req.body
       const inventoryUsed = updates?.userItems;
-  
+    if(userItems){
+      const existingTicket = await LaundryTicket.findOne({
+        userItems: { $in: userItems }, // Check if any of the userItems are in existing tickets
+        status: { $nin: [LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
+      });
+       
+      if (existingTicket) {
+        const {userItems}=await existingTicket.populate("userItems")
+        const itemNames = userItems.map(val => val.itemName).join(', ');
+        return res.status(400).json({
+          message: `These items ${itemNames} are already in an active laundry process and cannot be added to a new ticket.`
+        });
+      }
+    }
       const managers = await getAllManagers(companyId);
       if (!mongoose.Types.ObjectId.isValid(ticketId)) {
         return res.status(400).json({ error: "Invalid ticketId" });
