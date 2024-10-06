@@ -3,10 +3,17 @@ const LaundryTicket = require("../../models/laundryModel");
 const { getAllManagers, getAllUsersByRole } = require("../globalController/GlobalController");
 const { handleLaundaryUpdateTicketNotification } = require("../notificationController/handleLaundaryUpdateNotifications");
 const { laundryTicketStructure, populateLaundryTickets } = require("../../utils");
-const { LaundryOperator, LAUNDRY_STATUS } = require("../../utils/constants");
+const { LaundryOperator, LAUNDRY_STATUS, NotAssignedId, NotAssigned } = require("../../utils/constants");
 const UserItem = require("../../models/userItemsModel");
 
 const confirmCompleteStatus=[LAUNDRY_STATUS.WASH_COMPLETED, LAUNDRY_STATUS.DRYING_COMPLETED, LAUNDRY_STATUS.STREAM_PRESS,LAUNDRY_STATUS.LAUNDRY_COMPLETED]
+const handleAssignedTo=(ticket)=>{
+  const assignedTo =
+  ticket.assignedTo === NotAssignedId
+    ? { name: NotAssigned, _id: NotAssignedId }
+    : ticket.assignedTo;
+    return assignedTo
+}
 const getTicketsInProcess = async (req, res) => {
   try {
     const { id, companyId,locations } = req.user;
@@ -14,12 +21,23 @@ const getTicketsInProcess = async (req, res) => {
       location: locations[0],
       status: { $ne: LAUNDRY_STATUS.DELIVERED_TO_RESIDENT}, 
       confirmRecieve: { $exists: true, $not: { $size: 0 } }, 
-    }).select("ticketNo room userItems confirmRecieve confirmCompleted status").populate("room");
-      // const populatedTickets = await populateLaundryTickets(tickets);
-      // const populatedTicketsStructure = await laundryTicketStructure(populatedTickets);
-      return res.status(200).json(tickets);
+    })
+    .select("ticketNo room userItems confirmRecieve confirmCompleted status assignedTo").populate("room");
+   
+     
+    if(!tickets.length){
+      return res.status(400).json("No tickets found");
+    }
+    console.log("tickets[0]",tickets[0])
+    if (mongoose.Types.ObjectId.isValid(tickets[0].assignedTo)) {
+      await tickets[0].populate("assignedTo", "name email");
+    }
+     const assignedTo=handleAssignedTo(tickets[0])
+   
+      const populatedTicketsStructure=tickets.map(val=>({...val.toObject(),assignedTo}))
+      return res.status(200).json(populatedTicketsStructure);
 
-    return res.status(400).json("No tickets found");
+
   } catch (err) {
     console.log("err",err)
     return res.status(500).json({ error: err.message });
@@ -96,10 +114,12 @@ const confirmLaundaryItems = async (req, res) => {
       updatePayload, 
       { new: true }
     ).populate("room")
-    // .populate("userId", "name email")
-    //  .populate("updatedBy", "name email")
-     .select("ticketNo userItems confirmRecieve confirmCompleted status");
-     return res.status(200).json(updatedTicket);
+
+     .select("ticketNo userItems confirmRecieve confirmCompleted status assignedTo");
+     const assignedTo=handleAssignedTo(updatedTicket);
+     const populatedTicketsStructure={...updatedTicket.toObject(),assignedTo}
+      return res.status(200).json(populatedTicketsStructure);
+
   }
 
   return res.status(400).json("No Condition Met To Confirm Laundary Now");
@@ -157,7 +177,8 @@ const updateTicket = async (req, res) => {
 const updateInProcessTicketStatus = async (req, res) => {
   try {
     const { role, companyId, name, id } = req.user;
-    const { ticketIds, status } = req.body; // Assuming ticketIds is an array and status is the new status to set
+    const { ticketIds,  } = req.body; // Assuming ticketIds is an array and status is the new status to set
+    const itemPayload=req.body
     console.log("ticket===",ticketIds)
     // Validate ticketIds array
     if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
@@ -175,7 +196,7 @@ const updateInProcessTicketStatus = async (req, res) => {
     // Update status of all tickets in the collection
     const updatedTickets = await LaundryTicket.updateMany(
       { _id: { $in: ticketIds } }, // Filter for all tickets with the provided IDs
-      { status: status, updatedBy: id } // Update status and who made the update
+      { ...itemPayload, updatedBy: id } // Update status and who made the update
     );
 
     if (updatedTickets.nModified === 0) {
