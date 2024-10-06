@@ -14,7 +14,7 @@ const getTicketsInProcess = async (req, res) => {
       location: locations[0],
       status: { $ne: LAUNDRY_STATUS.DELIVERED_TO_RESIDENT}, 
       confirmRecieve: { $exists: true, $not: { $size: 0 } }, 
-    }).select("userItems confirmRecieve confirmCompleted status");;
+    }).select("ticketNo room userItems confirmRecieve confirmCompleted status").populate("room");
       // const populatedTickets = await populateLaundryTickets(tickets);
       // const populatedTicketsStructure = await laundryTicketStructure(populatedTickets);
       return res.status(200).json(tickets);
