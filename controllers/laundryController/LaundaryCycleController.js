@@ -6,7 +6,7 @@ const { laundryTicketStructure, populateLaundryTickets } = require("../../utils"
 const { LaundryOperator, LAUNDRY_STATUS } = require("../../utils/constants");
 const UserItem = require("../../models/userItemsModel");
 
-const confirmCompleteStatus=[LAUNDRY_STATUS.WASH_COMPLETED, LAUNDRY_STATUS.DRYING_COMPLETED, LAUNDRY_STATUS.STREAM_PRESS]
+const confirmCompleteStatus=[LAUNDRY_STATUS.WASH_COMPLETED, LAUNDRY_STATUS.DRYING_COMPLETED, LAUNDRY_STATUS.STREAM_PRESS,LAUNDRY_STATUS.LAUNDRY_COMPLETED]
 const getTicketsInProcess = async (req, res) => {
   try {
     const { id, companyId,locations } = req.user;
@@ -39,7 +39,7 @@ const confirmLaundaryItems = async (req, res) => {
     // Step 1: Find the ticket that contains the laundaryItem in userItems and status not LAUNDRY_COMPLETED
     const getTicket = await LaundryTicket.findOne({
       userItems: laundaryItem, 
-      status: { $nin: [LAUNDRY_STATUS.LAUNDRY_COMPLETED, LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
+      status: { $nin: [LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
     }).select("status userItems confirmRecieve confirmCompleted");
      console.log("get tickets==",getTicket)
     if (!getTicket) {
