@@ -32,6 +32,9 @@ const confirmLaundaryItems = async (req, res) => {
     console.log("sku",SKU)
    const  userItem=await UserItem.findOne({ SKU })
    console.log("laudnary item",userItem)
+   if(!userItem){
+      return res.status(404).json("No Item With this SKU exist");
+   }
    const laundaryItem=userItem._id
     // Step 1: Find the ticket that contains the laundaryItem in userItems and status not LAUNDRY_COMPLETED
     const getTicket = await LaundryTicket.findOne({
@@ -40,7 +43,7 @@ const confirmLaundaryItems = async (req, res) => {
     }).select("status userItems confirmRecieve confirmCompleted");
      console.log("get tickets==",getTicket)
     if (!getTicket) {
-      return res.status(404).json({ message: "No matching laundry ticket found." });
+      return res.status(404).json("No matching laundry ticket found.");
     }
 
     const { status, confirmRecieve, confirmCompleted, userItems } = getTicket;
@@ -95,11 +98,11 @@ const confirmLaundaryItems = async (req, res) => {
     ).populate("room")
     // .populate("userId", "name email")
     //  .populate("updatedBy", "name email")
-     .select("userItems confirmRecieve confirmCompleted status");
+     .select("ticketNo userItems confirmRecieve confirmCompleted status");
      return res.status(200).json(updatedTicket);
   }
 
-  return res.status(200).json("No Condition Met To Confirm Laundary Now");
+  return res.status(400).json("No Condition Met To Confirm Laundary Now");
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
