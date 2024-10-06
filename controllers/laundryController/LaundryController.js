@@ -120,11 +120,14 @@ const createTicket = async (req, res) => {
       userItems: { $in: userItems }, // Check if any of the userItems are in existing tickets
       status: { $nin: [LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
     });
-
+     
     if (existingTicket) {
+      const {userItems}=await existingTicket.populate("userItems")
+      // console.log("")
+      const itemNames = userItems.map(val => val.itemName).join(', ');
       // Step 2: If such a ticket exists, return an error
       return res.status(400).json({
-        message: 'Some of the items are already in an active laundry process and cannot be added to a new ticket.'
+        message: `These items ${itemNames} are already in an active laundry process and cannot be added to a new ticket.`
       });
     }
 
