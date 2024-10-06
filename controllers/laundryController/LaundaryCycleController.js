@@ -153,11 +153,77 @@ const updateTicket = async (req, res) => {
     }
   };
 
- 
+
+const updateInProcessTicketStatus = async (req, res) => {
+  try {
+    const { role, companyId, name, id } = req.user;
+    const { ticketIds, status } = req.body; // Assuming ticketIds is an array and status is the new status to set
+    console.log("ticket===",ticketIds)
+    // Validate ticketIds array
+    if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
+      return res.status(400).json({ error: "Invalid or missing ticketIds" });
+    }
+
+    // Ensure all ticketIds are valid MongoDB ObjectIDs
+    const areValidIds = ticketIds.every((ticketId) =>
+      mongoose.Types.ObjectId.isValid(ticketId)
+    );
+    if (!areValidIds) {
+      return res.status(400).json({ error: "One or more invalid ticketIds" });
+    }
+
+    // Update status of all tickets in the collection
+    const updatedTickets = await LaundryTicket.updateMany(
+      { _id: { $in: ticketIds } }, // Filter for all tickets with the provided IDs
+      { status: status, updatedBy: id } // Update status and who made the update
+    );
+
+    if (updatedTickets.nModified === 0) {
+      return res.status(404).json({ message: "No tickets were updated" });
+    }
+
+    // Optionally, fetch the updated tickets to return in the response
+    const tickets = await LaundryTicket.find({ _id: { $in: ticketIds } })
+      .populate("userId", "name email")
+      .populate("updatedBy", "name email")
+      .populate({
+        path: "userItems",
+        model: "UserItem",
+      })
+      .populate({
+        path: "room",
+        populate: {
+          path: "unit",
+          model: "Unit",
+        },
+      })
+      .populate({ path: "location", model: "Location" })
+      .sort({ createdAt: -1 });
+
+    const populatedTicketsStructure =await laundryTicketStructure(tickets)
+    console.log("tickets",tickets,"populated structure",populatedTicketsStructure)
+
+    // const managers = await getAllManagers(companyId);
+    // const users = await getAllUsersByRole(companyId, LaundryOperator);
+    // handleLaundaryUpdateTicketNotification(
+    //   req,
+    //   { status }, // Sending the updated status for notification
+    //   managers,
+    //   users,
+    //   populatedTicketsStructure
+    // );
+
+    res.status(200).json(populatedTicketsStructure);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 
 
   
   module.exports={
+    updateInProcessTicketStatus,
     confirmLaundaryItems,
     getTicketsInProcess,
     updateTicket
