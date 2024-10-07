@@ -26,7 +26,7 @@ const getTicketsInProcess = async (req, res) => {
    
      
     if(!tickets.length){
-      return res.status(400).json("No tickets found");
+      return res.status(200).json([]);
     }
     console.log("tickets[0]",tickets[0])
     if (mongoose.Types.ObjectId.isValid(tickets[0].assignedTo)) {
