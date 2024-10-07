@@ -1,4 +1,4 @@
-const { LaundryOperator } = require("../../utils/constants");
+const { LaundryOperator, laundaryCategory } = require("../../utils/constants");
 const { ticketCreateMessage } = require("../../utils/notificationMessages");
 const { notifyUsers } = require("./notifyUser");
 
@@ -18,7 +18,7 @@ const handleLaundaryTicketNotification = async (
       name,
       ticket,
       roleBasedUserCollection,
-      ticketCreateMessage
+      ticketCreateMessage,laundaryCategory
     );
   }
 
@@ -29,7 +29,7 @@ const handleLaundaryTicketNotification = async (
         name,
         ticket,
         managersCollection,
-        ticketCreateMessage
+        ticketCreateMessage,laundaryCategory
       );
   }
 };

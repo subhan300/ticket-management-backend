@@ -63,9 +63,9 @@ const getTicketByUserId = async (req, res) => {
     const populatedTicketsStucture = await laundryTicketStructure(
       populatedTickets
     );
-    res.status(200).json(populatedTicketsStucture);
+    return res.status(200).json(populatedTicketsStucture);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
 const getFilterLocationTickets = async (req, res) => {
@@ -123,9 +123,7 @@ const createTicket = async (req, res) => {
      
     if (existingTicket) {
       const {userItems}=await existingTicket.populate("userItems")
-      // console.log("")
       const itemNames = userItems.map(val => val.itemName).join(', ');
-      // Step 2: If such a ticket exists, return an error
       return res.status(400).json({
         message: `These items ${itemNames} are already in an active laundry process and cannot be added to a new ticket.`
       });
