@@ -133,9 +133,11 @@ const updateTicket = async (req, res) => {
       const { role, companyId ,name,id} = req.user;
       const { ticketId } = req.params;
       const updates = req.body;
-      const {userItems}=req.body
+      const {userItems,confirmRecieve}=req.body
       const inventoryUsed = updates?.userItems;
-    if(userItems){
+      const getTicket=await LaundryTicket.findById(updates._id)
+      console.log("confirmRecieve",getTicket.confirmRecieve.length,"updates",userItems)
+    if(userItems && getTicket.confirmRecieve.length){
       const existingTicket = await LaundryTicket.findOne({
         userItems: { $in: userItems }, // Check if any of the userItems are in existing tickets
         status: { $nin: [LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
@@ -181,6 +183,7 @@ const updateTicket = async (req, res) => {
         users,
         populatedTicketsStucture
       );
+       console.log("populatedTicketsStucture",populatedTicketsStucture)
       res.status(200).json(populatedTicketsStucture);
     } catch (err) {
       res.status(500).json({ message: err.message });
