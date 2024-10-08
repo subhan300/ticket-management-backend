@@ -136,7 +136,7 @@ const updateTicket = async (req, res) => {
       const {userItems,confirmRecieve}=req.body
       const inventoryUsed = updates?.userItems;
       const getTicket=await LaundryTicket.findById(updates._id)
-      console.log("confirmRecieve",getTicket.confirmRecieve.length,"updates",userItems)
+      console.log("confirmRecieve",getTicket?.confirmRecieve?.length,"updates",userItems)
     if(userItems && getTicket.confirmRecieve.length){
       const existingTicket = await LaundryTicket.findOne({
         userItems: { $in: userItems }, // Check if any of the userItems are in existing tickets
