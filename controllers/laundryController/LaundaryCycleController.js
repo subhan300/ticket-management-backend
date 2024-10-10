@@ -206,6 +206,7 @@ const updateTicket = async (req, res) => {
         .sort({ createdAt: -1 });
       const populatedTicketsStucture = await laundryTicketStructure(ticket);
       const users = await getAllUsersByRole(companyId, LaundryOperator);
+      console.log("users",users)
       handleLaundaryUpdateTicketNotification(
         req,
         updates,
@@ -226,7 +227,6 @@ const updateInProcessTicketStatus = async (req, res) => {
     const { role, companyId, name, id } = req.user;
     const { ticketIds,  } = req.body; // Assuming ticketIds is an array and status is the new status to set
     const itemPayload=req.body
-    console.log("ticket===",ticketIds)
     // Validate ticketIds array
     if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
       return res.status(400).json({ error: "Invalid or missing ticketIds" });
@@ -271,15 +271,15 @@ const updateInProcessTicketStatus = async (req, res) => {
     const populatedTicketsStructure =await laundryTicketStructure(tickets)
     console.log("tickets",tickets,"populated structure",populatedTicketsStructure)
 
-    // const managers = await getAllManagers(companyId);
-    // const users = await getAllUsersByRole(companyId, LaundryOperator);
-    // handleLaundaryUpdateTicketNotification(
-    //   req,
-    //   { status }, // Sending the updated status for notification
-    //   managers,
-    //   users,
-    //   populatedTicketsStructure
-    // );
+    const managers = await getAllManagers(companyId);
+    const users = await getAllUsersByRole(companyId, LaundryOperator);
+    handleLaundaryUpdateTicketNotification(
+      req,
+      { status:populatedTicketsStructure[0].status,tickets:populatedTicketsStructure,batchStatus:true }, // Sending the updated status for notification
+      managers,
+      users,
+      // populatedTicketsStructure
+    );
 
     res.status(200).json(populatedTicketsStructure);
   } catch (err) {

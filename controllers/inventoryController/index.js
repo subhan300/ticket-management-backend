@@ -6,9 +6,8 @@ const { updateStockStatus, generateSKU } = require("../../utils");
 const populateInventory=async(item)=>{
   return await  item.populate({
      path: "inventoryUsed.room",
-     select: "roomName unit",
+     select: "roomName ",
    })
-   .populate("unit")
    .populate("location").populate({
      path: 'selectedRooms.room', // Populate the 'room' field inside the array
      model: 'Room', // The model you're referencing
@@ -146,11 +145,11 @@ const receiveInventory = async (req, res) => {
     await inventory.save()
     const items = Inventory.findById(_id)
     const invetoryPopulated=await populateInventory(items)
-    const transFormInventory = invetoryPopulated.map((val) => ({
-      ...val.toObject(),
-       selectedRooms:handleSelectedRoomResSet(val),
-      inventoryId: val._id,
-    }));
+    const transFormInventory = {
+      ...invetoryPopulated.toObject(),
+       selectedRooms:handleSelectedRoomResSet(invetoryPopulated),
+      inventoryId: invetoryPopulated._id,
+    };
     res.status(200).json(transFormInventory);
   } catch (error) {
     console.log(error)
@@ -169,7 +168,6 @@ const updateInventoryItem = async (req, res) => {
     if(category && category==="Other"){
       const newCategory = new Categories({type:"inventory",category:customCategory,sizes:[size]});
       await newCategory.save()
-      console.log("new cateogry====",newCategory)
     }
     // Update stock status using the utility function
     getStatus = {};
@@ -186,6 +184,7 @@ const updateInventoryItem = async (req, res) => {
     const itemsUpdated =await Inventory.findByIdAndUpdate(productId, {...payload,category:category==="Other"?customCategory:category,}, {
       new: true,
     })
+    console.log("itemsUpdated",itemsUpdated)
     const items = Inventory.findById(itemsUpdated._id)
     const invetoryPopulated=await populateInventory(items)
     const transFormInventory =  { ...invetoryPopulated.toObject(),

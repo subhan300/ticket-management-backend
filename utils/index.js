@@ -71,6 +71,9 @@ const technicianUpdateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
 const updateTicketStatusMessage = (name, status, ticketNo) => {
   return `Ticket # ${ticketNo} is update to  ${status} by ${name}`;
 };
+const updateBatchLaundryStatusMessage = (name, status, tickets) => {
+  return `Tickets ${tickets} is update to  ${status} by ${name}`;
+};
 const updateStatusMessage = (name, status,ticketNo) => {
   return `Ticket # ${ticketNo} Status is updated to ${status} by ${name}`;
 };
@@ -281,6 +284,7 @@ const covertId=(id)=>{
   return new mongoose.Types.ObjectId(id)
 }
 module.exports = {
+  updateBatchLaundryStatusMessage,
   covertId,
   ticketStructure,
   populateTickets,

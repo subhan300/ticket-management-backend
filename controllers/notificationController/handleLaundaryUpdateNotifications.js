@@ -4,6 +4,7 @@ const { notifyUsers } = require("./notifyUser");
 const {handleStatusNotification} =require("./handleStatusNotification")
 const {handleAssignedNotifications}=require("./handleAssignedNotifications");
 const { handleLaundaryStatusNotification } = require("./laundaryStatusNotifications");
+const { laundaryBatchNotification } = require("./laundaryBatchNotification");
 
 const handleLaundaryUpdateTicketNotification = async (
     req,
@@ -13,7 +14,7 @@ const handleLaundaryUpdateTicketNotification = async (
     ticket,
   ) => {
      const category=laundaryCategory
-    const { assignedTo, status } = updates;
+    const { assignedTo, status,batchStatus } = updates;
       console.log("udpates====",assignedTo,"----",status)
     if (assignedTo && status) {
         console.log("shoul not reach")
@@ -36,10 +37,12 @@ const handleLaundaryUpdateTicketNotification = async (
         ticket,category
       );
       return;
-    } else if (status) {
+    } else if (status && !batchStatus) {
       // console.log("status==");
       handleLaundaryStatusNotification(req, updates, managersCollection,roleBasedUserCollection, ticket);
       return;
+    }else if(status && batchStatus){
+      laundaryBatchNotification(req,updates,managersCollection,roleBasedUserCollection,{})
     }
   };
   
