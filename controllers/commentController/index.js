@@ -49,7 +49,39 @@ const addComment = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const addCommentFunction = async (payload) => {
+  const {commentCollectionName,ticketId,userId,text,isSystemGenerated,createdAt}=payload
+  try {
+    console.log("text",text)
+    let ticket;
+    if (commentCollectionName === "laundryTicket") {
+      ticket = await LaundryTicket.findById(ticketId);
+    } else {
+      ticket = await Ticket.findById(ticketId);
+    }
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
 
+    const newComment = {
+      userId,
+      text,
+      isSystemGenerated,
+      createdAt,
+    };
+
+    ticket.comments.unshift(newComment); 
+    await ticket.save();
+
+    const formatComments = [...ticket.comments.toObject()];
+    console.log(formatComments)
+   
+
+    
+  } catch (error) {
+    console.log(error)
+  }
+};
 const editComment = async (req, res) => {
   const { ticketId, commentId, isSystemGenerated } = req.params;
   const { userId, text, files, createdAt,commentCollectionName } = req.body;
@@ -155,4 +187,5 @@ module.exports = {
   editComment,
   deleteComment,
   getCommentsByTicketId,
+  addCommentFunction
 };

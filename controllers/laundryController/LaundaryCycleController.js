@@ -5,6 +5,7 @@ const { handleLaundaryUpdateTicketNotification } = require("../notificationContr
 const { laundryTicketStructure, populateLaundryTickets } = require("../../utils");
 const { LaundryOperator, LAUNDRY_STATUS, NotAssignedId, NotAssigned } = require("../../utils/constants");
 const UserItem = require("../../models/userItemsModel");
+const { addComment, addCommentFunction } = require("../commentController");
 
 const confirmCompleteStatus=[LAUNDRY_STATUS.WASH_COMPLETED, LAUNDRY_STATUS.DRYING_COMPLETED, LAUNDRY_STATUS.STREAM_PRESS,LAUNDRY_STATUS.LAUNDRY_COMPLETED]
 const handleAssignedTo=(ticket)=>{
@@ -35,7 +36,8 @@ const getTicketsInProcess = async (req, res) => {
      const assignedTo=handleAssignedTo(tickets[0])
    
       const populatedTicketsStructure=tickets.map(val=>({...val.toObject(),assignedTo}))
-      return res.status(200).json(populatedTicketsStructure);
+      let sendRes=populatedTicketsStructure.length ? populatedTicketsStructure: []
+      return res.status(200).json(sendRes);
 
 
   } catch (err) {
@@ -43,9 +45,30 @@ const getTicketsInProcess = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+const handleComment=(commentPayload,userItem,updatePayload)=>{
+  console.log({commentPayload,userItem,updatePayload})
+  const commentTextMap = {
+    received: `Item : <span style="color: #008000">${userItem.itemName}</span> is confirmed and received`,
+    completed: `Item : <span style="color: #008000">${userItem.itemName}</span> is confirmed and ready to deliver`,
+    recievedStatus:`Laundary status is updated to Recieved`,
+    confirmedCompletedStatus:`Laundary status is updated to confirmed completed`,
+  };
+  const commentText = updatePayload?.confirmRecieve?.length ? "received" : "completed"
+  const commentStatus=updatePayload?.cofirmReiceve?.length && updatePayload.status ? "recievedStatus":""
+  const commentStatusCompleted=updatePayload?.confirmCompleted && updatePayload.status ?"confirmedCompletedStatus" :""
+  addCommentFunction({...commentPayload,text:commentTextMap[commentText]})
+  if(commentStatus){
+    addCommentFunction({...commentPayload,text:commentTextMap[commentStatus]})
+  }
+  if(commentStatusCompleted){
+    addCommentFunction({...commentPayload,text:commentTextMap[commentStatusCompleted]})
+  }
+
+}
 const confirmLaundaryItems = async (req, res) => {
   try {
     const { id } = req.user; // Extract user ID from req.user
+   
     const { SKU} = req.body; // Get the laundary item to confirm
     console.log("sku",SKU)
    const  userItem=await UserItem.findOne({ SKU })
@@ -60,6 +83,8 @@ const confirmLaundaryItems = async (req, res) => {
       status: { $nin: [LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] },
     }).select("status userItems confirmRecieve confirmCompleted");
      console.log("get tickets==",getTicket)
+     const commentPayload={userId:id,ticketId:getTicket._id,commentCollectionName:"laundryTicket",isSystemGenerated:true,createdAt:new Date()}
+
     if (!getTicket) {
       return res.status(404).json("No matching laundry ticket found.");
     }
@@ -90,7 +115,9 @@ const confirmLaundaryItems = async (req, res) => {
     if (status === LAUNDRY_STATUS.PICKED_UP && areAllIdsPresent(userItems, tempConfirmRecieve)) {
       // If all userItems are in confirmRecieve, update status to RECEIVED_IN_FACILITY
       updatePayload.status = LAUNDRY_STATUS.RECEIVED_IN_FACILITY;
-      updatePayload.confirmRecieve = tempConfirmRecieve; 
+      updatePayload.confirmRecieve = tempConfirmRecieve;
+     
+
       // return
      
     } else if (confirmCompleteStatus.includes(status) && areAllIdsPresent(userItems, tempConfirmComplete)) {
@@ -101,14 +128,16 @@ const confirmLaundaryItems = async (req, res) => {
     }
     else if(status === LAUNDRY_STATUS.PICKED_UP) {
       updatePayload.confirmRecieve = tempConfirmRecieve; 
-      // return
+      
     } else if (confirmCompleteStatus.includes(status)) {
       updatePayload.confirmCompleted = tempConfirmComplete; 
       // return
     }
     const containValue=Object.keys(updatePayload)
     console.log("contain value----",containValue)
+
   if(containValue.length){
+   
     const updatedTicket = await LaundryTicket.findByIdAndUpdate(
       getTicket._id, 
       updatePayload, 
@@ -116,6 +145,7 @@ const confirmLaundaryItems = async (req, res) => {
     ).populate("room")
 
      .select("ticketNo userItems confirmRecieve confirmCompleted status assignedTo");
+     handleComment(commentPayload,userItem,updatePayload)
      const assignedTo=handleAssignedTo(updatedTicket);
      const populatedTicketsStructure={...updatedTicket.toObject(),assignedTo}
       return res.status(200).json(populatedTicketsStructure);
