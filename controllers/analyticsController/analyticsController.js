@@ -4,35 +4,29 @@ const Inventory = require('../../models/inventoryModel');
 const userModel = require('../../models/userModel');
 const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/constants');
 
-const getDateRangeFilter = (date) => {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-  
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
-  
-    return { $gte: startOfDay, $lte: endOfDay };
-  };
   
   const getTicketAnalytics = async (req, res) => {
     try {
-      const { role, id } = req.user; // Extract user role and ID from request
+      const { roles, id } = req.user; // Extract user roles and ID from request
       const { startDate, endDate } = req.query;
+      
       const baseFilter = startDate && endDate 
         ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
         : {};
-  
+      
       let roleFilter = {};
-      if (role === TECHNICIAN) {
-        roleFilter = { 'assignedTo': id };
-      } else if (role ===USER) {
-        roleFilter = { userId: id };
+      
+      if (Array.isArray(roles)) {
+        if (roles.includes('TECHNICIAN')) {
+          roleFilter = { assignedTo: id }; 
+        } else if (roles.includes(USER)) {
+          roleFilter = { userId: id }; 
+        }
       }
       
       // Combine filters
       const filter = { ...baseFilter, ...roleFilter };
       
-      // Get ticket counts based on role
       const totalTickets = await Ticket.countDocuments(filter);
       const openTickets = await Ticket.countDocuments({ ...filter, status: 'OPEN' });
       const progressTickets = await Ticket.countDocuments({ ...filter, status: 'PROGRESS' });
@@ -50,7 +44,7 @@ const getDateRangeFilter = (date) => {
       const getTicketsCountForMonth = async (startOfMonth, endOfMonth) => {
         return Ticket.countDocuments({
           createdAt: { $gte: new Date(startOfMonth), $lte: new Date(endOfMonth) },
-          ...roleFilter, // Apply role-specific filter
+          ...roleFilter, 
         });
       };
   
@@ -108,7 +102,6 @@ const getDateRangeFilter = (date) => {
   
   const getInventoryAnalytics = async (req, res) => {
     try {
-       const {id,role}=req.user
       const { startDate, endDate } = req.query;
       const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
       const totalInventoryItems = await Inventory.countDocuments(filter);
@@ -135,9 +128,9 @@ const getDateRangeFilter = (date) => {
 const getUsersAnalytics = async (req, res) => {
     try {
       const totalUserItems = await userModel.countDocuments();
-      const managers = await userModel.countDocuments({ role: MANAGER });
-      const technicians = await userModel.countDocuments({ role: TECHNICIAN});
-      const users = await userModel.countDocuments({ role: USER });
+      const managers = await userModel.countDocuments({ roles: { $in: [MANAGER] }});
+      const technicians = await userModel.countDocuments({ roles: { $in: [TECHNICIAN] }});
+      const users = await userModel.countDocuments({ roles: { $in: [USER] } });
   
       res.status(200).json({
         // total:`${totalUserItems} Employees`,
@@ -154,7 +147,7 @@ const getUsersAnalytics = async (req, res) => {
   };
   const getTicketAnalyticsForChart = async (req, res) => {
     try {
-      const { role, id } = req.user;
+      const { roles, id } = req.user;
       const dateArray = req.body;
       
       // Helper function to get counts for date ranges
@@ -165,12 +158,11 @@ const getUsersAnalytics = async (req, res) => {
           const startOfDay = new Date(startDate);
           const endOfDay = new Date(endDate);
   
-          // Build the match filter based on role
           const matchFilter = { createdAt: { $gte: startOfDay, $lt: endOfDay } };
   
-          if (role === TECHNICIAN) {
+          if (roles.includes(TECHNICIAN)) {
             matchFilter.assignedTo = id;
-          } else if (role === USER) {
+          } else if (roles.includes(USER)) {
             matchFilter.userId = id;
           }
           // No additional filter for 'manager'

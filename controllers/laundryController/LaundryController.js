@@ -48,9 +48,9 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId, role } = req.user;
+    const { id: userId, roles } = req.user;
     let tickets;
-    if (role === MANAGER) {
+    if (roles.includes(MANAGER)) {
       tickets = LaundryTicket.find({});
     } else {
       // for now show all tickets
@@ -70,7 +70,6 @@ const getTicketByUserId = async (req, res) => {
 };
 const getFilterLocationTickets = async (req, res) => {
   try {
-    const { id, companyId } = req.user;
     const {locationId}=req.params;
     const tickets = LaundryTicket.find({
       location: locationId,

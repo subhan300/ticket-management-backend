@@ -18,6 +18,7 @@ const {
   NotAssignedId,
   MANAGER,
   USER,
+  laundaryCategory,
 } = require("../../utils/constants");
 const InventoryModel = require("../../models/inventoryModel");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
@@ -51,35 +52,48 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId, role } = req.user;
+    const { id: userId, roles } = req.user;
     let tickets;
-    if (role === MANAGER) {
+    if (roles.includes(MANAGER)) {
       // add lcoation as well
       tickets = Ticket.find({});
     } else {
       tickets = Ticket.find({ userId });
     }
     const populatedTickets = await populateTickets(tickets);
+    console.log("populated tickets ----- >",populatedTickets)
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
+    console.log("Err",err)
     res.status(500).json({ error: err.message });
   }
 };
 const getTicketById = async (req, res) => {
   try {
-    const { role } = req.user;
     const { id } = req.params;
     const { category } = req.body;
     let tickets;
+    console.log(category)
     let ticketStrcutureRes;
-    if (category === "laundary") {
+    if (category === laundaryCategory) {
       tickets = LaundaryTicket.findById(id);
       const populatedTickets = await populateLaundryTickets(tickets);
+      console.log("populated",populateTickets)
+      if(!populateTickets){
+          return   res.status(400).json("no ticket found");
+      }
       ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
     } else {
-      tickets = Ticket.findById(id);
+      console.log("id",id)
+      tickets =Ticket.findById(id);
+      // console.log("tickets",tickets)
       const populatedTickets = await populateTickets(tickets);
+      if(!populateTickets){
+        return   res.
+        status(400).json("no ticket found");
+    }
+    console.log("populated",populateTickets)
       ticketStrcutureRes = await ticketStructure(populatedTickets);
     }
     console.log("tickets>>>>>>>>>", tickets);
@@ -87,6 +101,7 @@ const getTicketById = async (req, res) => {
     //  ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
+    console.log("err",err)
     res.status(500).json({ error: err.message });
   }
 };
@@ -121,7 +136,7 @@ const getCompanyTickets = async (req, res) => {
 };
 const getUserTicket = async (req, res) => {
   try {
-    const { id, companyId,locations ,role} = req.user;
+    const { id, companyId,locations ,roles} = req.user;
     // console.log("location",locations)
     const { SKU } = req.params;
     const getRoom = await Room.findOne({
@@ -133,7 +148,7 @@ const getUserTicket = async (req, res) => {
     }).lean();
  
     let tickets ;
-    if(role===MANAGER){
+    if(roles.includes(MANAGER)){
      tickets= Ticket.find({
         companyId: companyId,
         room: getRoom._id,
@@ -288,10 +303,11 @@ const updateTicket = async (req, res) => {
   try {
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
-      const { role, companyId, name: usedBy, id: userId } = req.user;
+      const { roles, companyId, name: usedBy, id: userId } = req.user;
       const { ticketId } = req.params;
       const updates = req.body;
       const inventoryUsed = updates?.inventoryUsed;
+      console.log("udpates",updates)
       const isInventoryUsed = Array.isArray(inventoryUsed);
 
       if (!mongoose.Types.ObjectId.isValid(ticketId)) {
@@ -345,7 +361,7 @@ const updateTicket = async (req, res) => {
                   "inventoryUsed.$.ticketNo": updates.ticketNo,
                   "inventoryUsed.$.usedBy": usedBy,
                   "inventoryUsed.$.updatedDate": new Date(),
-                  "inventoryUsed.$.role": role,
+                  "inventoryUsed.$.role": roles[0],
                   "inventoryUsed.$.usedItemQty": item.quantityUsed,
                   usedItem: item.quantityUsed,
                   status: getStatus.status,
@@ -364,7 +380,7 @@ const updateTicket = async (req, res) => {
                       ticketNo: updates.ticketNo,
                       usedBy: usedBy,
                       updatedDate: new Date(),
-                      role: role,
+                      role: roles[0],
                       usedItemQty: item.quantityUsed,
                       status: getStatus.status,
                     },

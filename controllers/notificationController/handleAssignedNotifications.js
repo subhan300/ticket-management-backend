@@ -3,7 +3,7 @@ const {
   technicianUpdateTicketAssignedMessage,
   ticketUnAssignedMessage,
 } = require("../../utils");
-const { TECHNICIAN, NotAssignedId, MANAGER, LaundryOperator, } = require("../../utils/constants");
+const { TECHNICIAN, NotAssignedId, MANAGER, LaundryOperator, USER, } = require("../../utils/constants");
 const { messageToAssignedUser, broadcastAssignedMessage, broadcastUnAssignedMessage } = require("../../utils/notificationMessages");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { getAllUsersByRole } = require("../globalController/GlobalController");
@@ -30,7 +30,7 @@ const handleAssignedNotifications = async (
     const { assignedTo, status } = updates;
     const technicianSocketId = connectedUsers[assignedTo];
     const { role, name } = req.user;
-    if (role === "USER" && assignedTo) {
+    if (role === USER && assignedTo) {
       const technicianSocketId = connectedUsers[assignedTo];
       await notifyAssignedUser(ticket, req,category);
       if (managersCollection.length)

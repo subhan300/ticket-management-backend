@@ -6,7 +6,7 @@ const jwt=require("jsonwebtoken");
 const { RESIDENT } = require('../../utils/constants');
 // Function to create a new user
 const createUser = async (req, res) => {
-    const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl
+    const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl,roles
     } = req.body;
   
     try {
@@ -21,11 +21,11 @@ const createUser = async (req, res) => {
   
       // Hash password and create new user
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({ imageUrl, name, email, role, password: hashedPassword, livingLocation, locationName, companyId,locations });
+      const newUser = new User({ roles,imageUrl, name, email, role, password: hashedPassword, livingLocation, locationName, companyId,locations });
       const savedUser = await newUser.save();
       const getUser=await User.findById(savedUser._id).populate("companyId").populate("locations");
       // Generate JWT token
-      const token = jwt.sign({ user: { id: savedUser._id, email, name, role, livingLocation, locationName,locations } }, process.env.JWT_SECRET);
+      const token = jwt.sign({ user: { id: savedUser._id, email, name, role,roles, livingLocation, locationName,locations } }, process.env.JWT_SECRET);
       
       // Send back token and user details
       res.status(201).json(getUser);
@@ -50,9 +50,9 @@ const login = async (req, res) => {
         }
 
         // Generate JWT token
-        const {role,companyId,name, livingLocation,locationName ,locations}=user
+        const {role,companyId,name, livingLocation,locationName ,locations,roles}=user
         const token = jwt.sign(
-            { user: { id: user._id, email ,role,companyId,name, locationName ,locations} },
+            { user: { id: user._id, email ,role,roles,companyId,name, locationName ,locations} },
             process.env.JWT_SECRET,
             // { expiresIn: '1h' }
         );
@@ -66,18 +66,14 @@ const login = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl } = req.body;
+  // const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl } = req.body;
+  const payload=req.body
 
   try {
     const user = await User.findByIdAndUpdate(id, {
-      name,
-      email,
-      role,
-      password: password ? await bcrypt.hash(password, 10) : undefined,
-      locationName,
-      companyId,
-      locations,
-      imageUrl
+      ...payload,
+      password: payload.password ? await bcrypt.hash(payload.password, 10) : undefined,
+     
     }, { new: true });
 
     if (!user) {
@@ -93,11 +89,10 @@ const getUsersByRole= async (req,res) => {
 
   try {
     const {role}=req.params
-    const {companyId,locations}=req.user;
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       // locations: locations[0], 
-      role: role,            // Filters by the user's role
+      roles: { $in: [role] },          // Filters by the user's role
     }).select("name _id");
     return res.status(200).send(usersCollection)
   } catch (error) {
@@ -108,7 +103,6 @@ const getUsersByRole= async (req,res) => {
 const getUsers= async (req,res) => {
 
   try {
-    const {role}=req.params
     const {companyId,locations}=req.user;
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({

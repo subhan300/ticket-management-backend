@@ -145,7 +145,7 @@ const populateLaundryTickets = async (tickets) => {
     .sort({ createdAt: -1 });
 };
 const extractRoomAndUnit = (ticketItems) => {
-  let ticket = ticketItems.length ? ticketItems[0] : ticketItems;
+  let ticket = ticketItems?.length ? ticketItems[0] : ticketItems;
 
   const room = {
     roomName: ticket?.room?.roomName || null,
@@ -205,13 +205,14 @@ const laundryTicketStructure = async (populatedTickets) => {
   }
 };
 const ticketStructure = async (ticket) => {
-  console.log("ticket==>000",ticket?.length)
+  console.log("ticket==>000",ticket?.length,ticket)
   if (ticket?.length) {
     return await Promise.all(
       ticket.map(async (ticket) => {
         const { name, email, _id } = ticket.userId;
-        const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
-          _id: item.inventoryId?._id,
+        const transformedInventoryUsed = ticket?.inventoryUsed.filter(val=>val.inventoryId)?.map((item) => ({
+          _id: item?.inventoryId?._id,
+          inventoryId:item?.inventoryId?._id,
           productName: item?.inventoryId?.productName,
           productImage: item?.inventoryId?.productImage,
           quantityUsed: item?.quantityUsed,
@@ -250,8 +251,9 @@ const ticketStructure = async (ticket) => {
     );
   } else {
     const { name, email, _id } = ticket.userId;
-    const transformedInventoryUsed = ticket?.inventoryUsed?.map((item) => ({
-      _id: item.inventoryId._id,
+    const transformedInventoryUsed = ticket?.inventoryUsed.filter(val=>val.inventoryId)?.map((item) => ({
+      _id: item?.inventoryId?._id,
+      inventoryId:item?.inventoryId?._id,
       productName: item.inventoryId.productName,
       productImage: item.inventoryId.productImage,
       quantityUsed: item.quantityUsed,

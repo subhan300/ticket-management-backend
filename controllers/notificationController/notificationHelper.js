@@ -8,6 +8,8 @@ const {
 
   LaundryOperator,
   maintenanceCategory,
+  USER,
+  MANAGER,
 } = require("../../utils/constants");
 const { handleStatusNotification } = require("./handleStatusNotification");
 const { handleAssignedNotifications } = require("./handleAssignedNotifications");
@@ -54,9 +56,9 @@ const handleTicketNotification = async (
   roleBasedUserCollection,
   ticket
 ) => {
-  const { role, name } = req.user;
+  const { roles, name } = req.user;
   
-  if (role === "USER") {
+  if (roles.includes(USER)) {
     // console.log("mamagers",managersCollection,"tech-",technicians)
     if (roleBasedUserCollection.length) {
       await notifyUsers(req, name, ticket, roleBasedUserCollection, ticketCreateMessage,maintenanceCategory);
@@ -70,7 +72,7 @@ const handleTicketNotification = async (
         ticketCreateMessage,maintenanceCategory
       );
   }
-  if (role === "MANAGER" && roleBasedUserCollection.length) {
+  if (roles.includes(MANAGER) && roleBasedUserCollection.length) {
     console.log("collection of ", roleBasedUserCollection, "name", name);
     await notifyUsers(
       req,

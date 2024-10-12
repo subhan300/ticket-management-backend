@@ -105,7 +105,8 @@ const getUsersByCompanyId = async (req, res) => {
     const { companyId } = req.params;
     // console.log("company",req.user,"req",req.params)
     try {
-        const users = await User.find({companyId,role:TECHNICIAN}).select("name email role");
+        const users = await User.find({companyId,
+        }).select("name email role roles");
         if (!users) {
             return res.status(404).json({ message: 'users not found.' });
         }

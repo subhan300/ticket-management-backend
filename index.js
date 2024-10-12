@@ -27,7 +27,7 @@ const Ticket = require("./models/ticketModel");
 const { generateQRCode, generateBarcode, generateSKU } = require("./utils");
 const connectedUsers = require("./utils/store-data/connectedUsers");
 const LaundryTicket = require("./models/laundryModel");
-const { LaundryOperator, MANAGER } = require("./utils/constants");
+const { LaundryOperator, MANAGER, TECHNICIAN, USER } = require("./utils/constants");
 
 dotenv.config();
 
@@ -116,17 +116,19 @@ console.log("connected users collection", connectedUsers);
 io.on("connection", (socket) => {
   console.log("A user connected");
   socket.on("joinTicketRoom", async (payload) => {
-    const {ticketId,role}=payload
+    const {ticketId,roles}=payload
+    console.log("joinTicketRoom", payload);
     console.log(`User joined room for ticket: ${ticketId}`);
 
     socket.join(ticketId);
     try {
       const ticket = await Ticket.findById(ticketId);
       const laundryTicket = await LaundryTicket.findById(ticketId);
-      if (ticket && role !== LaundryOperator) {
+      console.log("ticket",ticket)
+      if (ticket && (roles.includes(MANAGER) || roles.includes(TECHNICIAN) || roles.includes(USER))) {
         socket.emit("initialComments", ticket.comments); // Emit the comments to the user
       } 
-      if(laundryTicket && role.includes(MANAGER,LaundryOperator)){
+      if(laundryTicket && (roles.includes(MANAGER) || roles.includes(LaundryOperator))){
         socket.emit("initialComments", laundryTicket.comments); // Emit the comments to the user
       }
     } catch (err) {

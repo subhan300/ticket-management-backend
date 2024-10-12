@@ -254,7 +254,7 @@ const getInventoryItemShortDetail = async (req, res) => {
   try {
     const items = await Inventory.find({ companyId })
       .select("productName productImage")
-      // .lean();
+      .lean();
     const transFormInventory = items.map((val) => ({
       ...val,
       quantityUsed: 1,

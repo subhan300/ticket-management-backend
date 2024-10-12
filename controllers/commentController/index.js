@@ -12,7 +12,6 @@ const addComment = async (req, res) => {
     createdAt,
     isSystemGenerated,
     commentCollectionName,
-    role,
   } = req.body;
 
   try {

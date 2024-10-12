@@ -5,7 +5,7 @@ const {
   updateTicketStatusMessage,
 
 } = require("../../utils");
-const { NotAssignedId, MANAGER,  } = require("../../utils/constants");
+const { NotAssignedId, MANAGER, USER,  } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");
@@ -22,7 +22,7 @@ const handleStatusNotification = async (
     const { status, } = updates;
     const assignedTo=ticket.assignedTo._id
     const { role, name,id } = req.user;
-    if (role === "USER" && status) {
+    if (role === USER && status) {
      
       if (assignedTo._id !== NotAssignedId) {
         await notifyAssignedUserAboutStatus(ticket, req,category);
