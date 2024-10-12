@@ -124,7 +124,6 @@ io.on("connection", (socket) => {
     try {
       const ticket = await Ticket.findById(ticketId);
       const laundryTicket = await LaundryTicket.findById(ticketId);
-      console.log("ticket",ticket)
       if (ticket && (roles.includes(MANAGER) || roles.includes(TECHNICIAN) || roles.includes(USER))) {
         socket.emit("initialComments", ticket.comments); // Emit the comments to the user
       } 

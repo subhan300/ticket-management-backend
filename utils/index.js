@@ -80,9 +80,11 @@ const updateStatusMessage = (name, status,ticketNo) => {
 const ticketCreateMessage = (name,_,ticketNo) => {
   return `Ticket # ${ticketNo} is created by ${name}`;
 };
-const ticketUnAssignedMessage = (name, role,ticketNo) => {
-  return `Ticket # ${ticketNo} is UnAssigned  by ${role} ${name}`;
+const ticketUnAssignedMessage = (name, roles, ticketNo) => {
+  const rolesList = roles.join(', '); // Convert roles array to a comma-separated string
+  return `Ticket # ${ticketNo} is UnAssigned by ${name} (${rolesList})`;
 };
+
 
 // export const selectMessage = (messageName, name, status) => {
 //   switch (messageName) {
@@ -205,7 +207,7 @@ const laundryTicketStructure = async (populatedTickets) => {
   }
 };
 const ticketStructure = async (ticket) => {
-  console.log("ticket==>000",ticket?.length,ticket)
+  // console.log("maintenance ticket strucuture==>",ticket)
   if (ticket?.length) {
     return await Promise.all(
       ticket.map(async (ticket) => {

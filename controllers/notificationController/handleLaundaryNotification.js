@@ -1,4 +1,4 @@
-const { LaundryOperator, laundaryCategory } = require("../../utils/constants");
+const { LaundryOperator, laundaryCategory, MANAGER } = require("../../utils/constants");
 const { ticketCreateMessage } = require("../../utils/notificationMessages");
 const { notifyUsers } = require("./notifyUser");
 
@@ -10,8 +10,8 @@ const handleLaundaryTicketNotification = async (
   roleBasedUserCollection,
   ticket
 ) => {
-  const { role, name } = req.user;
-  if (role === "MANAGER" && roleBasedUserCollection.length) {
+  const { roles, name } = req.user;
+  if (roles.includes(MANAGER) && roleBasedUserCollection.length) {
     console.log("collection of ", roleBasedUserCollection, "name", name);
     await notifyUsers(
       req,
@@ -22,7 +22,7 @@ const handleLaundaryTicketNotification = async (
     );
   }
 
-  if (role === LaundryOperator) {
+  if (roles.includes(LaundryOperator)) {
     if (managersCollection.length)
       await notifyUsers(
         req,

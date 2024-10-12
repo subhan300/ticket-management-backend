@@ -61,7 +61,6 @@ const getTicketByUserId = async (req, res) => {
       tickets = Ticket.find({ userId });
     }
     const populatedTickets = await populateTickets(tickets);
-    console.log("populated tickets ----- >",populatedTickets)
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
@@ -93,10 +92,10 @@ const getTicketById = async (req, res) => {
         return   res.
         status(400).json("no ticket found");
     }
-    console.log("populated",populateTickets)
+    console.log("populated",populatedTickets)
       ticketStrcutureRes = await ticketStructure(populatedTickets);
     }
-    console.log("tickets>>>>>>>>>", tickets);
+    console.log("tickets>>>>>>>>>", ticketStrcutureRes);
     // const populatedTickets = await populateTickets(tickets);
     //  ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
@@ -165,7 +164,6 @@ const getUserTicket = async (req, res) => {
         
       });
     }
-     console.log("tickets",tickets)
     const populatedTickets = await populateTickets(tickets);
     console.log(populatedTickets);
     if(!populatedTickets.length){
@@ -353,21 +351,24 @@ const updateTicket = async (req, res) => {
                 .status(400)
                 .send("Inventory is out of stock ,can't order that much");
             }
+            const getTicket=await Ticket.findById(ticketId).populate("room").select("room ticketNo");
+            console.log("get ticket------",getTicket)
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
               {
                 $set: {
-                  "inventoryUsed.$.room": updates.room,
-                  "inventoryUsed.$.ticketNo": updates.ticketNo,
+                  "inventoryUsed.$.room": getTicket.room,
+                  "inventoryUsed.$.ticketNo": getTicket.ticketNo,
                   "inventoryUsed.$.usedBy": usedBy,
                   "inventoryUsed.$.updatedDate": new Date(),
-                  "inventoryUsed.$.role": roles[0],
+                  "inventoryUsed.$.roles": roles,
                   "inventoryUsed.$.usedItemQty": item.quantityUsed,
                   usedItem: item.quantityUsed,
                   status: getStatus.status,
                 },
               }
             );
+            console.log("result",result,roles)
             if (result.modifiedCount === 0) {
               // If no document was updated, push a new entry to the array
               const res = await InventoryModel.updateOne(
@@ -375,12 +376,12 @@ const updateTicket = async (req, res) => {
                 {
                   $push: {
                     inventoryUsed: {
-                      room: updates.room,
+                      room: getTicket.room,
                       ticket: ticketId,
-                      ticketNo: updates.ticketNo,
+                      ticketNo: getTicket.ticketNo,
                       usedBy: usedBy,
                       updatedDate: new Date(),
-                      role: roles[0],
+                      roles: roles,
                       usedItemQty: item.quantityUsed,
                       status: getStatus.status,
                     },
@@ -390,7 +391,7 @@ const updateTicket = async (req, res) => {
                   },
                 }
               );
-              console.log("inventory res====", res);
+              // console.log("inventory res====", res);
             }
             const updatedInventory = await InventoryModel.findById(
               item.inventoryId
@@ -446,7 +447,7 @@ const updateTicket = async (req, res) => {
       res.status(200).json(ticketStrcutureRes);
     });
   } catch (err) {
-    console.log(err)
+    console.log("err-----",err)
     res.status(500).json({ message: err.message });
   }
 };

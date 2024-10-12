@@ -16,7 +16,7 @@ const notifyUsers2 = async (
   ) => {
       const { role, } = req.user;
       console.log("role===",role)
-    const { ticketNo, _id: ticketId, assignedTo } = ticket;
+    const { _id: ticketId} = ticket;
     for (const userId of usersCollection) {
       console.log("notify func run =====user====",userId)
       const socketId = connectedUsers[userId];

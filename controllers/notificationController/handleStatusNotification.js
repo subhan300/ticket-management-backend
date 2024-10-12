@@ -5,7 +5,7 @@ const {
   updateTicketStatusMessage,
 
 } = require("../../utils");
-const { NotAssignedId, MANAGER, USER,  } = require("../../utils/constants");
+const { NotAssignedId, MANAGER, USER, TECHNICIAN,  } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");
@@ -21,8 +21,8 @@ const handleStatusNotification = async (
   ) => {
     const { status, } = updates;
     const assignedTo=ticket.assignedTo._id
-    const { role, name,id } = req.user;
-    if (role === USER && status) {
+    const { role, name,id ,roles} = req.user;
+    if (roles.includes(USER) && status) {
      
       if (assignedTo._id !== NotAssignedId) {
         await notifyAssignedUserAboutStatus(ticket, req,category);
@@ -36,8 +36,8 @@ const handleStatusNotification = async (
           updateTicketAssignedMessage,category
         );
     }
-  console.log("assinged to",assignedTo)
-    if (role === MANAGER && assignedTo !== NotAssignedId) {
+  
+    if (roles.includes(MANAGER) && assignedTo !== NotAssignedId) {
       console.log("here right ")
       await notifyAssignedUserAboutStatus(ticket, req,category);
        
@@ -52,7 +52,7 @@ const handleStatusNotification = async (
         sendSocketNotification(req, userSocketId, notifyRes);
       }
     }
-    if (role === MANAGER && assignedTo === NotAssignedId) {
+    if (roles.includes(MANAGER) && assignedTo === NotAssignedId) {
       console.log("here NOT ASSIGNED right ")
       if(ticket.userId._id.toString() !== id){
         const userSocketId = connectedUsers[ticket.userId._id];
@@ -65,7 +65,7 @@ const handleStatusNotification = async (
       }
     }
   
-    if (role === "TECHNICIAN" && assignedTo !== NotAssignedId) {
+    if (roles.includes(TECHNICIAN) && assignedTo !== NotAssignedId) {
       const userSocketId = connectedUsers[ticket.userId._id];
       const notifyRes = await createNotification(
         ticket.userId._id,

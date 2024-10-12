@@ -29,8 +29,8 @@ const handleAssignedNotifications = async (
       console.log("ticket===",ticket)
     const { assignedTo, status } = updates;
     const technicianSocketId = connectedUsers[assignedTo];
-    const { role, name } = req.user;
-    if (role === USER && assignedTo) {
+    const { roles, name } = req.user;
+    if (roles.includes(USER) && assignedTo) {
       const technicianSocketId = connectedUsers[assignedTo];
       await notifyAssignedUser(ticket, req,category);
       if (managersCollection.length)
@@ -43,12 +43,12 @@ const handleAssignedNotifications = async (
         );
     }
     
-    if (role === "MANAGER" && assignedTo !== NotAssignedId) {
+    if (roles.includes(MANAGER) && assignedTo !== NotAssignedId) {
       console.log("manger====",ticket)
       await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo),category);
      
     }
-    if (role === MANAGER && assignedTo === NotAssignedId) {
+    if (roles.includes(MANAGER) && assignedTo === NotAssignedId) {
       console.log("here",usersCollection)
       const technicians = await getAllUsersByRole(ticket.companyId, TECHNICIAN);
      if(technicians.length){
@@ -62,7 +62,7 @@ const handleAssignedNotifications = async (
     }
   
   
-    if (role === TECHNICIAN && assignedTo !== NotAssignedId) {
+    if (roles.includes(TECHNICIAN) && assignedTo !== NotAssignedId) {
       const userSocketId = connectedUsers[ticket.userId._id];
       const notifyRes = await createNotification(
         ticket.userId._id,
@@ -79,7 +79,7 @@ const handleAssignedNotifications = async (
           technicianUpdateTicketAssignedMessage,category
         );
     }
-    if (role === TECHNICIAN && assignedTo === NotAssignedId) {
+    if (roles.includes(TECHNICIAN) && assignedTo === NotAssignedId) {
       if(managersCollection.length){
           await notifyUsers(req,
            name,
@@ -97,7 +97,7 @@ const handleAssignedNotifications = async (
       
      }
 
-     if (role === LaundryOperator) {
+     if (roles.includes(LaundryOperator)) {
      if(assignedTo){
       const userSocketId = connectedUsers[assignedTo];
       const notifyRes = await createNotification(

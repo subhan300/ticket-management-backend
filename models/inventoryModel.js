@@ -17,6 +17,7 @@ const inventorySchema = new Schema(
         room: { type: mongoose.Schema.Types.ObjectId, ref: "Room" },
  
         role: { type: String },
+        roles: [{ type: String }],
         usedItemQty: { type: Number, default: 0 },
       },
     ],

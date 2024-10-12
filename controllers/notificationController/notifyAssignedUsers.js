@@ -7,15 +7,15 @@ const { sendSocketNotification } = require("./sendSocketNotification");
 
 
 const notifyAssignedUser = async (ticket, req,category) => {
-    const { role, name } = req.user;
+    const { roles, name } = req.user;
     const { assignedTo, _id: ticketId } = ticket;
   
     const socketId = connectedUsers[assignedTo._id];
     const message =
-      role === TECHNICIAN  || role === LaundryOperator
+      roles.includes(TECHNICIAN)  || roles.includes(LaundryOperator)
         ? `You have been assigned a new ticket`
         : `Ticket is assigned by ${
-            role === "MANAGER" ? "Manager" : "Technician"
+          roles.includes(MANAGER)? "Manager" : "Technician"
           } ${name} to ${assignedTo.name}`;
     console.log("assigngedto====", assignedTo._id, "sockt==", socketId);
   

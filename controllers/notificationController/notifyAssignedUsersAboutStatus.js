@@ -5,7 +5,7 @@ const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");
 
 const notifyAssignedUserAboutStatus = async (ticket, req,category) => {
-  const { role, name } = req.user;
+  const { name } = req.user;
   const { assignedTo, _id: ticketId } = ticket;
   const socketId = connectedUsers[assignedTo?._id];
   const message = updateStatusMessage(name, ticket.status,ticket.ticketNo);
