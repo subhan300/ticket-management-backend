@@ -73,7 +73,6 @@ const getTicketById = async (req, res) => {
     const { id } = req.params;
     const { category } = req.body;
     let tickets;
-    console.log(category)
     let ticketStrcutureRes;
     if (category === laundaryCategory) {
       tickets = LaundaryTicket.findById(id);
@@ -84,7 +83,7 @@ const getTicketById = async (req, res) => {
       }
       ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
     } else {
-      console.log("id",id)
+      console.log("getticketbyid",id)
       tickets =Ticket.findById(id);
       // console.log("tickets",tickets)
       const populatedTickets = await populateTickets(tickets);
@@ -92,12 +91,8 @@ const getTicketById = async (req, res) => {
         return   res.
         status(400).json("no ticket found");
     }
-    console.log("populated",populatedTickets)
       ticketStrcutureRes = await ticketStructure(populatedTickets);
     }
-    console.log("tickets>>>>>>>>>", ticketStrcutureRes);
-    // const populatedTickets = await populateTickets(tickets);
-    //  ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     console.log("err",err)
