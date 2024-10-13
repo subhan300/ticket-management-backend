@@ -87,7 +87,9 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
           const startOfDay = new Date(startDate);
           const endOfDay = new Date(endDate);
   
-          const matchFilter = { createdAt: { $gte: startOfDay, $lt: endOfDay } };
+          const matchFilter = { createdAt: { $gte: startOfDay, 
+            // $lt: endOfDay
+           } };
   
           if (roles.includes(TECHNICIAN)) {
             matchFilter.assignedTo = id;
@@ -95,7 +97,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
             matchFilter.userId = id;
           }
           // No additional filter for 'manager'
-  
+      // console.log("match filter",matchFilter)
           const result = await Ticket.aggregate([
             { $match: matchFilter },
             {
@@ -121,6 +123,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
           ]);
   
           // Add result to counts array
+          
           counts.push({
             startDate,
             endDate,
@@ -156,6 +159,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
       const dryingCompleted = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DRYING_COMPLETED });
       const washCompleted = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DRYING_COMPLETED });
       const delivered = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DELIVERED_TO_RESIDENT });
+      const recieved = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.RECEIVED_IN_FACILITY});
   
    
       res.status(200).json({
@@ -167,6 +171,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
           dryingCompleted ,
           washCompleted,
           delivered,
+          recieved
         },
       });
     } catch (err) {
@@ -204,7 +209,7 @@ const getUsersAnalytics = async (req, res) => {
       const totalUserItems = await userModel.countDocuments();
       const managers = await userModel.countDocuments({ roles: { $in: [MANAGER] }});
       const technicians = await userModel.countDocuments({ roles: { $in: [TECHNICIAN] }});
-      const users = await userModel.countDocuments({ roles: { $in: [USER] } });
+      const Nurse = await userModel.countDocuments({ roles: { $in: [USER] } });
   
       res.status(200).json({
         // total:`${totalUserItems} Employees`,
@@ -212,7 +217,7 @@ const getUsersAnalytics = async (req, res) => {
         statusCounts: {
           managers,
           technicians,
-          users
+          Nurse
         }
       });
     } catch (err) {
@@ -224,7 +229,7 @@ const getUsersAnalytics = async (req, res) => {
     try {
       // Extract date ranges from the request body
       const dateArray = req.body;
-  
+      // console.log("------",dateArray)
       // Helper function to get counts for date ranges
       const getCountsForDates = async () => {
         const counts = [];
@@ -234,7 +239,9 @@ const getUsersAnalytics = async (req, res) => {
           const endOfDay = new Date(endDate);
   
           const result = await LaundryTicket.aggregate([
-            { $match: { createdAt: { $gte: startOfDay, $lt: endOfDay } } },
+            { $match: { createdAt: { $gte: startOfDay, 
+              // $lt: endOfDay 
+            } } },
             {
               $group: {
                 _id: null,
@@ -243,14 +250,24 @@ const getUsersAnalytics = async (req, res) => {
                     $cond: [{ $eq: ["$status", LAUNDRY_STATUS.DELIVERED] }, 1, 0]
                   }
                 },
-                inProgressCount: {
+                washCompleted: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.IN_PROGRESS] }, 1, 0]
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.WASH_COMPLETED] }, 1, 0]
+                  }
+                },
+                dryingCompleted: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.DRYING_COMPLETED] }, 1, 0]
                   }
                 },
                 pickedUpCount: {
                   $sum: {
                     $cond: [{ $eq: ["$status", LAUNDRY_STATUS.PICKED_UP] }, 1, 0]
+                  }
+                },
+                recievedCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.RECEIVED_IN_FACILITY] }, 1, 0]
                   }
                 }
               }
@@ -263,7 +280,10 @@ const getUsersAnalytics = async (req, res) => {
             endDate,
             deliveredCount: result[0]?.deliveredCount || 0,
             inProgressCount: result[0]?.inProgressCount || 0,
-            pickedUpCount: result[0]?.pickedUpCount || 0
+            pickedUpCount: result[0]?.pickedUpCount || 0,
+            dryingCompleted:result[0]?.dryingCompleted || 0,
+            washCompleted:result[0]?.washCompleted || 0,
+              recievedCount :result[0]?.recievedCount || 0
           });
         }
   
