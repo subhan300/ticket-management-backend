@@ -57,8 +57,15 @@ const getTicketByUserId = async (req, res) => {
     if (roles.includes(MANAGER)) {
       // add lcoation as well
       tickets = Ticket.find({});
-    } else {
+    } else if (roles.includes(USER)) {
       tickets = Ticket.find({ userId });
+    }else if(roles.includes(TECHNICIAN)){
+      tickets = Ticket.find({ 
+        $or: [
+          { assignedTo: userId },
+          { assignedTo: NotAssignedId }
+        ]
+      });
     }
     const populatedTickets = await populateTickets(tickets);
     const ticketStrcutureRes = await ticketStructure(populatedTickets);

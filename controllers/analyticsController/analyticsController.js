@@ -9,7 +9,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/const
     try {
       const { roles, id } = req.user; // Extract user roles and ID from request
       const { startDate, endDate } = req.query;
-      
+      console.log("roles",roles)
       const baseFilter = startDate && endDate 
         ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
         : {};
@@ -17,7 +17,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/const
       let roleFilter = {};
       
       if (Array.isArray(roles)) {
-        if (roles.includes('TECHNICIAN')) {
+        if (roles.includes(TECHNICIAN)) {
           roleFilter = { assignedTo: id }; 
         } else if (roles.includes(USER)) {
           roleFilter = { userId: id }; 
@@ -26,7 +26,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/const
       
       // Combine filters
       const filter = { ...baseFilter, ...roleFilter };
-      
+       console.log("filter===",filter)
       const totalTickets = await Ticket.countDocuments(filter);
       const openTickets = await Ticket.countDocuments({ ...filter, status: 'OPEN' });
       const progressTickets = await Ticket.countDocuments({ ...filter, status: 'PROGRESS' });
@@ -66,80 +66,9 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/const
           progressTickets,
           closedTickets,
           completedTickets,
+          total:totalTickets,  
         },
         percentageIncrease: percentageIncrease.toFixed(2), // Return percentage increase rounded to 2 decimal places
-      });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  };
-  
-  
-  const getLaundryTicketAnalytics = async (req, res) => {
-    try {
-      const { startDate, endDate } = req.query;
-      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
-  
-      const totalLaundryTickets = await LaundryTicket.countDocuments(filter);
-      const pickedUp = await LaundryTicket.countDocuments({ ...filter, status: 'PICKED_UP' });
-      const inProgress = await LaundryTicket.countDocuments({ ...filter, status: 'IN_PROGRESS' });
-      const delivered = await LaundryTicket.countDocuments({ ...filter, status: 'DELIVERED' });
-  
-   
-      res.status(200).json({
-        // total:`${totalLaundryTickets} Tickets`,
-        total:totalLaundryTickets,
-        statusCounts: {
-          pickedUp,
-          inProgress,
-          delivered,
-        },
-      });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  };
-  
-  const getInventoryAnalytics = async (req, res) => {
-    try {
-      const { startDate, endDate } = req.query;
-      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
-      const totalInventoryItems = await Inventory.countDocuments(filter);
-      const inStock = await Inventory.countDocuments({ ...filter, status: 'In Stock' });
-      const outOfStock = await Inventory.countDocuments({ ...filter, status: 'Out of Stock' });
-      const lowStock = await Inventory.countDocuments({ ...filter, status: 'Low Stock' });
-     
-  
-  
-      res.status(200).json({
-        // total:`${totalInventoryItems} Pieces`,
-        total:totalInventoryItems,
-        statusCounts: {
-          inStock,
-          outOfStock,
-          lowStock,
-        },
-        
-      });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  };
-const getUsersAnalytics = async (req, res) => {
-    try {
-      const totalUserItems = await userModel.countDocuments();
-      const managers = await userModel.countDocuments({ roles: { $in: [MANAGER] }});
-      const technicians = await userModel.countDocuments({ roles: { $in: [TECHNICIAN] }});
-      const users = await userModel.countDocuments({ roles: { $in: [USER] } });
-  
-      res.status(200).json({
-        // total:`${totalUserItems} Employees`,
-        total:totalUserItems,
-        statusCounts: {
-          managers,
-          technicians,
-          users
-        }
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -216,6 +145,78 @@ const getUsersAnalytics = async (req, res) => {
       res.status(500).json({ message: err.message });
     }
   };
+  
+  const getLaundryTicketAnalytics = async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
+  
+      const totalLaundryTickets = await LaundryTicket.countDocuments(filter);
+      const pickedUp = await LaundryTicket.countDocuments({ ...filter, status: 'PICKED_UP' });
+      const inProgress = await LaundryTicket.countDocuments({ ...filter, status: 'IN_PROGRESS' });
+      const delivered = await LaundryTicket.countDocuments({ ...filter, status: 'DELIVERED' });
+  
+   
+      res.status(200).json({
+        // total:`${totalLaundryTickets} Tickets`,
+        total:totalLaundryTickets,
+        statusCounts: {
+          pickedUp,
+          inProgress,
+          delivered,
+        },
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  };
+  
+  const getInventoryAnalytics = async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
+      const totalInventoryItems = await Inventory.countDocuments(filter);
+      const inStock = await Inventory.countDocuments({ ...filter, status: 'In Stock' });
+      const outOfStock = await Inventory.countDocuments({ ...filter, status: 'Out of Stock' });
+      const lowStock = await Inventory.countDocuments({ ...filter, status: 'Low Stock' });
+     
+  
+  
+      res.status(200).json({
+        // total:`${totalInventoryItems} Pieces`,
+        total:totalInventoryItems,
+        statusCounts: {
+          inStock,
+          outOfStock,
+          lowStock,
+        },
+        
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  };
+const getUsersAnalytics = async (req, res) => {
+    try {
+      const totalUserItems = await userModel.countDocuments();
+      const managers = await userModel.countDocuments({ roles: { $in: [MANAGER] }});
+      const technicians = await userModel.countDocuments({ roles: { $in: [TECHNICIAN] }});
+      const users = await userModel.countDocuments({ roles: { $in: [USER] } });
+  
+      res.status(200).json({
+        // total:`${totalUserItems} Employees`,
+        total:totalUserItems,
+        statusCounts: {
+          managers,
+          technicians,
+          users
+        }
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  };
+
   const getLaundryTicketAnalyticsForChart = async (req, res) => {
     try {
       // Extract date ranges from the request body
