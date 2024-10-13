@@ -7,9 +7,9 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
   
   const getTicketAnalytics = async (req, res) => {
     try {
-      const { roles, id } = req.user; // Extract user roles and ID from request
+      const { roles:userRoles, id } = req.user; // Extract user roles and ID from request
       const { startDate, endDate } = req.query;
-      console.log("roles",roles)
+      const roles=req?.body?.length ? req.body : userRoles
       const baseFilter = startDate && endDate 
         ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
         : {};
@@ -152,17 +152,20 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
       const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
   
       const totalLaundryTickets = await LaundryTicket.countDocuments(filter);
-      const pickedUp = await LaundryTicket.countDocuments({ ...filter, status: 'PICKED_UP' });
-      const inProgress = await LaundryTicket.countDocuments({ ...filter, status: 'IN_PROGRESS' });
-      const delivered = await LaundryTicket.countDocuments({ ...filter, status: 'DELIVERED' });
+      const pickedUp = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.PICKED_UP });
+      const dryingCompleted = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DRYING_COMPLETED });
+      const washCompleted = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DRYING_COMPLETED });
+      const delivered = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DELIVERED_TO_RESIDENT });
   
    
       res.status(200).json({
         // total:`${totalLaundryTickets} Tickets`,
         total:totalLaundryTickets,
         statusCounts: {
+          total:totalLaundryTickets,
           pickedUp,
-          inProgress,
+          dryingCompleted ,
+          washCompleted,
           delivered,
         },
       });
