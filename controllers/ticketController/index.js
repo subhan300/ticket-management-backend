@@ -52,12 +52,24 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId, roles } = req.user;
+    const { id: userId, } = req.user;
+    let roles=Object.keys(req.body).length?req.body : []
+    console.log("roles",roles)
     let tickets;
-    if (roles.includes(MANAGER)) {
+    if (roles.includes(MANAGER) || !roles.length) {
       // add lcoation as well
       tickets = Ticket.find({});
-    } else if (roles.includes(USER)) {
+    } 
+    else if(roles.includes(USER) && roles.includes(TECHNICIAN) ){
+      tickets = Ticket.find({ 
+        $or: [
+          { assignedTo: userId },
+          { assignedTo: NotAssignedId },
+          { userId }
+        ]
+      });
+    }
+    else if (roles.includes(USER)) {
       tickets = Ticket.find({ userId });
     }else if(roles.includes(TECHNICIAN)){
       tickets = Ticket.find({ 
