@@ -52,11 +52,11 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId, } = req.user;
-    let roles=Object.keys(req.body).length?req.body : []
+    const { id: userId,roles:userRoles } = req.user;
+    let roles=Object.keys(req.body).length?req.body : userRoles
     console.log("roles",roles)
     let tickets;
-    if (roles.includes(MANAGER) || !roles.length) {
+    if (roles.includes(MANAGER)) {
       // add lcoation as well
       tickets = Ticket.find({});
     } 
