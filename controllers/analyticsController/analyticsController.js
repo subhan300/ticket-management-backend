@@ -2,7 +2,7 @@ const Ticket = require('../../models/ticketModel');
 const LaundryTicket = require('../../models/laundryModel');
 const Inventory = require('../../models/inventoryModel');
 const userModel = require('../../models/userModel');
-const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/constants');
+const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPLETED } = require('../../utils/constants');
 
   
   const getTicketAnalytics = async (req, res) => {
@@ -28,11 +28,11 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/const
       const filter = { ...baseFilter, ...roleFilter };
        console.log("filter===",filter)
       const totalTickets = await Ticket.countDocuments(filter);
-      const openTickets = await Ticket.countDocuments({ ...filter, status: 'OPEN' });
-      const progressTickets = await Ticket.countDocuments({ ...filter, status: 'PROGRESS' });
+      const openTickets = await Ticket.countDocuments({ ...filter, status: OPEN });
+      const progressTickets = await Ticket.countDocuments({ ...filter, status:  PROGRESS });
       // const blockedTickets = await Ticket.countDocuments({ ...filter, status: 'BLOCKED' });
-      const closedTickets = await Ticket.countDocuments({ ...filter, status: 'CLOSED' });
-      const completedTickets = await Ticket.countDocuments({ ...filter, status: 'COMPLETED' });
+      const closedTickets = await Ticket.countDocuments({ ...filter, status: CLOSED });
+      const completedTickets = await Ticket.countDocuments({ ...filter, status: COMPLETED});
       
       // Get ticket counts for the current and previous month
       const now = new Date();
@@ -103,17 +103,17 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS } = require('../../utils/const
                 _id: null,
                 openCount: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", "OPEN"] }, 1, 0]
+                    $cond: [{ $eq: ["$status", OPEN] }, 1, 0]
                   }
                 },
                 progressCount: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", "PROGRESS"] }, 1, 0]
+                    $cond: [{ $eq: ["$status", PROGRESS] }, 1, 0]
                   }
                 },
                 completedCount: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", "COMPLETED"] }, 1, 0]
+                    $cond: [{ $eq: ["$status", COMPLETED] }, 1, 0]
                   }
                 }
               }
