@@ -104,7 +104,7 @@ const getRoomsByLocationId = async (req, res) => {
           $group: {
               _id: '$unitDetails._id', // Group by unit ID
               unit: { $first: '$unitDetails' }, // Get the unit details
-              rooms: { $push: { _id: '$_id', SKU: '$SKU', roomName: '$roomName' } } // Push room details into an array
+              rooms: { $push: { _id: '$_id', SKU: '$SKU', roomName: '$roomName',type:'$type' } } // Push room details into an array
           }
       },
       {
