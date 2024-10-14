@@ -134,7 +134,7 @@ const getStorageRooms = async (req, res) => {
   try {
     const {locations}=req.user;
     const location=locations[0]
-    const rooms = await Room.find({location,type:"storageRoom"}).populate('unit'); // Populate unit reference
+    const rooms = await Room.find({location,type:"storage"}).populate('unit'); // Populate unit reference
     res.status(200).json(rooms);
   } catch (error) {
     console.error('Error fetching rooms:', error);
