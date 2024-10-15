@@ -25,6 +25,8 @@ const LAUNDRY_PRIORITY = {
   LOW: "LOW",
   HIGH: "HIGH",
 };
+const invenotryStatus={IN_STOCK:"In Stock",OUT_STOCK: "Out of Stock", LOW_STOCK:"Low Stock"}
+
 const LAUNDRY_STATUS = {
   
   PICKED_UP: "Picked up",
@@ -61,4 +63,5 @@ module.exports = {
   ADMIN,
   CLOSED,
   USER,
+  invenotryStatus
 };

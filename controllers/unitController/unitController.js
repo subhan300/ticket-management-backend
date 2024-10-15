@@ -123,6 +123,50 @@ const getUnitRoomsByCompanyId = async (req, res) => {
     }
   };
 
+  const deleteUnitById = async (req, res) => {
+    const session = await mongoose.startSession(); // Start a new session for the transaction
+    session.startTransaction(); // Start the transaction
+  
+    try {
+      const { id } = req.params; // Extract the unit ID from request parameters
+  
+      if (!id) {
+        return res.status(400).json({ message: 'Unit ID is required' });
+      }
+  
+      // Delete the unit by its ID within the transaction
+      const result = await Unit.findByIdAndDelete(id, { session });
+      
+      if (!result) {
+        await session.abortTransaction(); // Abort transaction if unit is not found
+        session.endSession();
+        return res.status(404).json({ message: 'Unit not found' });
+      }
+  
+      // Delete all rooms associated with the unit within the transaction
+      const deleteRoomResult = await roomModel.deleteMany({ unit: id }, { session });
+  
+      if (!deleteRoomResult) {
+        await session.abortTransaction(); // Abort transaction if room deletion fails
+        session.endSession();
+        return res.status(500).json({ message: 'Failed to delete associated rooms' });
+      }
+  
+      // Commit the transaction if everything goes well
+      await session.commitTransaction();
+      session.endSession();
+  
+      return res.status(200).json({ message: 'Unit and associated rooms deleted successfully', unit: result });
+    } catch (error) {
+      // Rollback the transaction on error
+      await session.abortTransaction();
+      session.endSession();
+      console.error('Error deleting unit by id:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  
+
 
 
 const createUnitAndRooms = async (req, res) => {
@@ -172,7 +216,7 @@ const createUnitAndRooms = async (req, res) => {
 module.exports = {  };
 
 
-module.exports={ deleteUnitsByLocation,
+module.exports={ deleteUnitById, deleteUnitsByLocation,
   createUnitAndRooms,
   getUnitsByLocationId,
   getUnitRoomsByCompanyId,

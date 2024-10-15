@@ -3,6 +3,7 @@
 const Categories = require("../../models/categories");
 const Inventory = require("../../models/inventoryModel");
 const { updateStockStatus, generateSKU } = require("../../utils");
+const { invenotryStatus } = require("../../utils/constants");
 const populateInventory=async(item)=>{
   return await  item.populate({
      path: "inventoryUsed.room",
@@ -65,6 +66,7 @@ const createInventoryItem = async (req, res) => {
   }
   try {
     const item = new Inventory({
+      status:quantity < threshold? invenotryStatus.LOW_STOCK:invenotryStatus.IN_STOCK,
       supplier,
       warrantyPeriod,
       productName,
@@ -74,7 +76,6 @@ const createInventoryItem = async (req, res) => {
       quantity,
       location,
       category:category==="Other"?customCategory:category,
-      status,
       usedItem,
       companyId,
       SKU:sku,

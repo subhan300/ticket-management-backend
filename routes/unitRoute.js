@@ -11,7 +11,8 @@ router.post('/create-inbulk', unitController.createUnitsInBulk)
 router.post('/create-unit-rooms',authenticateJWT, unitController.createUnitAndRooms)
 router.put('/:id',authenticateJWT, unitController.updateUnit)
 
-router.delete('/:locationId', unitController.deleteUnitsByLocation)
+// router.delete('/:locationId', unitController.deleteUnitsByLocation)
+router.delete('/:id', unitController.deleteUnitById)
 
 router.get('/getAll', unitController.getAllUnits);
 router.get('/:locationId', unitController.getUnitsByLocationId)

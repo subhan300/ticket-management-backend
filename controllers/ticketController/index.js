@@ -328,35 +328,32 @@ const updateTicket = async (req, res) => {
 
       if (inventoryUsed && isInventoryUsed) {
         for (const item of inventoryUsed) {
-          const getAvailableQty = await InventoryModel.findById(
+          const getInventoryItem = await InventoryModel.findById(
             item.inventoryId
-          ).lean();
-
-          if (
-            getAvailableQty &&
-            getAvailableQty.availableQty < item.quantityUsed
-          ) {
-            throw new Error(
-              `Inventory quantity is out of stock for item: ${getAvailableQty.productName}`
-            );
-          } else {
+          );
+          console.log("getInventoryItem.inventoryUsed",getInventoryItem.inventoryUsed)
+          const filteredInventoryUsedTicket = getInventoryItem.inventoryUsed?.filter(
+            (usedItem) => usedItem.ticket.toString() === ticketId
+          );
+         
+            console.log("____________________Already updated one ")
             let getStatus = {};
-
-            if (item.quantityUsed) {
-              const filteredInventoryUsed = getAvailableQty.inventoryUsed?.filter(
-                (usedItem) => usedItem._id.toString() !== ticketId
+              const filteredInventoryUsed = getInventoryItem.inventoryUsed?.filter(
+                (usedItem) => usedItem.ticket.toString() !== ticketId
               );
-
-              const totalUsedItemQty = filteredInventoryUsed?.reduce(
+            console.log("________filteredinventoryused",filteredInventoryUsed,"___get invenotry",getInventoryItem.availableQty )
+            // filtering this ticket data and totaling others ,so will get inventoryused for them 
+               const totalUsedItemQty = filteredInventoryUsed?.reduce(
                 (total, usedItem) => total + usedItem.usedItemQty,
                 0
               );
-              const usedItem = { usedItem: totalUsedItemQty };
+              console.log("___total used item",totalUsedItemQty)
+              const usedItem = { usedItem: totalUsedItemQty ,updatedQty:item.quantityUsed};
               getStatus = updateStockStatus({
-                ...getAvailableQty,
+                ...getInventoryItem.toObject(),
                 ...usedItem,
               });
-            }
+            console.log("_status",getStatus)
             if (
               getStatus.status === "Out of Stock" &&
               getStatus.availableQty < 0
@@ -367,6 +364,7 @@ const updateTicket = async (req, res) => {
             }
             const getTicket=await Ticket.findById(ticketId).populate("room").select("room ticketNo");
             console.log("get ticket------",getTicket)
+            if(filteredInventoryUsedTicket.length){
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
               {
@@ -380,11 +378,15 @@ const updateTicket = async (req, res) => {
                   usedItem: item.quantityUsed,
                   status: getStatus.status,
                 },
-              }
-            );
-            console.log("result",result,roles)
+              })
+
+          
             if (result.modifiedCount === 0) {
-              // If no document was updated, push a new entry to the array
+              return res.status(400).send("Inventory item is not updated");
+            }
+         
+          }else{
+               console.log("__________else")
               const res = await InventoryModel.updateOne(
                 { _id: item.inventoryId },
                 {
@@ -405,22 +407,23 @@ const updateTicket = async (req, res) => {
                   },
                 }
               );
-              // console.log("inventory res====", res);
             }
+           
+       
             const updatedInventory = await InventoryModel.findById(
               item.inventoryId
             );
-            const totalUsedItemQty = updatedInventory.inventoryUsed.reduce(
+            const totalUsedItemQtyFinal = updatedInventory.inventoryUsed.reduce(
               (total, usedItem) => total + usedItem.usedItemQty,
               0
             );
             await InventoryModel.updateOne(
               { _id: item.inventoryId },
-              { $set: { usedItem: totalUsedItemQty } }
+              { $set: { usedItem: totalUsedItemQtyFinal } }
             );
           }
         }
-      }
+      
 
       if (req.files) {
         if (req.files.images) {
