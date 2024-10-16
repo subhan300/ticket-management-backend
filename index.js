@@ -28,6 +28,7 @@ const { generateQRCode, generateBarcode, generateSKU } = require("./utils");
 const connectedUsers = require("./utils/store-data/connectedUsers");
 const LaundryTicket = require("./models/laundryModel");
 const { LaundryOperator, MANAGER, TECHNICIAN, USER } = require("./utils/constants");
+const Notification = require("./models/notificationModel");
 
 dotenv.config();
 
@@ -140,11 +141,33 @@ io.on("connection", (socket) => {
     console.log(`User left room for ticket: ${ticketId}`);
     socket.leave(ticketId);
   });
-  socket.on("register", (userId) => {
+  socket.on("register", async (userId) => {
+    // Add or update the connected user's socket ID in connectedUsers
     connectedUsers[userId] = socket.id;
+  
+    try {
+      // Loop through each connected user and send notifications specific to that user
+      await Promise.all(
+        Object.keys(connectedUsers).map(async (user) => {
+          const socketId = connectedUsers[user];
+  
+          // Fetch notifications specific to this user
+          const userNotifications = await Notification.find({ userId: user });
+          console.log(`Fetched notifications for user ${user}:`, userNotifications);
+  
+          // Send the notifications only to the connected socket of that user
+          io.to(socketId).emit('initialNotifications', userNotifications);
+        })
+      );
+      
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  
     console.log(`User registered: ${userId}`);
-    console.log("connedted users", connectedUsers);
+    console.log("Connected users:", connectedUsers);
   });
+  
   socket.on("disconnect", () => {
     console.log("A user disconnected");
     for (const [userId, socketId] of Object.entries(connectedUsers)) {
