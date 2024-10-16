@@ -143,20 +143,42 @@ const getUnitRoomsByCompanyId = async (req, res) => {
         return res.status(404).json({ message: 'Unit not found' });
       }
   
+      // Fetch all rooms associated with the unit before deleting them
+      const roomsToDelete = await roomModel.find({ unit: id }, { session });
+  
+      if (!roomsToDelete.length) {
+        await session.abortTransaction(); // Abort transaction if no rooms are found
+        session.endSession();
+        return res.status(404).json({ message: 'No rooms found associated with the unit' });
+      }
+  
       // Delete all rooms associated with the unit within the transaction
       const deleteRoomResult = await roomModel.deleteMany({ unit: id }, { session });
-  
+      
       if (!deleteRoomResult) {
         await session.abortTransaction(); // Abort transaction if room deletion fails
         session.endSession();
         return res.status(500).json({ message: 'Failed to delete associated rooms' });
       }
   
+      // Delete associated data for each room (e.g., Inventory, UserItem, Tickets)
+      const roomIds = roomsToDelete.map(room => room._id); // Collect all room IDs
+      
+      // Delete associated inventories, user items, and tickets for the rooms
+      const res1 = await Inventory.deleteMany({ 'selectedRooms.room': { $in: roomIds } }, { session });
+      const res2 = await UserItem.deleteMany({ room: { $in: roomIds } }, { session });
+      const res3 = await Ticket.deleteMany({ room: { $in: roomIds } }, { session });
+  
+      console.log({ res1, res2, res3 });
+  
       // Commit the transaction if everything goes well
       await session.commitTransaction();
       session.endSession();
   
-      return res.status(200).json({ message: 'Unit and associated rooms deleted successfully', unit: result });
+      return res.status(200).json({ 
+        message: 'Unit and associated rooms and their data deleted successfully', 
+        unit: result 
+      });
     } catch (error) {
       // Rollback the transaction on error
       await session.abortTransaction();
