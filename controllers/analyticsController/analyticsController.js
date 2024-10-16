@@ -62,11 +62,12 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
         // total:`${totalTickets} Tickets`,
         total:totalTickets,  
         statusCounts: {
+          total:totalTickets,  
           openTickets,
           progressTickets,
           closedTickets,
           completedTickets,
-          total:totalTickets,  
+        
         },
         percentageIncrease: percentageIncrease.toFixed(2), // Return percentage increase rounded to 2 decimal places
       });
@@ -168,10 +169,11 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
         statusCounts: {
           total:totalLaundryTickets,
           pickedUp,
-          dryingCompleted ,
+          recieved,
           washCompleted,
+          dryingCompleted ,
           delivered,
-          recieved
+   
         },
       });
     } catch (err) {
@@ -184,8 +186,9 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
       const { startDate, endDate } = req.query;
       const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
       const totalInventoryItems = await Inventory.countDocuments(filter);
-      const inStock = await Inventory.countDocuments({ ...filter, status: 'In Stock' });
       const outOfStock = await Inventory.countDocuments({ ...filter, status: 'Out of Stock' });
+      const inStock = await Inventory.countDocuments({ ...filter, status: 'In Stock' });
+     
       const lowStock = await Inventory.countDocuments({ ...filter, status: 'Low Stock' });
      
   
@@ -195,8 +198,8 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
         total:totalInventoryItems,
         statusCounts: {
           inStock,
-          outOfStock,
           lowStock,
+          outOfStock,
         },
         
       });
