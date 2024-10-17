@@ -34,6 +34,8 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
       const closedTickets = await Ticket.countDocuments({ ...filter, status: CLOSED });
       const completedTickets = await Ticket.countDocuments({ ...filter, status: COMPLETED});
       
+      const auditTickets = await Ticket.countDocuments({ ...filter, audit: true});
+      
       // Get ticket counts for the current and previous month
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -67,6 +69,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
           progressTickets,
           closedTickets,
           completedTickets,
+          auditTickets
         
         },
         percentageIncrease: percentageIncrease.toFixed(2), // Return percentage increase rounded to 2 decimal places
@@ -118,6 +121,11 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
                   $sum: {
                     $cond: [{ $eq: ["$status", COMPLETED] }, 1, 0]
                   }
+                },
+                auditCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$audit", true] }, 1, 0]
+                  }
                 }
               }
             }
@@ -130,7 +138,8 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
             endDate,
             openCount: result[0]?.openCount || 0,
             progressCount: result[0]?.progressCount || 0,
-            completedCount: result[0]?.completedCount || 0
+            completedCount: result[0]?.completedCount || 0,
+            auditCount:result[0]?.auditCount || [0]
           });
         }
   

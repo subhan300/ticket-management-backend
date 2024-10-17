@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const UserItem = require("./userItemsModel");
 const Ticket = require("./ticketModel");
-const Inventory=require("./inventoryModel")
+const Inventory=require("./inventoryModel");
+const LaundryTicket = require("./laundryModel");
 const Schema = mongoose.Schema;
 
 const roomSchema = new Schema({
@@ -30,7 +31,8 @@ roomSchema.pre('findOneAndDelete', async function (next) {
     const res1=await await Inventory.deleteMany({ 'selectedRooms.room': roomId });
     const res2=await await UserItem.deleteMany({ room: roomId });
     const res3=await await Ticket.deleteMany({ room: roomId });
-    console.log({res1,res2,res3})
+    const res4=await LaundryTicket.deleteMany({room: roomId});
+    console.log({res1,res2,res3,res4})
     next();
   } catch (error) {
     console.error('Error while deleting room and associated data:', error);

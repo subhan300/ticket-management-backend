@@ -4,6 +4,9 @@ const bcrypt = require('bcrypt');
 const User = require('../../models/userModel');
 const jwt=require("jsonwebtoken");
 const { RESIDENT } = require('../../utils/constants');
+const Ticket = require('../../models/ticketModel');
+const LaundryTicket = require('../../models/laundryModel');
+const { default: mongoose } = require('mongoose');
 // Function to create a new user
 const createUser = async (req, res) => {
     const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl,roles
@@ -115,15 +118,49 @@ const getUsers= async (req,res) => {
   }
 };
 
-
 const deleteUser = async (req, res) => {
+  const session = await mongoose.startSession(); // Start a new session for the transaction
+  session.startTransaction(); // Start the transaction
+
   try {
     const { userId } = req.params;
-    const deletedItem = await User.findByIdAndDelete(userId);
 
-    res.status(200).json("deleted");
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    // Delete the user by its ID within the transaction
+    const deletedUser = await User.findByIdAndDelete(userId, { session });
+
+    if (!deletedUser) {
+      await session.abortTransaction(); // Abort transaction if user is not found
+      session.endSession();
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete all tickets created by the user within the transaction
+    const deletedTickets = await Ticket.deleteMany({  userId }, { session });
+    const deletedLaundryTickets = await LaundryTicket.deleteMany({  userId }, { session });
+
+    // Check if any tickets were deleted
+    if (deletedTickets.deletedCount === 0) {
+      console.log('No tickets found for the user');
+    }
+    if (deletedLaundryTickets.deletedCount === 0) {
+      console.log('No tickets found for the user');
+    }
+
+    // Commit the transaction if everything goes well
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json("deleted");
+  } catch (error) {
+    // Rollback the transaction on error
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Error deleting user by id:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 

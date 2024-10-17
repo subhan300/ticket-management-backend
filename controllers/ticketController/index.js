@@ -19,6 +19,9 @@ const {
   MANAGER,
   USER,
   laundaryCategory,
+  PROGRESS,
+  OPEN,
+  COMPLETED,
 } = require("../../utils/constants");
 const InventoryModel = require("../../models/inventoryModel");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
@@ -510,7 +513,41 @@ const addComment = async (req, res) => {
   }
 };
 
+// Controller to update tickets' status from "Progress" to "In-Progress"
+const updateInBulk = async (req, res) => {
+  const session = await mongoose.startSession(); // Start a new session if using transactions
+  session.startTransaction();
+
+  try {
+    // Update tickets that currently have status "Progress" to "In-Progress"
+    const result = await Ticket.updateMany(
+      { status: "COMPLETED" }, // Filter: Only update tickets with 'Progress' status
+      { status: COMPLETED }, // Update: Set status to 'In-Progress'
+      { session }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'No tickets with "Progress" status were updated' });
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.status(200).json({ 
+      message: `${result.modifiedCount} tickets updated from "Progress" to "In-Progress"`, 
+      result 
+    });
+  } catch (error) {
+    await session.abortTransaction(); // Rollback the transaction if there is an error
+    session.endSession();
+    console.error('Error updating tickets:', error);
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
 module.exports = {
+  updateInBulk,
   createTicket,
   deleteTicket,
   getTicketByUserId,

@@ -18,6 +18,7 @@ router.get('/history/:SKU', authenticateJWT,ticketController.getUserTicket);
 router.post('/create', authenticateJWT,ticketController.createTicket);
 router.post('/get-ticket/:id',authenticateJWT,ticketController.getTicketById);
 router.put('/update/:ticketId',authenticateJWT,ticketController.updateTicket);
+router.put('/update-inbulk/',authenticateJWT,ticketController.updateInBulk);
 router.delete('/delete/:ticketId', authenticateJWT,ticketController.deleteTicket);
 
 router.post('/addComment', authenticateJWT,uploadMiddleware,ticketController.addComment);

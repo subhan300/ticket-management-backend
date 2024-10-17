@@ -211,7 +211,11 @@ const ticketStructure = async (ticket) => {
   if (ticket?.length) {
     return await Promise.all(
       ticket.map(async (ticket) => {
-        const { name, email, _id } = ticket.userId;
+      
+           console.log("________________",)
+         const   { name="", email="", _id=null } = ticket?.userId || {};
+        
+        
         const transformedInventoryUsed = ticket?.inventoryUsed.filter(val=>val.inventoryId)?.map((item) => ({
           _id: item?.inventoryId?._id,
           inventoryId:item?.inventoryId?._id,
@@ -252,7 +256,7 @@ const ticketStructure = async (ticket) => {
       })
     );
   } else {
-    const { name, email, _id } = ticket.userId;
+    const { name, email, _id } = ticket.userId || {};
     const transformedInventoryUsed = ticket?.inventoryUsed.filter(val=>val.inventoryId)?.map((item) => ({
       _id: item?.inventoryId?._id,
       inventoryId:item?.inventoryId?._id,

@@ -3,6 +3,10 @@ const Unit = require('../../models/unitModel');
 const User = require('../../models/userModel');
 const { generateSKU } = require('../../utils');
 const roomModel = require('../../models/roomModel');
+const inventoryModel = require('../../models/inventoryModel');
+const UserItem = require('../../models/userItemsModel');
+const Ticket = require('../../models/ticketModel');
+const LaundryTicket = require('../../models/laundryModel');
 
 const getAllUnits = async (req, res) => {
   try {
@@ -136,7 +140,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
   
       // Delete the unit by its ID within the transaction
       const result = await Unit.findByIdAndDelete(id, { session });
-      
+  
       if (!result) {
         await session.abortTransaction(); // Abort transaction if unit is not found
         session.endSession();
@@ -144,7 +148,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
       }
   
       // Fetch all rooms associated with the unit before deleting them
-      const roomsToDelete = await roomModel.find({ unit: id }, { session });
+      const roomsToDelete = await roomModel.find({ unit: id });
   
       if (!roomsToDelete.length) {
         await session.abortTransaction(); // Abort transaction if no rooms are found
@@ -154,7 +158,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
   
       // Delete all rooms associated with the unit within the transaction
       const deleteRoomResult = await roomModel.deleteMany({ unit: id }, { session });
-      
+  
       if (!deleteRoomResult) {
         await session.abortTransaction(); // Abort transaction if room deletion fails
         session.endSession();
@@ -163,13 +167,15 @@ const getUnitRoomsByCompanyId = async (req, res) => {
   
       // Delete associated data for each room (e.g., Inventory, UserItem, Tickets)
       const roomIds = roomsToDelete.map(room => room._id); // Collect all room IDs
-      
+  
       // Delete associated inventories, user items, and tickets for the rooms
-      const res1 = await Inventory.deleteMany({ 'selectedRooms.room': { $in: roomIds } }, { session });
+      const res1 = await inventoryModel.deleteMany({ 'selectedRooms.room': { $in: roomIds } }, { session });
       const res2 = await UserItem.deleteMany({ room: { $in: roomIds } }, { session });
       const res3 = await Ticket.deleteMany({ room: { $in: roomIds } }, { session });
+      const res4=await LaundryTicket.deleteMany({room:{ $in:roomIds }},{session});
+
   
-      console.log({ res1, res2, res3 });
+      console.log({ res1, res2, res3,res4 });
   
       // Commit the transaction if everything goes well
       await session.commitTransaction();
@@ -187,6 +193,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
+  
   
 
 
