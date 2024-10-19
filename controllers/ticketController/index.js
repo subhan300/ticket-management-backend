@@ -239,7 +239,7 @@ const searchTicket = async (req, res) => {
 const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
-    console.log("-------------------------------------")
+    console.log("crate ticket-------------------------------------")
     const {
       issue,
       description,

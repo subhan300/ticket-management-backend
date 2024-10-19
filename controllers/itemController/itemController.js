@@ -48,7 +48,42 @@ const deleteItemById = async (req, res) => {
     }
   };
 
+  const deleteDuplicates = async (req, res) => {
+    console.log("____________here")
+    try {
+      console.log("____________here")
+      // Step 1: Find all duplicate items by the 'item' field (name)
+      const duplicates = await Item.aggregate([
+        {
+          $group: {
+            _id: { item: "$item" }, // Group by 'item' field (the name of the item)
+            count: { $sum: 1 }, // Count the number of items with the same name
+            ids: { $push: "$_id" } // Collect all item IDs with the same name
+          }
+        },
+        {
+          $match: { count: { $gt: 1 } } // Only get items where count > 1 (duplicates)
+        }
+      ]);
+  
+      // Step 2: Loop through the duplicates and delete all except one
+      for (const duplicate of duplicates) {
+        const idsToDelete = duplicate.ids.slice(1); // Exclude the first one (keep it)
+        
+        // Delete all the duplicate items by their IDs
+        await Item.deleteMany({ _id: { $in: idsToDelete } });
+      }
+  
+      res.status(200).json({ message: "All duplicates deleted successfully" });
+    } catch (error) {
+      console.log("Error deleting duplicates:", error);
+      res.status(500).json({ message: "ssError deleting duplicates", error });
+    }
+  };
+  
+  
 module.exports = {
+  deleteDuplicates,
     deleteItemById ,
   getAllItems,
   createItemsInBulk,

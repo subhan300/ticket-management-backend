@@ -9,5 +9,6 @@ router.post("/bulk", itemController.createItemsInBulk);
 router.put("/:id", itemController.updateItemById);
 
 router.delete("/:id", itemController.deleteItemById);
+router.delete("/delete-duplicates/all", itemController.deleteDuplicates);
 
 module.exports = router;
