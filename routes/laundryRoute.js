@@ -21,6 +21,7 @@ router.get('/location/:locationId',authenticateJWT,laundryController.getFilterLo
 router.post('/getResidentHistory/room/:roomId',authenticateJWT,laundryController.getResidentHistoryByRoomId);
 router.get('/byUserId', authenticateJWT,laundryController.getTicketByUserId);
 router.get('/company/usersByRole', authenticateJWT,getAllUsersCollectionByRole);
+router.post('/room', authenticateJWT,laundryController.getLaundryTicketByRoom);
 
 
 // here user id mean for the resident this ticket is created 

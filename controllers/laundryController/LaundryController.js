@@ -68,6 +68,31 @@ const getTicketByUserId = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+const getLaundryTicketByRoom = async (req, res) => {
+  try {
+     const {locations}=req.user;
+    
+    const { room } = req.body
+    console.log("location",locations,room)
+     const getRoom=await roomModel.findOne({location:locations[0],roomName:room})
+    console.log("room",getRoom);
+    if(!getRoom){
+      return res.status(404).json({message:"Room not found"})
+    }
+    let tickets = LaundryTicket.find({room:getRoom._id});
+    
+    const populatedTickets = await populateLaundryTickets(tickets);
+    if(!populatedTickets.length){
+      return res.status(200).json({message:"No tickets found"});
+    }
+    const populatedTicketsStucture = await laundryTicketStructure(
+      populatedTickets
+    );
+    return res.status(200).json(populatedTicketsStucture);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
 const getFilterLocationTickets = async (req, res) => {
   try {
     const {locationId}=req.params;
@@ -334,6 +359,7 @@ const getResidentHistoryByRoomId = async (req, res) => {
 };
 
 module.exports = {
+  getLaundryTicketByRoom,
   getResidentHistory,
   getResidentProductsAndLocationBySkuList,
   getResidentLocationByItemSku,
