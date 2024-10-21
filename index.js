@@ -20,6 +20,8 @@ const itemRoute=require("./routes/itemRoute");
 const supplierRoute=require("./routes/supplierRoute")
 const categoriesRoute=require("./routes/categoriesRoute");
 const switchbotRoute=require("./routes/switchbotRoute");
+const environmentCheckListRoute=require("./routes/environmentCheckListRoute");
+const predefinedQuestionRoute=require("./routes/predefinedQuestionRoute");
 
 const connectDB = require("./config/db");
 const path = require("path");
@@ -101,6 +103,9 @@ app.use("/api/item",itemRoute);
 app.use("/api/supplier",supplierRoute);
 app.use("/api/switchbot",switchbotRoute)
 app.use("/api/categories",categoriesRoute);
+app.use("/api/environmentCheckListRoute",environmentCheckListRoute);
+app.use("/api/predefinedQuestionRoute",predefinedQuestionRoute);
+
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
 
