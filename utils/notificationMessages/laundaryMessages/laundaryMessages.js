@@ -1,7 +1,7 @@
 const broadcastAssignedMessage = (name, assignedTo,ticketNo) => {
   return `${name} have  assigned a  Laundary ticket # ${ticketNo} to ${assignedTo}`;
 };
-const broadcastUnAssignedMessage = (name, role,ticketNo) => {
+const broadcastUnAssignedMessage = (name,ticketNo,role) => {
   return `Ticket # ${ticketNo} is UnAssigned  by ${role} ${name}`;
 };
 const messageToAssignedUser=(ticketNo)=>{

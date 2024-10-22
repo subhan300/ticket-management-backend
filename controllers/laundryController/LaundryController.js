@@ -188,9 +188,9 @@ const createTicket = async (req, res) => {
     const structuredLaundaryRes = await laundryTicketStructure(getSelectedTicket);
     const laundryOperator = await getAllUsersByRole(companyId, LaundryOperator);
     const managers = await getAllUsersByRole(companyId, MANAGER);
-
+     console.log("____",structuredLaundaryRes)
     handleLaundaryTicketNotification(req, managers, laundryOperator, structuredLaundaryRes);
-
+   
     return res.status(201).json(structuredLaundaryRes);
 
   } catch (err) {

@@ -18,7 +18,7 @@ const notifyUsers = async (
     for (const userId of usersCollection) {
       console.log("notify func run =====user====",userId)
       const socketId = connectedUsers[userId];
-      const message = messageHandler(name,roles,ticketNo);
+      const message = messageHandler(name,ticketNo,roles);
       const notifyRes = await createNotification(userId, message, ticketId,category);
       sendSocketNotification(req, socketId, notifyRes);
     }
