@@ -3,14 +3,23 @@ const EnvironmentChecklist = require('../../models/environmentInspection');
 // Add a new checklist
 const addChecklist = async (req, res) => {
   try {
-    const { month, week, checkList } = req.body;
+    const { year, month, week, checkList } = req.body;
 
-    // Ensure month and week are provided
-    if (!month || !week || !checkList || !Array.isArray(checkList)) {
-      return res.status(400).json({ error: 'Month, week, and checkList are required.' });
+    // Ensure year, month, week, and checkList are provided
+    if (!year || !month || !week || !checkList || !Array.isArray(checkList)) {
+      return res.status(400).json({ message: 'Year, month, week, and checkList are required.' });
     }
 
+    // Check if a checklist for the same year, month, and week already exists
+    const existingChecklist = await EnvironmentChecklist.findOne({ year, month, week });
+
+    if (existingChecklist) {
+      return res.status(409).json({ message: 'Checklist for this year, month, and week already exists.' });
+    }
+
+    // If not, create a new checklist
     const newChecklist = new EnvironmentChecklist({
+      year,
       month,
       week,
       checkList,
@@ -19,9 +28,10 @@ const addChecklist = async (req, res) => {
     await newChecklist.save();
     res.status(201).json(newChecklist);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: error });
   }
 };
+
 
 // Update an existing checklist
 const updateChecklist = async (req, res) => {
