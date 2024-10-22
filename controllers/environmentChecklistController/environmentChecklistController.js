@@ -47,6 +47,7 @@ const updateChecklist = async (req, res) => {
     // Update month, week, and checkList fields
     checklist.month = updatedData.month || checklist.month;
     checklist.week = updatedData.week || checklist.week;
+    checklist.year = updatedData.year || checklist.year;
     checklist.checkList = updatedData.checkList || checklist.checkList;
 
     await checklist.save();
