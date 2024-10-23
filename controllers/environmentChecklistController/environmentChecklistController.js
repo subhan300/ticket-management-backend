@@ -36,12 +36,14 @@ const addChecklist = async (req, res) => {
 // Update an existing checklist
 const updateChecklist = async (req, res) => {
   const { id } = req.params;
+  console.log("id_____",id)
   const updatedData = req.body;
 
   try {
     const checklist = await EnvironmentChecklist.findById(id);
+    console.log("check list",checklist)
     if (!checklist) {
-      return res.status(404).json({ error: 'EnvironmentChecklist not found' });
+      return res.status(404).json({ message: 'EnvironmentChecklist not found' });
     }
 
     // Update month, week, and checkList fields
@@ -53,7 +55,7 @@ const updateChecklist = async (req, res) => {
     await checklist.save();
     res.status(200).json(checklist);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
