@@ -68,6 +68,21 @@ const getChecklists = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+const  getSearchChecklist= async (req, res) => {
+  try {
+    const { month, year, week } = req.body; // Using query parameters
+
+    if (!month || !year || !week) {
+      return res.status(400).json({ error: "Month, year, and week are required." });
+    }
+
+    const checklists = await EnvironmentChecklist.find({ month, year, week });
+    res.status(200).json(checklists);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 // Delete all checklists
 const deleteAllChecklists = async (req, res) => {
@@ -94,6 +109,7 @@ const deleteChecklistById = async (req, res) => {
 };
 
 module.exports = {
+  getSearchChecklist,
   addChecklist,
   getChecklists,
   updateChecklist,

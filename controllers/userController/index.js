@@ -103,6 +103,21 @@ const getUsersByRole= async (req,res) => {
     res.status(400).send("failed to handle query")
   }
 };
+const getUsersByRoles= async (req,res) => {
+
+  try {
+    const {roles}=req.body
+// location[0] because laundary operator will have only one location 
+   const usersCollection=  await User.find({
+      // locations: locations[0], 
+      roles: { $in: roles },          // Filters by the user's role
+    }).select("name _id");
+    return res.status(200).send(usersCollection)
+  } catch (error) {
+    console.error('Error fetching managers:', error);
+    res.status(400).send("failed to handle query")
+  }
+};
 const getUsers= async (req,res) => {
 
   try {
@@ -179,5 +194,6 @@ module.exports={
   getUsers,
   getUsersByRole,
   updateUser,
-    login,createUser,deleteUser
+    login,createUser,deleteUser,
+    getUsersByRoles
 }

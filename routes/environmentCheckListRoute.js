@@ -4,13 +4,15 @@ const {
   getChecklists,
   updateChecklist,
   deleteChecklistById,
-  deleteAllChecklists
+  deleteAllChecklists,
+  getSearchChecklist
 } = require('../controllers/environmentChecklistController/environmentChecklistController');
 
 const router = express.Router();
 
 // Add a new checklist
 router.post('/', addChecklist);
+router.post('/search',  getSearchChecklist);
 
 // Get all checklists
 router.get('/', getChecklists);

@@ -10,6 +10,9 @@ const environmentCheckListSchema = new mongoose.Schema({
       required: true,
     },
     questions: [{
+      comment:{type:String},
+      staff:[{  type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'}],
       question: { type: String, required: true },
       answers: {
         type: Map,
