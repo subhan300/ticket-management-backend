@@ -164,7 +164,7 @@ const getUserTicket = async (req, res) => {
     }).lean();
  
     let tickets ;
-    if(roles.includes(MANAGER)){
+    if(roles.includes(MANAGER) || roles.includes(USER)){
      tickets= Ticket.find({
         companyId: companyId,
         room: getRoom._id,
