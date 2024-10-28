@@ -10,6 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "agenda": "^5.0.0",
+    "agendash": "^4.0.0",
     "bcrypt": "^5.1.1",
     "canvas": "^2.11.2",
     "cors": "^2.8.5",

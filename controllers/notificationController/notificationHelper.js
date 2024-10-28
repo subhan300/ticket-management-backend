@@ -57,7 +57,7 @@ const handleTicketNotification = async (
   ticket
 ) => {
   const { roles, name } = req.user;
-  
+   console.log("__requser ",req.user)
   if (roles.includes(USER)) {
     // console.log("mamagers",managersCollection,"tech-",technicians)
     if (roleBasedUserCollection.length) {

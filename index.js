@@ -22,6 +22,7 @@ const categoriesRoute=require("./routes/categoriesRoute");
 const switchbotRoute=require("./routes/switchbotRoute");
 const environmentCheckListRoute=require("./routes/environmentCheckListRoute");
 const predefinedQuestionRoute=require("./routes/predefinedQuestionRoute");
+const scheduleRoute=require("./routes/sheduleJobRoute");
 
 const connectDB = require("./config/db");
 const path = require("path");
@@ -33,6 +34,8 @@ const LaundryTicket = require("./models/laundryModel");
 const { LaundryOperator, MANAGER, TECHNICIAN, USER } = require("./utils/constants");
 const Notification = require("./models/notificationModel");
 
+const Agenda = require("agenda");
+const Job = require("./jobs/jobs");
 dotenv.config();
 
 const app = express();
@@ -64,6 +67,7 @@ app.get("/health", (req, res) => {
 
 // Connect to MongoDB
 connectDB();
+
 
 const server = app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
@@ -105,6 +109,7 @@ app.use("/api/switchbot",switchbotRoute)
 app.use("/api/categories",categoriesRoute);
 app.use("/api/environmentCheckListRoute",environmentCheckListRoute);
 app.use("/api/predefinedQuestionRoute",predefinedQuestionRoute);
+app.use("/api/schedule",scheduleRoute);
 
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
