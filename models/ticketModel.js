@@ -37,6 +37,7 @@ const inventoryUsedSchema = new mongoose.Schema({
 });
 const ticketSchema = new mongoose.Schema(
   {
+    isSheduled:{type:Boolean,default:false},
     ticketNo:{type:String,},
     userId: {
       type: mongoose.Schema.Types.ObjectId,

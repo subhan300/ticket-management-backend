@@ -12,7 +12,7 @@ const updateTicketStatusMessage = (name, status, ticketNo) => {
   return `Ticket #${ticketNo} is update to  ${status} by ${name}`;
 };
 
-const ticketCreateMessage = (name,ticketNo) => {
+const ticketCreateMessage = (name,_,ticketNo) => {
   return `Laundary Ticket # ${ticketNo}  is created by ${name}`;
 };
 

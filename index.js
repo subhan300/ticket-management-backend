@@ -33,13 +33,14 @@ const connectedUsers = require("./utils/store-data/connectedUsers");
 const LaundryTicket = require("./models/laundryModel");
 const { LaundryOperator, MANAGER, TECHNICIAN, USER } = require("./utils/constants");
 const Notification = require("./models/notificationModel");
-
-const Agenda = require("agenda");
+const { agenda } = require("./controllers/sheduleController/sheduleController");
 const Job = require("./jobs/jobs");
+
 dotenv.config();
 
 const app = express();
 const port = config.port;
+
 
 // Middleware
 app.use(express.json());
@@ -84,6 +85,7 @@ const io = socketIo(server, {
 // Middleware to make io accessible in the controllers
 app.use((req, res, next) => {
   req.io = io;
+  Job(agenda,io);
 
   next();
 });

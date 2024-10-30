@@ -5,27 +5,22 @@ const {
     handleTicketNotification,
   } = require("../controllers/notificationController/notificationHelper");
 const { formatTicketNumber } = require("../utils");
+const { handleSheduledTicketNotification } = require("../controllers/notificationController/handleSheduledTicketNotification");
 
-module.exports = function (agenda,req) {
-    
+module.exports = function (agenda,io) {
   agenda.define("create ticket", async (job) => {
    try{
     const { data } = job.attrs.data;
+    const { user } =  job.attrs.data;
     const { companyId, } = data;
-    console.log("Creating ticket with data:", data);
+    console.log("Creating ticket with data:", user);
     const ticket = new Ticket(data);
     await ticket.save();
     const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
     const managers = await getAllUsersByRole(companyId, MANAGER);
-    // handleTicketNotification(req, managers, technicians, ticket);
-    await ticket.populate({
-      path: "room",
-      populate: {
-        path: "unit",
-        model: "Unit",
-      },
-    });
-
+    const req={io,user}
+   
+    handleSheduledTicketNotification(req,managers,technicians,ticket)
     console.log("Ticket created successfully");
    }catch(err){
     console.log(err);

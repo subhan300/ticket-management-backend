@@ -252,12 +252,14 @@ const createTicket = async (req, res) => {
       issueItem,
       issueItemDescription,
       audit,
+      isSheduled,
       dueDate,
     } = req.body;
     const ticketNo = await getLastTicketNumber();
     const ticket = new Ticket({
       userId,
       issue,
+      isSheduled:isSheduled??false,
       description,
       issueLocation,
       status,
