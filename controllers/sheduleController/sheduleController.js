@@ -88,7 +88,7 @@ const sheduleTicketCreation = async (req, res) => {
       if (isOneTime) {
         // For one-time jobs
         const job = await agenda.schedule(start.toDate(), 'create ticket', { data: payload, user: { roles, userId, name } });
-        return res.send(`Single job scheduled with ID: ${job.attrs._id} for ${startDateTime}`);
+        return res.status(200).json({data:"done"});
       } else {
         // For recurring jobs
         const allowedDays = days.map(Number); // E.g., [1, 3, 5] for Monday, Wednesday, Friday
@@ -112,11 +112,11 @@ const sheduleTicketCreation = async (req, res) => {
           current = current.add(1, 'day').startOf('day');
         }
   
-        return res.send(`Jobs scheduled between ${startDateTime} and ${endDateTime} on specified days and months`);
+        return res.status(200).json({data:"done"});
       }
     } catch (error) {
       console.error('Error scheduling job:', error);
-      res.status(500).send('Error scheduling job');
+      res.status(500).json('Error scheduling job');
     }
   };
   

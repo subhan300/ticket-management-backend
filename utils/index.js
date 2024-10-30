@@ -212,7 +212,6 @@ const ticketStructure = async (ticket) => {
     return await Promise.all(
       ticket.map(async (ticket) => {
       
-           console.log("________________",)
          const   { name="", email="", _id=null } = ticket?.userId || {};
         
         
