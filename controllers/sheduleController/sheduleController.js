@@ -18,11 +18,7 @@ const getAllJobs = async (req, res) => {
     }
   };
 
-const getLastTicketNumber = async () => {
-  const lastTicket = await Ticket.findOne().sort({ ticketNo: -1 });
-  const getNumber = lastTicket ? lastTicket.ticketNo : 0;
-  return formatTicketNumber(getNumber);
-};
+
 
 const deleteJob = async (req, res) => {
     const { jobId } = req.params; // Get jobId from the request parameters
@@ -103,8 +99,8 @@ agenda.start().then(() => {
 const sheduleTicketCreation = async (req, res) => {
     const { companyId, name, email, id: userId, roles } = req.user;
     const { startDateTime, endDateTime, days, months, isOneTime, data } = req.body;
-    const ticketNo = await getLastTicketNumber();
-    const payload = { ...data, ticketNo, userId, companyId, isSheduled: true };
+    // const ticketNo = await getLastTicketNumber();
+    const payload = { ...data, userId, companyId, isSheduled: true };
   
     try {
       const start = dayjs(startDateTime);
