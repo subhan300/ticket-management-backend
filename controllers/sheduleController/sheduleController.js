@@ -2,17 +2,44 @@ const Agenda = require("agenda");
 
 const dotenv = require("dotenv");
 const Ticket = require("../../models/ticketModel");
-const { formatTicketNumber } = require("../../utils");
+const { formatTicketNumber, ObjectId } = require("../../utils");
 const dayjs = require("dayjs");
 
 dotenv.config();
 const databaseUrl=process.env.MONGODB_URI
 const agenda = new Agenda({ db: { address: databaseUrl } });
+const getAllJobs = async (req, res) => {
+    try {
+      const jobs = await agenda.jobs({}); // Fetch all jobs
+      res.status(200).json(jobs);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      res.status(500).json({ error: 'Error fetching jobs' });
+    }
+  };
+
 const getLastTicketNumber = async () => {
   const lastTicket = await Ticket.findOne().sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
   return formatTicketNumber(getNumber);
 };
+
+const deleteJob = async (req, res) => {
+    const { jobId } = req.params; // Get jobId from the request parameters
+  
+    try {
+      const job = await agenda.cancel({ _id: new ObjectId(jobId) }); // Cancel the job by ID
+    
+      console.log("job",job,"jobId",jobId)
+      if (job === 0) {
+        return res.status(404).json({ message: 'Job not found' });
+      }
+      res.status(200).json({ message: 'Job deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      res.status(500).json({ error: 'Error deleting job' });
+    }
+  };
 
 agenda.start().then(() => {
     console.log('Agenda started');
@@ -122,5 +149,7 @@ const sheduleTicketCreation = async (req, res) => {
   
 module.exports={
     sheduleTicketCreation,
-    agenda
+    agenda,
+    getAllJobs,
+    deleteJob
 }
