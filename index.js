@@ -15,14 +15,14 @@ const locationRoute = require("./routes/locationRoute");
 const userItemRoute = require("./routes/userItemRoute");
 const laundryRoute = require("./routes/laundryRoute");
 const analyticsRoute = require("./routes/analyticsRoute");
-const roomsRoute=require("./routes/roomRoute");
-const itemRoute=require("./routes/itemRoute");
-const supplierRoute=require("./routes/supplierRoute")
-const categoriesRoute=require("./routes/categoriesRoute");
-const switchbotRoute=require("./routes/switchbotRoute");
-const environmentCheckListRoute=require("./routes/environmentCheckListRoute");
-const predefinedQuestionRoute=require("./routes/predefinedQuestionRoute");
-const scheduleRoute=require("./routes/sheduleJobRoute");
+const roomsRoute = require("./routes/roomRoute");
+const itemRoute = require("./routes/itemRoute");
+const supplierRoute = require("./routes/supplierRoute");
+const categoriesRoute = require("./routes/categoriesRoute");
+const switchbotRoute = require("./routes/switchbotRoute");
+const environmentCheckListRoute = require("./routes/environmentCheckListRoute");
+const predefinedQuestionRoute = require("./routes/predefinedQuestionRoute");
+const scheduleRoute = require("./routes/sheduleJobRoute");
 
 const connectDB = require("./config/db");
 const path = require("path");
@@ -31,7 +31,12 @@ const Ticket = require("./models/ticketModel");
 const { generateQRCode, generateBarcode, generateSKU } = require("./utils");
 const connectedUsers = require("./utils/store-data/connectedUsers");
 const LaundryTicket = require("./models/laundryModel");
-const { LaundryOperator, MANAGER, TECHNICIAN, USER } = require("./utils/constants");
+const {
+  LaundryOperator,
+  MANAGER,
+  TECHNICIAN,
+  USER,
+} = require("./utils/constants");
 const Notification = require("./models/notificationModel");
 const { agenda } = require("./controllers/sheduleController/sheduleController");
 const Job = require("./jobs/jobs");
@@ -40,7 +45,6 @@ dotenv.config();
 
 const app = express();
 const port = config.port;
-
 
 // Middleware
 app.use(express.json());
@@ -69,7 +73,6 @@ app.get("/health", (req, res) => {
 // Connect to MongoDB
 connectDB();
 
-
 const server = app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
@@ -85,7 +88,7 @@ const io = socketIo(server, {
 // Middleware to make io accessible in the controllers
 app.use((req, res, next) => {
   req.io = io;
-  Job(agenda,io);
+  Job(agenda, io);
 
   next();
 });
@@ -103,15 +106,15 @@ app.use("/api/product", productRoute);
 app.use("/api/location", locationRoute);
 app.use("/api/userItems", userItemRoute);
 app.use("/api/laundryTicket", laundryRoute);
-app.use("/api/analytics",analyticsRoute);
-app.use("/api/rooms",roomsRoute);
-app.use("/api/item",itemRoute);
-app.use("/api/supplier",supplierRoute);
-app.use("/api/switchbot",switchbotRoute)
-app.use("/api/categories",categoriesRoute);
-app.use("/api/environmentCheckListRoute",environmentCheckListRoute);
-app.use("/api/predefinedQuestionRoute",predefinedQuestionRoute);
-app.use("/api/schedule",scheduleRoute);
+app.use("/api/analytics", analyticsRoute);
+app.use("/api/rooms", roomsRoute);
+app.use("/api/item", itemRoute);
+app.use("/api/supplier", supplierRoute);
+app.use("/api/switchbot", switchbotRoute);
+app.use("/api/categories", categoriesRoute);
+app.use("/api/environmentCheckListRoute", environmentCheckListRoute);
+app.use("/api/predefinedQuestionRoute", predefinedQuestionRoute);
+app.use("/api/schedule", scheduleRoute);
 
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
@@ -131,7 +134,7 @@ console.log("connected users collection", connectedUsers);
 io.on("connection", (socket) => {
   console.log("A user connected");
   socket.on("joinTicketRoom", async (payload) => {
-    const {ticketId,roles}=payload
+    const { ticketId, roles } = payload;
     console.log("joinTicketRoom", payload);
     console.log(`User joined room for ticket: ${ticketId}`);
 
@@ -139,49 +142,57 @@ io.on("connection", (socket) => {
     try {
       const ticket = await Ticket.findById(ticketId);
       const laundryTicket = await LaundryTicket.findById(ticketId);
-      if (ticket && (roles.includes(MANAGER) || roles.includes(TECHNICIAN) || roles.includes(USER))) {
+      if (
+        ticket &&
+        (roles.includes(MANAGER) ||
+          roles.includes(TECHNICIAN) ||
+          roles.includes(USER))
+      ) {
         socket.emit("initialComments", ticket.comments); // Emit the comments to the user
-      } 
-      if(laundryTicket && (roles.includes(MANAGER) || roles.includes(LaundryOperator))){
+      }
+      if (
+        laundryTicket &&
+        (roles.includes(MANAGER) || roles.includes(LaundryOperator))
+      ) {
         socket.emit("initialComments", laundryTicket.comments); // Emit the comments to the user
       }
     } catch (err) {
       console.error("Error fetching ticket comments:", err);
       socket.emit("error", { message: "Error fetching ticket comments" });
     }
-
   });
   socket.on("leaveTicketRoom", (ticketId) => {
     console.log(`User left room for ticket: ${ticketId}`);
     socket.leave(ticketId);
   });
   socket.on("register", async (userId) => {
-    // Add or update the connected user's socket ID in connectedUsers
     connectedUsers[userId] = socket.id;
-  
+
     try {
       // Loop through each connected user and send notifications specific to that user
       await Promise.all(
         Object.keys(connectedUsers).map(async (user) => {
           const socketId = connectedUsers[user];
-  
+
           // Fetch notifications specific to this user
           const userNotifications = await Notification.find({ userId: user });
-          console.log(`Fetched notifications for user ${user}:`, userNotifications);
-  
+          console.log(
+            `Fetched notifications for user ${user}:`,
+            userNotifications
+          );
+
           // Send the notifications only to the connected socket of that user
-          io.to(socketId).emit('initialNotifications', userNotifications);
+          io.to(socketId).emit("initialNotifications", userNotifications);
         })
       );
-      
     } catch (err) {
       console.error("Error fetching notifications:", err);
     }
-  
+
     console.log(`User registered: ${userId}`);
     console.log("Connected users:", connectedUsers);
   });
-  
+
   socket.on("disconnect", () => {
     console.log("A user disconnected");
     for (const [userId, socketId] of Object.entries(connectedUsers)) {
