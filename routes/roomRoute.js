@@ -26,6 +26,7 @@ router.get("/:SKU",authenticateJWT, getRoomBySku);
 
 router.put("/:id",authenticateJWT,updateRoom);
 
+
 router.delete("/:id",authenticateJWT, deleteRoom);
 router.delete("/inbulk/:unitId",authenticateJWT, deleteRoomsInBulk);
 

@@ -10,13 +10,20 @@ const recordTemperatureSchema = new mongoose.Schema({
   readings: [
     {
       category: {type:String, default: "room" },
+      battery: {type:String, },
       date: {
         type: Date,
         default: Date.now,
       },
+      
       temperature: {
         type: Number,
         required: true,
+      },
+       
+      humidity: {
+        type: Number,
+        // required: true,
       },
     },
   ],

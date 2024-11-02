@@ -1,4 +1,5 @@
 const Temperature = require("../../models/recordTemperatureModel");
+const { getDevicesStatus, getTemepratureFromSensor } = require("../switchbotController/SwitchBotController");
 
 // Add a new temperature reading for a room
 const addTemperatureReading = async (req, res) => {
@@ -75,8 +76,11 @@ const getLatestTemperatureReading = async (req, res) => {
 };
 const getAllTemperatureReadings = async (req, res) => {
     try {
-      const tempRecord = await Temperature.find({ });
-     console.log("__temp",tempRecord)
+      const tempRecord = await Temperature.find({ }).populate("roomId")
+      tempRecord.forEach(record => {
+        record.readings.sort((a, b) => new Date(b.date) - new Date(a.date));
+      });
+  
       if (!tempRecord) {
         return res
           .status(404)
@@ -89,7 +93,51 @@ const getAllTemperatureReadings = async (req, res) => {
       res.status(500).json({ message: error.message });
     }
   };
+  const updateTemperatureReadings = async (req, res) => {
+    try {
+      const roomIds = req.body; // Extract roomIds from the request body
+  
+      // Fetch all temperature records if roomIds is empty, otherwise fetch specified records only
+      const records = roomIds.length > 0
+        ? await Temperature.find({ _id: { $in: roomIds } }).populate("roomId")
+        : await Temperature.find().populate("roomId");
+  
+      for (const record of records) {
+        // If a sensor is integrated, fetch the latest status
+        if (record.isSensorIntegrated) {
+          const sensorStatus = await getTemepratureFromSensor(record.isSensorIntegrated);
+  
+          // Assuming the device status has a 'temperature' field
+          if (sensorStatus && sensorStatus.temperature != null) {
+            // Update the record with the new temperature reading
+            const newReading = {
+              temperature: sensorStatus.temperature,
+              humidity: sensorStatus.humidity,
+              date: new Date(),
+              battery: sensorStatus.battery
+            };
+  
+            // Add the new reading to the readings array
+            record.readings.push(newReading);
+  
+            // Save the updated record
+            await record.save();
+          }
+        }
+  
+        // Sort the readings array by date in descending order (latest first)
+        record.readings.sort((a, b) => b.date - a.date);
+      }
+  
+      res.status(200).json(records);
+    } catch (error) {
+      console.error("Error updating temperature readings:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+  
 module.exports = {
+    updateTemperatureReadings,
     getAllTemperatureReadings,
   addTemperatureReading,
   getTemperatureReadings,

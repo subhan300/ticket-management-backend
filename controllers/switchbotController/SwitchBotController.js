@@ -130,7 +130,7 @@ const getDevices = async (req, res) => {
     switchBotReq.end(); // End the request
 };
 
-const getDevicesStatus = async (req, res) => {
+const getDevicesStatus = async (req,res ) => {
     const {deviceId}=req.body
     const nonce="123"
     const t = Date.now();
@@ -177,5 +177,48 @@ const getDevicesStatus = async (req, res) => {
     switchBotReq.end(); // End the request
 };
 
+const getTemepratureFromSensor = (deviceId) => {
+    return new Promise((resolve, reject) => {
+      const nonce = "123";
+      const t = Date.now();
+      const options = {
+        hostname: 'api.switch-bot.com',
+        port: 443,
+        path: `/v1.1/devices/${deviceId}/status`,
+        method: 'GET',
+        headers: {
+          "Authorization": token,
+          "sign": generateSign(nonce, t),
+          "nonce": nonce,
+          "t": t,
+          'Content-Type': 'application/json',
+        },
+      };
+  
+      const switchBotReq = https.request(options, (switchBotRes) => {
+        let data = '';
+  
+        switchBotRes.on('data', (chunk) => {
+          data += chunk;
+        });
+  
+        switchBotRes.on('end', () => {
+          try {
+            const devices = JSON.parse(data);
+            resolve(devices.body); // Assuming the status is in the body
+          } catch (error) {
+            reject("Error parsing response: " + error);
+          }
+        });
+      });
+  
+      switchBotReq.on('error', (error) => {
+        reject("Error: " + error);
+      });
+  
+      switchBotReq.end();
+    });
+  };
 
-module.exports = { getSignature,getDevices , getDevicesStatus};
+
+module.exports = { getSignature,getDevices , getDevicesStatus,getTemepratureFromSensor};
