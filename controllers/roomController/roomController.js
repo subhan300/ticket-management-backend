@@ -1,6 +1,8 @@
 const Room = require('../../models/roomModel'); // Adjust the path as necessary
 const { generateSKU,covertId } = require('../../utils');
 
+const RecordTemperature=require("../../models/recordTemperatureModel");
+const { default: mongoose } = require('mongoose');
 // Create a new room
 const createRoom = async (req, res) => {
   try {
@@ -104,7 +106,7 @@ const getRoomsByLocationId = async (req, res) => {
           $group: {
               _id: '$unitDetails._id', // Group by unit ID
               unit: { $first: '$unitDetails' }, // Get the unit details
-              rooms: { $push: { _id: '$_id', SKU: '$SKU', roomName: '$roomName',type:'$type' } } // Push room details into an array
+              rooms: { $push: { _id: '$_id', SKU: '$SKU', roomName: '$roomName',type:'$type',sensor:"$sensor" } } // Push room details into an array
           }
       },
       {
@@ -162,21 +164,57 @@ const getRoomBySku = async (req, res) => {
     }
   };
 
-// Update a room by ID
+
+
 const updateRoom = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { id } = req.params;
-    const payload = req.body;
-    const updatedRoom = await Room.findByIdAndUpdate(id, payload, { new: true });
-    if (!updatedRoom) {
-      return res.status(404).json({ message: 'Room not found' });
+    const { sensor, ...payload } = req.body;
+     
+    // Check if the sensor exists in another room
+    if (sensor) {
+      const existingRoom = await Room.findOne({ sensor, _id: { $ne: id } }).session(session);
+      if (existingRoom) {
+        return res.status(400).json({ message: `Sensor already exists in room ${existingRoom.roomName}` });
+      }
     }
+
+    // Find or create the temperature record within the transaction
+    let record = await RecordTemperature.findOne({ roomId: id }).session(session);
+    if (record) {
+      // Update the existing record if it exists
+      console.log("_sensor",sensor)
+      record.isSensorIntegrated = sensor;
+      await record.save({ session });
+    } else {
+      // Create a new record if it doesn't exist
+      await RecordTemperature.create([{ roomId: id, isSensorIntegrated:sensor}], { session });
+    }
+
+    // Proceed with the room update within the transaction
+    const updatedRoom = await Room.findByIdAndUpdate(id, { sensor, ...payload }, { new: true, session });
+    if (!updatedRoom) {
+      throw new Error('Room not found');
+    }
+
+    // Commit transaction if everything is successful
+    await session.commitTransaction();
+    session.endSession();
+
     res.status(200).json(updatedRoom);
   } catch (error) {
+    // Roll back any changes made in the transaction
+    await session.abortTransaction();
+    session.endSession();
+
     console.error('Error updating room:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // Delete a room by ID
 const deleteRoom = async (req, res) => {
