@@ -6,6 +6,9 @@ const recordTemperatureSchema = new mongoose.Schema({
     ref: "Room",
     required: true,
   },
+  threshold:{type:Number,default:0},
+  temperatureThreshold:{type:Number,default:0},
+  humidityThreshold:{type:Number,default:0},
   isSensorIntegrated:{type:String,default:false},
   readings: [
     {

@@ -13,10 +13,12 @@ const {
   getTemperatureReadings,
   getLatestTemperatureReading,
   updateTemperatureReadings,
+  updateThreshold,
 } = require("../controllers/recordTemepratureController/recordTemperatureController");
 
 router.post("/", authenticateJWT, addTemperatureReading);
 router.put("/", authenticateJWT, updateTemperatureReadings);
 router.get("/get-all", authenticateJWT, getAllTemperatureReadings);
+router.put("/threshold", authenticateJWT, updateThreshold);
 
 module.exports = router;
