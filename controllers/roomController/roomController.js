@@ -175,7 +175,7 @@ const updateRoom = async (req, res) => {
     const { sensor, ...payload } = req.body;
      
     // Check if the sensor exists in another room
-    if (sensor) {
+    if (sensor !== "false" && sensor) {
       const existingRoom = await Room.findOne({ sensor, _id: { $ne: id } }).session(session);
       if (existingRoom) {
         return res.status(400).json({ message: `Sensor already exists in room ${existingRoom.roomName}` });
