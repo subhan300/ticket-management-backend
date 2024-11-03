@@ -39,7 +39,7 @@ const {
   USER,
 } = require("./utils/constants");
 const Notification = require("./models/notificationModel");
-const { agenda } = require("./controllers/sheduleController/sheduleController");
+const { agenda,recordTemperatureAgenda } = require("./controllers/sheduleController/sheduleController");
 const Job = require("./jobs/jobs");
 
 dotenv.config();
@@ -90,6 +90,7 @@ const io = socketIo(server, {
 app.use((req, res, next) => {
   req.io = io;
   Job(agenda, io);
+  Job(recordTemperatureAgenda,io)
 
   next();
 });
@@ -179,10 +180,10 @@ io.on("connection", (socket) => {
 
           // Fetch notifications specific to this user
           const userNotifications = await Notification.find({ userId: user });
-          console.log(
-            `Fetched notifications for user ${user}:`,
-            userNotifications
-          );
+          // console.log(
+          //   `Fetched notifications for user ${user}:`,
+          //   userNotifications
+          // );
 
           // Send the notifications only to the connected socket of that user
           io.to(socketId).emit("initialNotifications", userNotifications);

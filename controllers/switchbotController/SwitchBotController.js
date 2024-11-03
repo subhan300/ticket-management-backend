@@ -114,7 +114,8 @@ const getDevices = async (req, res) => {
         switchBotRes.on('end', () => {
             try {
                 const devices = JSON.parse(data);
-                res.status(switchBotRes.statusCode).json(devices); // Return device data
+                 const filterDevices=devices.body.deviceList.filter(val=>val.enableCloudService)
+                res.status(switchBotRes.statusCode).json(filterDevices); // Return device data
             } catch (error) {
                 console.error("Error parsing response: ", error);
                 res.status(500).json({ error: 'Internal Server Error' });

@@ -7,6 +7,7 @@ const TECHNICIAN = "TECHNICIAN";
 const USER = "NURSE";
 const HOUSEKEEPING = "HOUSEKEEPING";
 const MANAGER = "MANAGER";
+ const LOW_TEMPERATURE_CATEGORY="LOW_TEMPERATURE_CATEGORY"
 const ADMIN = "ADMIN";
 const RESIDENT = "RESIDENT";
 const NotAssigned = "Not Assigned";
@@ -63,5 +64,6 @@ module.exports = {
   ADMIN,
   CLOSED,
   USER,
-  invenotryStatus
+  invenotryStatus,
+  LOW_TEMPERATURE_CATEGORY
 };

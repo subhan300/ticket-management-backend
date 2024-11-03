@@ -4,10 +4,11 @@ const dotenv = require("dotenv");
 const Ticket = require("../../models/ticketModel");
 const { formatTicketNumber, ObjectId } = require("../../utils");
 const dayjs = require("dayjs");
-
 dotenv.config();
 const databaseUrl = process.env.MONGODB_URI;
 const agenda = new Agenda({ db: { address: databaseUrl } });
+const recordTemperatureAgenda = new Agenda({ db: { address: databaseUrl, collection: 'temperatureJobs' } });
+
 const getAllJobs = async (req, res) => {
   try {
     const jobs = await agenda.jobs({}); // Fetch all jobs
@@ -38,63 +39,10 @@ const deleteJob = async (req, res) => {
 agenda.start().then(() => {
   console.log("Agenda started");
 });
+recordTemperatureAgenda.start().then(() => {
+    console.log("Record Temperature Agenda started");
+  });
 
-// const sheduleTicketCreation = async (req, res) => {
-//   const { companyId, name, email, id: userId, roles } = req.user;
-//   const { startDateTime, endDateTime, days, months, isOneTime, data } =
-//     req.body;
-//   // const ticketNo = await getLastTicketNumber();
-//   const payload = { ...data, userId, companyId, isSheduled: true };
-
-//   try {
-//     const start = dayjs(startDateTime);
-//     const end = dayjs(endDateTime);
-//     const current = dayjs(); // Get the current time
-//     console.log("start date", start, start.toDate());
-//     // Schedule the job for the current time if the time is now or in the future
-//     if (isOneTime) {
-//       // For one-time jobs
-//       const job = await agenda.schedule(start.toDate(), "create ticket", {
-//         data: payload,
-//         user: { roles, userId, name },
-//       });
-//       return res.status(200).json({ data: "done" });
-//     } else {
-//       const allowedDays = days.map(Number); // E.g., [1, 3, 5] for Monday, Wednesday, Friday
-//       const allowedMonths = months.map(Number); // E.g., [0, 6] for January and July
-
-//       let current = start;
-//       while (current.isBefore(end) || current.isSame(end)) {
-//         console.log("__condirin");
-//         const currentDay = current.day(); // 0=Sunday, 1=Monday, ..., 6=Saturday
-//         const currentMonth = current.month(); // 0=January, ..., 11=December
-
-//         // Check if the current date matches allowed days and months
-//         if (
-//           allowedDays.includes(currentDay) &&
-//           allowedMonths.includes(currentMonth)
-//         ) {
-//           // Schedule the job
-//           const job = await agenda.schedule(current.toDate(), "create ticket", {
-//             data: payload,
-//             user: { roles, userId, name },
-//           });
-//           console.log(
-//             `Scheduled job on ${current.format()} with ID: ${job.attrs._id}`
-//           );
-//         }
-
-//         // Move to the start of the next day
-//         current = current.add(1, "day").startOf("day");
-//       }
-
-//       return res.status(200).json({ data: "done" });
-//     }
-//   } catch (error) {
-//     console.error("Error scheduling job:", error);
-//     res.status(500).json("Error scheduling job");
-//   }
-// };
 const sheduleTicketCreation = async (req, res) => {
   const { companyId, name, email, id: userId, roles } = req.user;
   const { startDateTime, endDateTime, days, months, isOneTime, data } =
@@ -176,9 +124,20 @@ const sheduleTicketCreation = async (req, res) => {
     });
   }
 };
+
+const recordTemperature = async (req, res) => {
+    const user=req.user
+    await  recordTemperatureAgenda.start();
+    // await  recordTemperatureAgenda.every("0 8,14,20 * * *", "recordTemperature");
+    await recordTemperatureAgenda.now("recordTemperature",{data:user});
+    return res.status(200).send("record temperature job scheduled")
+  };
+
 module.exports = {
+    recordTemperature,
   sheduleTicketCreation,
   agenda,
   getAllJobs,
   deleteJob,
+  recordTemperatureAgenda
 };

@@ -146,6 +146,30 @@ const getAllTemperatureReadings = async (req, res) => {
       // Loop through each record to update the corresponding threshold
       for (const record of records) {
         for (const key of thresholdKeys) {
+          if (record[key] !== undefined) {
+            record[key] = thresholds[key]; // Update the record's threshold with the new value
+          }
+        }
+        await record.save(); // Save the updated record
+      }
+      
+      res.status(200).json(records); // Return the updated records
+    } catch (error) {
+      console.error("Error updating temperature readings:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+  const weebHookTrigger = async (req, res) => {
+    try {
+      const thresholds = req.body; // Get the thresholds from the request body
+      const thresholdKeys = Object.keys(thresholds); // Extract the keys (e.g., temperatureThreshold, humidityThreshold)
+      
+      // Fetch all temperature records and populate roomId
+      const records = await Temperature.find().populate("roomId");
+      
+      // Loop through each record to update the corresponding threshold
+      for (const record of records) {
+        for (const key of thresholdKeys) {
           // Check if the key exists in the record and update the value
           if (record[key] !== undefined) {
             record[key] = thresholds[key]; // Update the record's threshold with the new value
@@ -169,4 +193,5 @@ module.exports = {
   addTemperatureReading,
   getTemperatureReadings,
   getLatestTemperatureReading,
+  weebHookTrigger
 };

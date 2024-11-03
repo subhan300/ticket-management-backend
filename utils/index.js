@@ -84,17 +84,11 @@ const ticketUnAssignedMessage = (name, roles, ticketNo) => {
   const rolesList = roles.join(', '); // Convert roles array to a comma-separated string
   return `Ticket # ${ticketNo} is UnAssigned by ${name} (${rolesList})`;
 };
+const handleLowTemperatureMessage=({room,temperature,threshold})=>{
+  return `Temperature ${temperature} is below the threshold (${threshold}) of room ${room}.`
+}
 
 
-// export const selectMessage = (messageName, name, status) => {
-//   switch (messageName) {
-//     case "status":
-//       return updateTicketStatusMessage(name, status);
-//     case "assignedTo":
-//       return updateTicketAssignedMessage(name);
-
-//   }
-// };
 const getAssignedTo = async (ticketItem) => {
   if (mongoose.Types.ObjectId.isValid(ticketItem.assignedTo)) {
     await ticketItem.populate("assignedTo", "name email");
@@ -310,5 +304,6 @@ module.exports = {
   managerUpdateTicketAssignedMessage,
   updateTicketStatusMessage,
   updateTicketAssignedMessage,
-  getAssignedTo 
+  getAssignedTo ,
+  handleLowTemperatureMessage
 };
