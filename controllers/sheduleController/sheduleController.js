@@ -128,8 +128,8 @@ const sheduleTicketCreation = async (req, res) => {
 const recordTemperature = async (req, res) => {
     const user=req.user
     await  recordTemperatureAgenda.start();
-    // await  recordTemperatureAgenda.every("0 8,14,20 * * *", "recordTemperature");
-    await recordTemperatureAgenda.now("recordTemperature",{data:user});
+    await  recordTemperatureAgenda.every("0 8,14,20 * * *", "recordTemperature");
+    // await recordTemperatureAgenda.now("recordTemperature",{data:user});
     return res.status(200).send("record temperature job scheduled")
   };
 
