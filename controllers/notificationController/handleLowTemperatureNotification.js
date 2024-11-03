@@ -81,5 +81,7 @@ const  handleLowTemperatureNotification = async (
     getLowReadingThings.message,
     LOW_TEMPERATURE_CATEGORY
   );
+  return true
+
 };
 module.exports = {  handleLowTemperatureNotification };

@@ -44,50 +44,55 @@ module.exports = function (agenda, io) {
   });
   agenda.define("recordTemperature", async (job) => {
     try {
-      // console.log("io===>",io)
-      const { data } = job.attrs.data;
-      // console.log("job===>",data)
-      const records = await RecordTemperature.find({}).populate("roomId");
-      // console.log("-started",records)
-      for (const record of records) {
-        if (record.isSensorIntegrated) {
-          const sensorStatus = await getTemepratureFromSensor(
-            record.isSensorIntegrated
-          );
-          const nurses = await getAllUsersByRole(data.companyId, USER);
-          const managers = await getAllUsersByRole(data.companyId, MANAGER);
+        console.log("Started recordTemperature job:", job.attrs._id);
+        const { data } = job.attrs.data;
 
-          if (sensorStatus && sensorStatus.temperature != null) {
-            const req = { io, user: data };
-            console.log("record=======>", sensorStatus);
-            if (
-              record.temperatureThreshold <= sensorStatus.temperature ||
-              record.humidityThreshold <= sensorStatus.humidity
-            )
-              return handleLowTemperatureNotification(req, managers, nurses, {
-                humidityThreshold: record.humidityThreshold,
-                humidity: sensorStatus.humidity,
-                temperatureThreshold: record.temperatureThreshold,
-                temperature: sensorStatus.temperature,
-                room:record.roomId.roomName
-              });
-            const newReading = {
-              temperature: sensorStatus.temperature,
-              humidity: sensorStatus.humidity,
-              date: new Date(),
-              battery: sensorStatus.battery,
-            };
-            record.readings.push(newReading);
-            await record.save();
-          }
+        console.log("Fetching records from RecordTemperature...");
+        const records = await RecordTemperature.find({}).populate("roomId");
+        console.log("Fetched records:", records);
+
+        for (const record of records) {
+            if (record.isSensorIntegrated) {
+                const sensorStatus = await getTemepratureFromSensor(record.isSensorIntegrated);
+                console.log("Sensor Status:", sensorStatus, "Room:", record.roomId);
+
+                const nurses = await getAllUsersByRole(data.companyId, USER);
+                const managers = await getAllUsersByRole(data.companyId, MANAGER);
+                 console.log("working====")
+                if (sensorStatus && sensorStatus.temperature != null) {
+                    const req = { io, user: data };
+                    if (
+                        record.temperatureThreshold <= sensorStatus.temperature ||
+                        record.humidityThreshold <= sensorStatus.humidity
+                    ) {
+                        await handleLowTemperatureNotification(req, managers, nurses, {
+                            humidityThreshold: record.humidityThreshold,
+                            humidity: sensorStatus.humidity,
+                            temperatureThreshold: record.temperatureThreshold,
+                            temperature: sensorStatus.temperature,
+                            room: record.roomId.roomName
+                        });
+                    }
+
+                    const newReading = {
+                        temperature: sensorStatus.temperature,
+                        humidity: sensorStatus.humidity,
+                        date: new Date(),
+                        battery: sensorStatus.battery,
+                    };
+                    record.readings.push(newReading);
+                    await record.save();
+                    console.log("Saved new reading for room:", record.roomId.roomName);
+                }
+            }
+            record.readings.sort((a, b) => b.date - a.date);
         }
-        record.readings.sort((a, b) => b.date - a.date);
-      }
 
-      console.log("tmeperature recording");
+        console.log("Temperature recording completed successfully.");
     } catch (err) {
-      console.log(err);
+        console.error("Error in recordTemperature job:", err);
     }
+
     // Add your job logic here
   });
 };
