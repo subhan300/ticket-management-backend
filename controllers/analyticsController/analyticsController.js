@@ -209,6 +209,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
           inStock,
           lowStock,
           outOfStock,
+          total:totalInventoryItems
         },
         
       });
