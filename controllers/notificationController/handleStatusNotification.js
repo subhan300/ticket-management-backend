@@ -24,7 +24,7 @@ const handleStatusNotification = async (
     const { role, name,id ,roles} = req.user;
     if (roles.includes(USER) && status) {
      
-      if (assignedTo._id !== NotAssignedId) {
+      if (assignedTo !== NotAssignedId) {
         await notifyAssignedUserAboutStatus(ticket, req,category);
       }
       if (managersCollection.length)
