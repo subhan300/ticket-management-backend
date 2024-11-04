@@ -206,10 +206,11 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
         // total:`${totalInventoryItems} Pieces`,
         total:totalInventoryItems,
         statusCounts: {
+          total:totalInventoryItems,
           inStock,
           lowStock,
           outOfStock,
-          total:totalInventoryItems
+         
         },
         
       });
@@ -228,6 +229,7 @@ const getUsersAnalytics = async (req, res) => {
         // total:`${totalUserItems} Employees`,
         total:totalUserItems,
         statusCounts: {
+          total:totalUserItems,
           managers,
           technicians,
           Nurse
