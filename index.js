@@ -135,73 +135,72 @@ app.post("/api/genereate-barCode", async (req, res) => {
   }
 });
 console.log("connected users collection", connectedUsers);
+
 io.on("connection", (socket) => {
-  console.log("A user connected");
+
+  // Register user connection
+  socket.on("register", async (userId) => {
+    // Add user to connected users list
+    connectedUsers[userId] = socket.id;
+
+    // Notify all clients that this user is online
+    io.emit("userStatusChange", { userId, isOnline: true });
+    // console.log(`User registered and online: ${userId}`);
+    console.log("Connected users:", connectedUsers);
+
+    // Send initial notifications to the user
+    try {
+      const userNotifications = await Notification.find({ userId });
+      socket.emit("initialNotifications", userNotifications);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+      socket.emit("error", { message: "Error fetching notifications" });
+    }
+  });
+
+  // Join a ticket room
   socket.on("joinTicketRoom", async (payload) => {
     const { ticketId, roles } = payload;
-    console.log("joinTicketRoom", payload);
-    console.log(`User joined room for ticket: ${ticketId}`);
+    // console.log("joinTicketRoom", payload);
+    // console.log(`User joined room for ticket: ${ticketId}`);
 
     socket.join(ticketId);
+
     try {
       const ticket = await Ticket.findById(ticketId);
       const laundryTicket = await LaundryTicket.findById(ticketId);
-      if (
-        ticket &&
-        (roles.includes(MANAGER) ||
-          roles.includes(TECHNICIAN) ||
-          roles.includes(USER))
-      ) {
-        socket.emit("initialComments", ticket.comments); // Emit the comments to the user
+
+      // Check roles for access to ticket comments
+      if (ticket && (roles.includes(MANAGER) || roles.includes(TECHNICIAN) || roles.includes(USER))) {
+        socket.emit("initialComments", ticket.comments);
       }
-      if (
-        laundryTicket &&
-        (roles.includes(MANAGER) || roles.includes(LaundryOperator))
-      ) {
-        socket.emit("initialComments", laundryTicket.comments); // Emit the comments to the user
+      if (laundryTicket && (roles.includes(MANAGER) || roles.includes(LaundryOperator))) {
+        socket.emit("initialComments", laundryTicket.comments);
       }
     } catch (err) {
       console.error("Error fetching ticket comments:", err);
       socket.emit("error", { message: "Error fetching ticket comments" });
     }
   });
+
+  // Leave a ticket room
   socket.on("leaveTicketRoom", (ticketId) => {
     console.log(`User left room for ticket: ${ticketId}`);
     socket.leave(ticketId);
   });
-  socket.on("register", async (userId) => {
-    connectedUsers[userId] = socket.id;
 
-    try {
-      // Loop through each connected user and send notifications specific to that user
-      await Promise.all(
-        Object.keys(connectedUsers).map(async (user) => {
-          const socketId = connectedUsers[user];
-
-          // Fetch notifications specific to this user
-          const userNotifications = await Notification.find({ userId: user });
-          // console.log(
-          //   `Fetched notifications for user ${user}:`,
-          //   userNotifications
-          // );
-
-          // Send the notifications only to the connected socket of that user
-          io.to(socketId).emit("initialNotifications", userNotifications);
-        })
-      );
-    } catch (err) {
-      console.error("Error fetching notifications:", err);
-    }
-
-    console.log(`User registered: ${userId}`);
-    console.log("Connected users:", connectedUsers);
-  });
-
+  // Handle user disconnection
   socket.on("disconnect", () => {
     console.log("A user disconnected");
+
+    // Find and remove the disconnected user from connected users list
     for (const [userId, socketId] of Object.entries(connectedUsers)) {
       if (socketId === socket.id) {
         delete connectedUsers[userId];
+        
+        // Notify all clients that this user is now offline
+        io.emit("userStatusChange", { userId, isOnline: false });
+        console.log(`User disconnected and offline: ${userId}`);
         break;
       }
     }

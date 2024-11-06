@@ -23,9 +23,8 @@ const handleNotification = async (
   ticket
 ) => {
   const { assignedTo, status } = updates;
-  //   console.log("udpates====",updates,"",status)
   if (assignedTo && status) {
-    handleStatusNotification(req, updates, managersCollection, ticket);
+    handleStatusNotification(req, updates, managersCollection, ticket,maintenanceCategory);
     handleAssignedNotifications(
       req,
       updates,
@@ -44,7 +43,6 @@ const handleNotification = async (
     );
     return;
   } else if (status) {
-    // console.log("status==");
     handleStatusNotification(req, updates, managersCollection, ticket,maintenanceCategory);
     return;
   }

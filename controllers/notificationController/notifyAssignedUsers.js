@@ -1,5 +1,5 @@
 
-const { TECHNICIAN, LaundryOperator, } = require("../../utils/constants");
+const { TECHNICIAN, LaundryOperator, MANAGER, } = require("../../utils/constants");
 const connectedUsers = require("../../utils/store-data/connectedUsers");
 const { createNotification } = require("./createNotification");
 const { sendSocketNotification } = require("./sendSocketNotification");

@@ -26,8 +26,9 @@ const handleAssignedNotifications = async (
     category
   
   ) => {
-      console.log("ticket===",ticket)
+      // console.log("ticket===",ticket)
     const { assignedTo, status } = updates;
+    console.log("assigned to",assignedTo,ticket._id,ticket.ticketNO)
     const technicianSocketId = connectedUsers[assignedTo];
     const { roles, name } = req.user;
     if (roles.includes(USER) && assignedTo) {
@@ -44,12 +45,12 @@ const handleAssignedNotifications = async (
     }
     
     if (roles.includes(MANAGER) && assignedTo !== NotAssignedId) {
-      console.log("manger====",ticket)
+      console.log("manger====",category)
       await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo),category);
      
     }
     if (roles.includes(MANAGER) && assignedTo === NotAssignedId) {
-      console.log("here",usersCollection)
+      console.log("here==>",usersCollection)
       const technicians = await getAllUsersByRole(ticket.companyId, TECHNICIAN);
      if(technicians.length){
          await notifyUsers(req,
@@ -64,6 +65,7 @@ const handleAssignedNotifications = async (
   
     if (roles.includes(TECHNICIAN) && assignedTo !== NotAssignedId) {
       const userSocketId = connectedUsers[ticket.userId._id];
+       console.log("ticket iserid twhxcnian",ticket.userId)
       const notifyRes = await createNotification(
         ticket.userId._id,
         technicianUpdateTicketAssignedMessage(name,"",ticket.ticketNo),

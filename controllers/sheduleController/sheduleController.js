@@ -37,10 +37,10 @@ const deleteJob = async (req, res) => {
 };
 
 agenda.start().then(() => {
-  console.log("Agenda started");
+//   console.log("Agenda started");
 });
 recordTemperatureAgenda.start().then(() => {
-    console.log("Record Temperature Agenda started");
+    // console.log("Record Temperature Agenda started");
   });
 
 const sheduleTicketCreation = async (req, res) => {

@@ -11,9 +11,7 @@ const handleLaundaryTicketNotification = async (
   ticket
 ) => {
   const { roles, name } = req.user;
-  console.log("ticket",ticket)
   if (roles.includes(MANAGER) && roleBasedUserCollection.length) {
-    console.log("collection of ", roleBasedUserCollection, "name", name);
     await notifyUsers(
       req,
       name,

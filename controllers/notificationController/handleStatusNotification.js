@@ -21,6 +21,7 @@ const handleStatusNotification = async (
   ) => {
     const { status, } = updates;
     const assignedTo=ticket.assignedTo._id
+    console.log("catwgpory",category)
     const { role, name,id ,roles} = req.user;
     if (roles.includes(USER) && status) {
      

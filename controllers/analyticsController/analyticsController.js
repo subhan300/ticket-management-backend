@@ -26,7 +26,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
       
       // Combine filters
       const filter = { ...baseFilter, ...roleFilter };
-       console.log("filter===",filter)
+      //  console.log("filter===",filter)
       const totalTickets = await Ticket.countDocuments(filter);
       const openTickets = await Ticket.countDocuments({ ...filter, status: OPEN });
       const progressTickets = await Ticket.countDocuments({ ...filter, status:  PROGRESS });

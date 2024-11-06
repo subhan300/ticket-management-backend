@@ -324,7 +324,7 @@ const updateTicket = async (req, res) => {
       const { ticketId } = req.params;
       const updates = req.body;
       const inventoryUsed = updates?.inventoryUsed;
-      console.log("udpates",updates)
+      // console.log("udpates",updates)
       const isInventoryUsed = Array.isArray(inventoryUsed);
 
       if (!mongoose.Types.ObjectId.isValid(ticketId)) {
@@ -368,7 +368,7 @@ const updateTicket = async (req, res) => {
                 .send("Inventory is out of stock ,can't order that much");
             }
             const getTicket=await Ticket.findById(ticketId).populate("room").select("room ticketNo");
-            console.log("get ticket------",getTicket)
+            // console.log("get ticket------",getTicket)
             if(filteredInventoryUsedTicket.length){
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
