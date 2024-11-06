@@ -46,7 +46,7 @@ const getTicketsInProcess = async (req, res) => {
   }
 };
 const handleComment=(commentPayload,userItem,updatePayload)=>{
-  console.log({commentPayload,userItem,updatePayload})
+  console.log("handle comment=====>",{commentPayload,userItem,updatePayload})
   const commentTextMap = {
     received: `Item : <span style="color: #008000">${userItem.itemName}</span> is confirmed and received`,
     completed: `Item : <span style="color: #008000">${userItem.itemName}</span> is confirmed and ready to deliver`,
@@ -214,7 +214,7 @@ const updateTicket = async (req, res) => {
         users,
         populatedTicketsStucture
       );
-       console.log("populatedTicketsStucture",populatedTicketsStucture)
+       console.log("update laundryv populatedTicketsStucture")
       res.status(200).json(populatedTicketsStucture);
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -269,7 +269,7 @@ const updateInProcessTicketStatus = async (req, res) => {
       .sort({ createdAt: -1 });
 
     const populatedTicketsStructure =await laundryTicketStructure(tickets)
-    console.log("tickets",tickets,"populated structure",populatedTicketsStructure)
+    // console.log("tickets",tickets,"populated structure",populatedTicketsStructure)
 
     const managers = await getAllManagers(companyId);
     const users = await getAllUsersByRole(companyId, LaundryOperator);

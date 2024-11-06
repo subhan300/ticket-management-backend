@@ -1,5 +1,6 @@
 const Ticket = require("../../models/ticketModel");
 const LaundryTicket = require("../../models/laundryModel");
+const { default: mongoose } = require("mongoose");
 
 // Add a new comment to a ticket
 const addComment = async (req, res) => {
@@ -63,7 +64,7 @@ const addCommentFunction = async (payload) => {
     }
 
     const newComment = {
-      userId,
+      userId:mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId): null,
       text,
       isSystemGenerated,
       createdAt,
