@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
 
     // Send initial notifications to the user
     try {
-      const userNotifications = await Notification.find({ userId });
+      const userNotifications = await Notification.find({ userId }).sort({ createdAt: -1 });;
       socket.emit("initialNotifications", userNotifications);
     } catch (err) {
       console.error("Error fetching notifications:", err);
