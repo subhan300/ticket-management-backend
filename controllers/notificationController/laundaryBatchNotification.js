@@ -3,7 +3,7 @@ const {
     updateBatchLaundryStatusMessage,
    
   } = require("../../utils");
-  const { LaundryOperator, laundaryCategory } = require("../../utils/constants");
+  const { LaundryOperator, laundaryCategory, MANAGER } = require("../../utils/constants");
   
   const {
     notifyAssignedUserAboutStatus,
@@ -20,12 +20,13 @@ const {
     roleBasedUserCollection,
     ticket
   ) => {
-    const { status,tickets } = updates;
     
-    const { role, name ,id} = req.user;
+    const { status,tickets } = updates;
+    debugger
+    const { roles, name ,id} = req.user;
     const ticketNoAll = tickets.map(val => val.ticketNo).join(",");
      const filterUser=roleBasedUserCollection.filter(val=>val._id !== id)
-    if (role === LaundryOperator && status) {
+    if (roles.includes(LaundryOperator) && status) {
         await notifyUsers2(
           req,
           name,
@@ -45,7 +46,7 @@ const {
         );
     }
   
-    if (role === "MANAGER") {
+    if (roles.includes(MANAGER)) {
       await notifyUsers2(
           req,
           name,

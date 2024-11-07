@@ -72,7 +72,7 @@ const updateTicketStatusMessage = (name, status, ticketNo) => {
   return `Ticket # ${ticketNo} is update to  ${status} by ${name}`;
 };
 const updateBatchLaundryStatusMessage = (name, status, tickets) => {
-  return `Tickets ${tickets} is update to  ${status} by ${name}`;
+  return `Tickets # ${tickets} is updated to  ${status} by ${name}`;
 };
 const updateStatusMessage = (name, status,ticketNo) => {
   return `Ticket # ${ticketNo} Status is updated to ${status} by ${name}`;

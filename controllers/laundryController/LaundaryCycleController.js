@@ -3,9 +3,10 @@ const LaundryTicket = require("../../models/laundryModel");
 const { getAllManagers, getAllUsersByRole } = require("../globalController/GlobalController");
 const { handleLaundaryUpdateTicketNotification } = require("../notificationController/handleLaundaryUpdateNotifications");
 const { laundryTicketStructure, populateLaundryTickets } = require("../../utils");
-const { LaundryOperator, LAUNDRY_STATUS, NotAssignedId, NotAssigned } = require("../../utils/constants");
+const { LaundryOperator, LAUNDRY_STATUS, NotAssignedId, NotAssigned, MANAGER } = require("../../utils/constants");
 const UserItem = require("../../models/userItemsModel");
 const { addComment, addCommentFunction } = require("../commentController");
+const { getUsersByRole } = require("../userController");
 
 const confirmCompleteStatus=[LAUNDRY_STATUS.WASH_COMPLETED, LAUNDRY_STATUS.DRYING_COMPLETED, LAUNDRY_STATUS.STREAM_PRESS,LAUNDRY_STATUS.LAUNDRY_COMPLETED]
 const handleAssignedTo=(ticket)=>{
@@ -67,7 +68,9 @@ const handleComment=(commentPayload,userItem,updatePayload)=>{
 }
 const confirmLaundaryItems = async (req, res) => {
   try {
-    const { id } = req.user; // Extract user ID from req.user
+  debugger
+
+    const { id ,companyId} = req.user; // Extract user ID from req.user
    
     const { SKU} = req.body; // Get the laundary item to confirm
     console.log("sku",SKU)
@@ -88,7 +91,7 @@ const confirmLaundaryItems = async (req, res) => {
     if (!getTicket) {
       return res.status(404).json("No matching laundry ticket found.");
     }
-
+debugger
     const { status, confirmRecieve, confirmCompleted, userItems } = getTicket;
     let updatePayload = {};
     // Helper function to compare two arrays of ObjectId as strings
@@ -148,6 +151,10 @@ const confirmLaundaryItems = async (req, res) => {
      handleComment(commentPayload,userItem,updatePayload)
      const assignedTo=handleAssignedTo(updatedTicket);
      const populatedTicketsStructure={...updatedTicket.toObject(),assignedTo}
+     const managers=getAllUsersByRole(companyId,MANAGER);
+     const LaundryOperators=getAllUsersByRole(companyId,LaundryOperator)
+
+     handleLaundaryUpdateTicketNotification(req,{tickets:populatedTicketsStructure,batchStatus:true,...updatePayload},managers,LaundryOperators)
       return res.status(200).json(populatedTicketsStructure);
 
   }
