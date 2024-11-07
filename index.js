@@ -39,7 +39,10 @@ const {
   USER,
 } = require("./utils/constants");
 const Notification = require("./models/notificationModel");
-const { agenda,recordTemperatureAgenda } = require("./controllers/sheduleController/sheduleController");
+const {
+  agenda,
+  recordTemperatureAgenda,
+} = require("./controllers/sheduleController/sheduleController");
 const Job = require("./jobs/jobs");
 
 dotenv.config();
@@ -90,7 +93,7 @@ const io = socketIo(server, {
 app.use((req, res, next) => {
   req.io = io;
   Job(agenda, io);
-  Job(recordTemperatureAgenda,io)
+  Job(recordTemperatureAgenda, io);
 
   next();
 });
@@ -119,7 +122,6 @@ app.use("/api/predefinedQuestionRoute", predefinedQuestionRoute);
 app.use("/api/schedule", scheduleRoute);
 app.use("/api/record-temperature", recordTemperatureRoute);
 
-
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
 
@@ -137,7 +139,7 @@ app.post("/api/genereate-barCode", async (req, res) => {
 console.log("connected users collection", connectedUsers);
 
 io.on("connection", (socket) => {
-
+  console.log("conected__");
   // Register user connection
   socket.on("register", async (userId) => {
     // Add user to connected users list
@@ -150,7 +152,9 @@ io.on("connection", (socket) => {
 
     // Send initial notifications to the user
     try {
-      const userNotifications = await Notification.find({ userId }).sort({ createdAt: -1 });;
+      const userNotifications = await Notification.find({ userId }).sort({
+        createdAt: -1,
+      });
       socket.emit("initialNotifications", userNotifications);
     } catch (err) {
       console.error("Error fetching notifications:", err);
@@ -171,10 +175,18 @@ io.on("connection", (socket) => {
       const laundryTicket = await LaundryTicket.findById(ticketId);
 
       // Check roles for access to ticket comments
-      if (ticket && (roles.includes(MANAGER) || roles.includes(TECHNICIAN) || roles.includes(USER))) {
+      if (
+        ticket &&
+        (roles.includes(MANAGER) ||
+          roles.includes(TECHNICIAN) ||
+          roles.includes(USER))
+      ) {
         socket.emit("initialComments", ticket.comments);
       }
-      if (laundryTicket && (roles.includes(MANAGER) || roles.includes(LaundryOperator))) {
+      if (
+        laundryTicket &&
+        (roles.includes(MANAGER) || roles.includes(LaundryOperator))
+      ) {
         socket.emit("initialComments", laundryTicket.comments);
       }
     } catch (err) {
@@ -197,7 +209,7 @@ io.on("connection", (socket) => {
     for (const [userId, socketId] of Object.entries(connectedUsers)) {
       if (socketId === socket.id) {
         delete connectedUsers[userId];
-        
+
         // Notify all clients that this user is now offline
         io.emit("userStatusChange", { userId, isOnline: false });
         console.log(`User disconnected and offline: ${userId}`);
