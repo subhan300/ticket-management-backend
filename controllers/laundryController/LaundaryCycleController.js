@@ -68,7 +68,6 @@ const handleComment=(commentPayload,userItem,updatePayload)=>{
 }
 const confirmLaundaryItems = async (req, res) => {
   try {
-  debugger
 
     const { id ,companyId} = req.user; // Extract user ID from req.user
    
@@ -151,10 +150,10 @@ debugger
      handleComment(commentPayload,userItem,updatePayload)
      const assignedTo=handleAssignedTo(updatedTicket);
      const populatedTicketsStructure={...updatedTicket.toObject(),assignedTo}
-     const managers=getAllUsersByRole(companyId,MANAGER);
-     const LaundryOperators=getAllUsersByRole(companyId,LaundryOperator)
+     const managers=await getAllUsersByRole(companyId,MANAGER);
+     const LaundryOperators=await getAllUsersByRole(companyId,LaundryOperator)
 
-     handleLaundaryUpdateTicketNotification(req,{tickets:populatedTicketsStructure,batchStatus:true,...updatePayload},managers,LaundryOperators)
+     handleLaundaryUpdateTicketNotification(req,{tickets:[populatedTicketsStructure],batchStatus:true,...updatePayload},managers,LaundryOperators)
       return res.status(200).json(populatedTicketsStructure);
 
   }

@@ -9,7 +9,7 @@ const messageToAssignedUser=(ticketNo)=>{
 }
 
 const updateTicketStatusMessage = (name, status, ticketNo) => {
-  return `Ticket #${ticketNo} is update to  ${status} by ${name}`;
+  return `Ticket #${ticketNo} is updated to  ${status} by ${name}`;
 };
 
 const ticketCreateMessage = (name,_,ticketNo) => {

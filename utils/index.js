@@ -69,7 +69,7 @@ const technicianUpdateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
   return `Ticket # ${ticketNo} is assigned by technician to himself ${name}`;
 };
 const updateTicketStatusMessage = (name, status, ticketNo) => {
-  return `Ticket # ${ticketNo} is update to  ${status} by ${name}`;
+  return `Ticket # ${ticketNo} is updateed to  ${status} by ${name}`;
 };
 const updateBatchLaundryStatusMessage = (name, status, tickets) => {
   return `Tickets # ${tickets} is updated to  ${status} by ${name}`;
