@@ -163,7 +163,10 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
     try {
       const { startDate, endDate } = req.query;
       const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
-  
+      console.log("date===>",new Date("2024-11-06"));
+      const date=new Date("2024-11-06")
+     
+
       const totalLaundryTickets = await LaundryTicket.countDocuments(filter);
       const pickedUp = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.PICKED_UP });
       const dryingCompleted = await LaundryTicket.countDocuments({ ...filter, status: LAUNDRY_STATUS.DRYING_COMPLETED });
@@ -173,7 +176,6 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
   
    
       res.status(200).json({
-        // total:`${totalLaundryTickets} Tickets`,
         total:totalLaundryTickets,
         statusCounts: {
           total:totalLaundryTickets,
@@ -262,7 +264,7 @@ const getUsersAnalytics = async (req, res) => {
                 _id: null,
                 deliveredCount: {
                   $sum: {
-                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.DELIVERED] }, 1, 0]
+                    $cond: [{ $eq: ["$status", LAUNDRY_STATUS.DELIVERED_TO_RESIDENT] }, 1, 0]
                   }
                 },
                 washCompleted: {
