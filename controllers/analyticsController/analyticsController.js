@@ -45,20 +45,20 @@ const { default: mongoose } = require('mongoose');
       const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
   
-      const getTicketsCountForMonth = async (startOfMonth, endOfMonth) => {
-        return Ticket.countDocuments({
-          createdAt: { $gte: new Date(startOfMonth), $lte: new Date(endOfMonth) },
-          ...roleFilter, 
-        });
-      };
+      // const getTicketsCountForMonth = async (startOfMonth, endOfMonth) => {
+      //   return Ticket.countDocuments({
+      //     createdAt: { $gte: new Date(startOfMonth), $lte: new Date(endOfMonth) },
+      //     ...roleFilter, 
+      //   });
+      // };
   
-      const currentMonthCount = await getTicketsCountForMonth(currentMonthStart, currentMonthEnd);
-      const previousMonthCount = await getTicketsCountForMonth(previousMonthStart, previousMonthEnd);
+      // const currentMonthCount = await getTicketsCountForMonth(currentMonthStart, currentMonthEnd);
+      // const previousMonthCount = await getTicketsCountForMonth(previousMonthStart, previousMonthEnd);
   
-      let percentageIncrease = 0;
-      if (previousMonthCount > 0) {
-        percentageIncrease = ((currentMonthCount - previousMonthCount) / previousMonthCount) * 100;
-      }
+      // let percentageIncrease = 0;
+      // if (previousMonthCount > 0) {
+      //   percentageIncrease = ((currentMonthCount - previousMonthCount) / previousMonthCount) * 100;
+      // }
   
      
   
@@ -74,7 +74,8 @@ const { default: mongoose } = require('mongoose');
           auditTickets
         
         },
-        percentageIncrease: percentageIncrease.toFixed(2), // Return percentage increase rounded to 2 decimal places
+        percentageIncrease: 0
+        // percentageIncrease.toFixed(2), // Return percentage increase rounded to 2 decimal places
       });
     } catch (err) {
       res.status(500).json({ message: err.message });
@@ -97,10 +98,10 @@ const { default: mongoose } = require('mongoose');
 
   
           const matchFilter =  {
-        //     createdAt: {
-        //     $gte: startOfDay,   // Start of today
-        //     $lt: startOfNextDay // Start of tomorrow (exclusive)
-        // }
+            createdAt: {
+            $gte: startOfDay,   // Start of today
+            $lt: startOfNextDay // Start of tomorrow (exclusive)
+        }
       }
   
           if (roles.includes(TECHNICIAN)) {
@@ -142,14 +143,13 @@ const { default: mongoose } = require('mongoose');
           ]);
   
           // Add result to counts array
-          debugger
           counts.push({
             startDate,
             endDate,
             openCount: result[0]?.openCount || 0,
             progressCount: result[0]?.progressCount || 0,
             completedCount: result[0]?.completedCount || 0,
-            auditCount:result[0]?.auditCount || [0]
+            auditCount:result[0]?.auditCount || 0
           });
         }
   
