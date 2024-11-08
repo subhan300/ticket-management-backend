@@ -3,6 +3,8 @@ const LaundryTicket = require('../../models/laundryModel');
 const Inventory = require('../../models/inventoryModel');
 const userModel = require('../../models/userModel');
 const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPLETED } = require('../../utils/constants');
+const dayjs = require('dayjs');
+const { default: mongoose } = require('mongoose');
 
   
   const getTicketAnalytics = async (req, res) => {
@@ -82,26 +84,34 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
     try {
       const { roles, id } = req.user;
       const dateArray = req.body;
+      console.log("id===",id)
       
       // Helper function to get counts for date ranges
       const getCountsForDates = async () => {
         const counts = [];
         
         for (const { startDate, endDate } of dateArray) {
-          const startOfDay = new Date(startDate);
-          const endOfDay = new Date(endDate);
+          // const startOfDay = new Date(startDate);
+          const startOfDay = dayjs(startDate).startOf('day').toDate();
+          const startOfNextDay = dayjs(startDate).add(1, 'day').startOf('day').toDate();
+
   
-          const matchFilter = { createdAt: { $gte: startOfDay, 
-            // $lt: endOfDay
-           } };
+          const matchFilter =  {
+        //     createdAt: {
+        //     $gte: startOfDay,   // Start of today
+        //     $lt: startOfNextDay // Start of tomorrow (exclusive)
+        // }
+      }
   
           if (roles.includes(TECHNICIAN)) {
             matchFilter.assignedTo = id;
           } else if (roles.includes(USER)) {
-            matchFilter.userId = id;
+            matchFilter.userId = new mongoose.Types.ObjectId(id);
+          
           }
           // No additional filter for 'manager'
       // console.log("match filter",matchFilter)
+    
           const result = await Ticket.aggregate([
             { $match: matchFilter },
             {
@@ -132,7 +142,7 @@ const { MANAGER, TECHNICIAN, USER, LAUNDRY_STATUS, OPEN, PROGRESS, CLOSED, COMPL
           ]);
   
           // Add result to counts array
-          
+          debugger
           counts.push({
             startDate,
             endDate,
