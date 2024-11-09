@@ -206,6 +206,7 @@ io.on("connection", (socket) => {
     console.log(`User left room for ticket: ${ticketId}`);
     socket.leave(ticketId);
   });
+ 
 
   // Handle user disconnection
   socket.on("disconnect", () => {
@@ -217,7 +218,8 @@ io.on("connection", (socket) => {
         delete connectedUsers[userId];
 
         // Notify all clients that this user is now offline
-        io.emit("userStatusChange", { userId, isOnline: false });
+        req.io.to(socketId).emit("userStatusChange", { userId, isOnline: false });
+        // io.emit.to("userStatusChange", { userId, isOnline: false });
         console.log(`User disconnected and offline: ${userId}`);
         break;
       }
