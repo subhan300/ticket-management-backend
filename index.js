@@ -218,7 +218,7 @@ io.on("connection", (socket) => {
         delete connectedUsers[userId];
 
         // Notify all clients that this user is now offline
-        req.io.to(socketId).emit("userStatusChange", { userId, isOnline: false });
+        io.to(socketId).emit("userStatusChange", { userId, isOnline: false });
         // io.emit.to("userStatusChange", { userId, isOnline: false });
         console.log(`User disconnected and offline: ${userId}`);
         break;
