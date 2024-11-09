@@ -459,6 +459,9 @@ const updateTicket = async (req, res) => {
             path: "unit",
             model: "Unit",
           },
+        }) .populate({
+          path: "comments.userId",         // Populating the userId inside each comment
+          select: "name email"             // Selecting the name and email of the user who commented
         });
       // const populatedTickets=populateTickets(ticket)
       const ticketStrcutureRes = await ticketStructure(populatedTickets);

@@ -171,8 +171,14 @@ io.on("connection", (socket) => {
     socket.join(ticketId);
 
     try {
-      const ticket = await Ticket.findById(ticketId);
-      const laundryTicket = await LaundryTicket.findById(ticketId);
+      const ticket = await Ticket.findById(ticketId).populate({
+        path: "comments.userId",         
+        select: "name email"             
+      });
+      const laundryTicket = await LaundryTicket.findById(ticketId).populate({
+        path: "comments.userId",         // Populating the userId inside each comment
+        select: "name email"             // Selecting the name and email of the user who commented
+      });
 
       // Check roles for access to ticket comments
       if (

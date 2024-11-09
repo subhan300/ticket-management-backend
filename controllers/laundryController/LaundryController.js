@@ -182,6 +182,9 @@ const createTicket = async (req, res) => {
           path: "unit",
           model: "Unit",
         },
+      }) .populate({
+        path: "comments.userId",         // Populating the userId inside each comment
+        select: "name email"             // Selecting the name and email of the user who commented
       })
       .sort({ createdAt: -1 });
 

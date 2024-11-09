@@ -120,6 +120,9 @@ const populateTickets = async (tickets) => {
         path: "unit",
         model: "Unit",
       },
+    }).populate({
+      path: "comments.userId",        
+      select: "name email"            
     })
     .sort({ createdAt: -1 });
 };
@@ -137,7 +140,10 @@ const populateLaundryTickets = async (tickets) => {
         model: "Unit",
       },
     })
-    .populate({ path: "location", model: "Location" })
+    .populate({ path: "location", model: "Location" }).populate({
+      path: "comments.userId",         // Populating the userId inside each comment
+      select: "name email"             // Selecting the name and email of the user who commented
+    })
     .sort({ createdAt: -1 });
 };
 const extractRoomAndUnit = (ticketItems) => {
