@@ -8,11 +8,37 @@ dotenv.config();
 const databaseUrl = process.env.MONGODB_URI;
 const agenda = new Agenda({ db: { address: databaseUrl } });
 const recordTemperatureAgenda = new Agenda({ db: { address: databaseUrl, collection: 'temperatureJobs' } });
-
+// const handleSortedJobs = (jobs)=>{
+//     return jobs.sort((job1, jobB) => {
+//          const jobA=job1.attrs
+//          const jobB=job2.attrs
+//         // Check for missing lastRunAt properties first
+//         if (jobA?.lastRunAt === undefined && jobB?.lastRunAt === undefined) {
+//           // If both lack lastRunAt, their order doesn't matter (return 0)
+//           return 0;
+//         } else if (jobA?.lastRunAt === undefined) {
+//           // If only jobA lacks lastRunAt, put it first (return -1)
+//           return -1;
+//         } else if (jobB?.lastRunAt === undefined) {
+//           // If only jobB lacks lastRunAt, put it last (return 1)
+//           return 1;
+//         }
+      
+//         // If both have lastRunAt, sort by latest to earliest
+//         return jobB.lastRunAt - jobA.lastRunAt;
+//       });
+// }
+const handleSortedJobs = (jobs)=>{
+    const first= jobs.filter(val=>!val?.attrs?.lastRunAt)
+    const remaining=jobs.filter(val=>val?.attrs?.lastRunAt)
+    return [...first,...remaining]
+}
 const getAllJobs = async (req, res) => {
   try {
-    const jobs = await agenda.jobs({}); // Fetch all jobs
-    res.status(200).json(jobs);
+    const jobs = await agenda.jobs({})
+    const sortedJobs = handleSortedJobs(jobs)
+    console.log("===> jobs",sortedJobs)
+   res.status(200).json(sortedJobs);
   } catch (error) {
     console.error("Error fetching jobs:", error);
     res.status(500).json({ error: "Error fetching jobs" });
