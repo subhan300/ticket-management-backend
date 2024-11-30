@@ -42,9 +42,7 @@ const getAllJobs = async (req, res) => {
     const jobsStructure = await Promise.all(
       sortedJobs.map(async (val) => {
         const { attrs: data } = val;
-         console.log("data=====",data)
         const room  = await roomModel.findById(data.data.data.room);
-        console.log("data val======",data.data)
         return {...data, ...data.data.data, room ,...data.data.user};
       })
     );
