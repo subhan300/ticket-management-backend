@@ -463,11 +463,10 @@ const updateTicket = async (req, res) => {
           path: "comments.userId",         // Populating the userId inside each comment
           select: "name email"             // Selecting the name and email of the user who commented
         });
-      // const populatedTickets=populateTickets(ticket)
       const ticketStrcutureRes = await ticketStructure(populatedTickets);
-      const users = await getAllUsersByRole(companyId, USER);
-      const managers = await getAllUsersByRole(companyId, MANAGER);
-      handleNotification(req, updates, managers, users, populatedTickets);
+      // const users = await getAllUsersByRole(companyId, USER);
+      // const managers = await getAllUsersByRole(companyId, MANAGER);
+      // handleNotification(req, updates, managers, users, populatedTickets);
 
       res.status(200).json(ticketStrcutureRes);
     });

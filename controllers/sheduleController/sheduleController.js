@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const Ticket = require("../../models/ticketModel");
 const { formatTicketNumber, ObjectId } = require("../../utils");
 const dayjs = require("dayjs");
+const roomModel = require("../../models/roomModel");
 dotenv.config();
 const databaseUrl = process.env.MONGODB_URI;
 const agenda = new Agenda({ db: { address: databaseUrl } });
@@ -35,16 +36,26 @@ const handleSortedJobs = (jobs)=>{
 }
 const getAllJobs = async (req, res) => {
   try {
-    const jobs = await agenda.jobs({})
-    const sortedJobs = handleSortedJobs(jobs)
-    console.log("===> jobs",sortedJobs)
-   res.status(200).json(sortedJobs);
+    const jobs = await agenda.jobs({});
+    const sortedJobs = handleSortedJobs(jobs);
+
+    const jobsStructure = await Promise.all(
+      sortedJobs.map(async (val) => {
+        const { attrs: data } = val;
+         console.log("data=====",data)
+        const room  = await roomModel.findById(data.data.data.room);
+        console.log("data val======",data.data)
+        return {...data, ...data.data.data, room ,...data.data.user};
+      })
+    );
+
+    // console.log("===> jobs", jobsStructure);
+    res.status(200).json(jobsStructure);
   } catch (error) {
     console.error("Error fetching jobs:", error);
     res.status(500).json({ error: "Error fetching jobs" });
   }
 };
-
 const deleteJob = async (req, res) => {
   const { jobId } = req.params; // Get jobId from the request parameters
 
