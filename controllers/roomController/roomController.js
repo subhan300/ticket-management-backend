@@ -46,7 +46,7 @@ const createRoomsInBulk = async (req, res) => {
 // Get all rooms
 const getAllRooms = async (req, res) => {
   try {
-    const rooms = await Room.find().populate('unit'); // Populate unit reference
+    const rooms = await Room.find({softDelete: { $ne: true }}).populate('unit'); // Populate unit reference
     res.status(200).json(rooms);
   } catch (error) {
     console.error('Error fetching rooms:', error);
@@ -72,7 +72,7 @@ const getRoomById = async (req, res) => {
 const getRoomsByUnitId = async (req, res) => {
   try {
     const { unitId } = req.params;
-    const room = await Room.find({unit:unitId}).populate('unit').sort({roomName:1});
+    const room = await Room.find({unit:unitId,softDelete: { $ne: true }}).populate('unit').sort({roomName:1});
     console.log("___room",room)
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
@@ -132,30 +132,100 @@ const getRoomsByUnitId = async (req, res) => {
 //     res.status(500).json({ message: 'Internal server error' });
 //   }
 // };
+// const getRoomsByLocationId = async (req, res) => {
+//   try {
+//     const { locationId } = req.params;
+//     const groupedRooms = await Room.aggregate([
+//       {
+//         $match: {
+//           location: covertId(locationId) // Match rooms for the specific location
+//         }
+//       },
+//       {
+//         $lookup: {
+//           from: 'units', // Assuming the collection name for units is 'units'
+//           localField: 'unit',
+//           foreignField: '_id',
+//           as: 'unitDetails' // The field to add the unit details
+//         }
+//       },
+//       {
+//         $unwind: '$unitDetails' // Unwind the array to get individual unit details
+//       },
+//       {
+//         $sort: {
+//           'roomName': 1 // Sort rooms by name or any other field inside the room document
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: '$unitDetails._id', // Group by unit ID
+//           unit: { $first: '$unitDetails' }, // Get the unit details
+//           rooms: {
+//             $push: {
+//               _id: '$_id',
+//               SKU: '$SKU',
+//               roomName: '$roomName',
+//               type: '$type',
+//               sensor: '$sensor'
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0, // Exclude the default _id field
+//           unit: 1,
+//           rooms: 1
+//         }
+//       },
+//       {
+//         $sort: {
+//           'unit.unitName': 1 // Sort units by unit name or any other field
+//         }
+//       }
+//     ]);
+
+//     if (!groupedRooms || groupedRooms.length === 0) {
+//       return res.status(404).json({ message: 'Rooms not found for this location' });
+//     }
+
+//     res.status(200).json(groupedRooms);
+//   } catch (error) {
+//     console.error('Error fetching rooms:', error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
 const getRoomsByLocationId = async (req, res) => {
   try {
     const { locationId } = req.params;
     const groupedRooms = await Room.aggregate([
       {
         $match: {
-          location: covertId(locationId) // Match rooms for the specific location
-        }
+          location: covertId(locationId),
+          softDelete: { $ne: true }, // Exclude soft-deleted rooms
+        },
       },
       {
         $lookup: {
           from: 'units', // Assuming the collection name for units is 'units'
           localField: 'unit',
           foreignField: '_id',
-          as: 'unitDetails' // The field to add the unit details
-        }
+          as: 'unitDetails', // The field to add the unit details
+        },
       },
       {
-        $unwind: '$unitDetails' // Unwind the array to get individual unit details
+        $unwind: '$unitDetails', // Unwind the array to get individual unit details
+      },
+      {
+        $match: {
+          'unitDetails.softDelete': { $ne: true }, // Exclude soft-deleted units
+        },
       },
       {
         $sort: {
-          'roomName': 1 // Sort rooms by name or any other field inside the room document
-        }
+          'roomName': 1, // Sort rooms by name or any other field inside the room document
+        },
       },
       {
         $group: {
@@ -167,23 +237,23 @@ const getRoomsByLocationId = async (req, res) => {
               SKU: '$SKU',
               roomName: '$roomName',
               type: '$type',
-              sensor: '$sensor'
-            }
-          }
-        }
+              sensor: '$sensor',
+            },
+          },
+        },
       },
       {
         $project: {
           _id: 0, // Exclude the default _id field
           unit: 1,
-          rooms: 1
-        }
+          rooms: 1,
+        },
       },
       {
         $sort: {
-          'unit.unitName': 1 // Sort units by unit name or any other field
-        }
-      }
+          'unit.unitName': 1, // Sort units by unit name or any other field
+        },
+      },
     ]);
 
     if (!groupedRooms || groupedRooms.length === 0) {
@@ -201,7 +271,7 @@ const getStorageRooms = async (req, res) => {
   try {
     const {locations}=req.user;
     const location=locations[0]
-    const rooms = await Room.find({location,type:"storage"}).populate('unit'); // Populate unit reference
+    const rooms = await Room.find({location,type:"storage", softDelete: { $ne: true } }).populate('unit'); // Populate unit reference
     res.status(200).json(rooms);
   } catch (error) {
     console.error('Error fetching rooms:', error);
@@ -218,7 +288,9 @@ const getRoomBySku = async (req, res) => {
       const room = await Room.find({$or: [
         { SKU: SKU }, 
         { roomName: SKU }, 
-      ],}).populate('unit');
+      ],
+      softDelete: { $ne: true }, // Exclude soft-deleted rooms
+    }).populate('unit');
       if (!room) {
         return res.status(404).json({ message: 'Room not found' });
       }
@@ -281,20 +353,23 @@ const updateRoom = async (req, res) => {
 };
 
 
-// Delete a room by ID
 const deleteRoom = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedRoom = await Room.findByIdAndDelete(id);
+    // Soft delete implementation: Set the softDelete flag to true
+    const deletedRoom = await Room.findByIdAndUpdate(id, { softDelete: true }, { new: true });
+
     if (!deletedRoom) {
       return res.status(404).json({ message: 'Room not found' });
     }
-    res.status(200).json({ message: 'Room deleted successfully' });
+
+    res.status(200).json({ message: 'Room marked as deleted successfully' });
   } catch (error) {
     console.error('Error deleting room:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 const deleteRoomsInBulk = async (req, res) => {
     try {
       const { unitId } = req.params; // Extract location ID from request parameters

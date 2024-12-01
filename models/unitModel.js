@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const UnitSchema = new Schema({
+  softDelete:{type:Boolean,default:false},
   name: {
     type: String,
     required: true,

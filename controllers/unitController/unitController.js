@@ -10,7 +10,7 @@ const LaundryTicket = require('../../models/laundryModel');
 
 const getAllUnits = async (req, res) => {
   try {
-    const units = await Unit.find();
+    const units = await Unit.find({softDelete: { $ne: true }});
     res.status(200).json(units);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -22,7 +22,7 @@ const getUnitsByCompanyId = async (req, res) => {
   try {
     const { companyId } = req.params;
    
-    const unit = await Unit.find({company: companyId},{name:1})
+    const unit = await Unit.find({company: companyId,softDelete: { $ne: true }},{name:1})
     res.status(200).json(unit);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -33,7 +33,7 @@ const getUnitsByLocationId = async (req, res) => {
   try {
     const { locationId } = req.params;
    
-    const unit = await Unit.find({location:locationId})
+    const unit = await Unit.find({location:locationId,softDelete: { $ne: true }})
     res.status(200).json(unit);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -127,63 +127,125 @@ const getUnitRoomsByCompanyId = async (req, res) => {
     }
   };
 
+  // const deleteUnitById = async (req, res) => {
+  //   const session = await mongoose.startSession(); // Start a new session for the transaction
+  //   session.startTransaction(); // Start the transaction
+  
+  //   try {
+  //     const { id } = req.params; // Extract the unit ID from request parameters
+  
+  //     if (!id) {
+  //       return res.status(400).json({ message: 'Unit ID is required' });
+  //     }
+  
+  //     // Delete the unit by its ID within the transaction
+  //     const result = await Unit.findByIdAndUpdate(id, { softDelete: true }, { new: true });
+  //     // const result = await Unit.findByIdAndDelete(id, { session });
+  
+  //     if (!result) {
+  //       await session.abortTransaction(); // Abort transaction if unit is not found
+  //       session.endSession();
+  //       return res.status(404).json({ message: 'Unit not found' });
+  //     }
+  
+  //     // Fetch all rooms associated with the unit before deleting them
+  //     const roomsToDelete = await roomModel.find({ unit: id });
+  
+  //     if (!roomsToDelete.length) {
+  //       await session.abortTransaction(); // Abort transaction if no rooms are found
+  //       session.endSession();
+  //       return res.status(404).json({ message: 'No rooms found associated with the unit' });
+  //     }
+  
+  //     // Delete all rooms associated with the unit within the transaction
+  //     const deleteRoomResult = await roomModel.deleteMany({ unit: id }, { session });
+  
+  //     if (!deleteRoomResult) {
+  //       await session.abortTransaction(); // Abort transaction if room deletion fails
+  //       session.endSession();
+  //       return res.status(500).json({ message: 'Failed to delete associated rooms' });
+  //     }
+  
+  //     // Delete associated data for each room (e.g., Inventory, UserItem, Tickets)
+  //     const roomIds = roomsToDelete.map(room => room._id); // Collect all room IDs
+  
+  //     // Delete associated inventories, user items, and tickets for the rooms
+  //     const res1 = await inventoryModel.deleteMany({ 'selectedRooms.room': { $in: roomIds } }, { session });
+  //     const res2 = await UserItem.deleteMany({ room: { $in: roomIds } }, { session });
+  //     const res3 = await Ticket.deleteMany({ room: { $in: roomIds } }, { session });
+  //     const res4=await LaundryTicket.deleteMany({room:{ $in:roomIds }},{session});
+
+  
+  //     console.log({ res1, res2, res3,res4 });
+  
+  //     // Commit the transaction if everything goes well
+  //     await session.commitTransaction();
+  //     session.endSession();
+  
+  //     return res.status(200).json({ 
+  //       message: 'Unit and associated rooms and their data deleted successfully', 
+  //       unit: result 
+  //     });
+  //   } catch (error) {
+  //     // Rollback the transaction on error
+  //     await session.abortTransaction();
+  //     session.endSession();
+  //     console.error('Error deleting unit by id:', error);
+  //     return res.status(500).json({ message: 'Internal server error' });
+  //   }
+  // };
+  
   const deleteUnitById = async (req, res) => {
     const session = await mongoose.startSession(); // Start a new session for the transaction
     session.startTransaction(); // Start the transaction
-  
+    
     try {
       const { id } = req.params; // Extract the unit ID from request parameters
-  
+    
       if (!id) {
         return res.status(400).json({ message: 'Unit ID is required' });
       }
-  
-      // Delete the unit by its ID within the transaction
-      const result = await Unit.findByIdAndDelete(id, { session });
-  
+    
+      // Soft delete the unit by its ID within the transaction
+      const result = await Unit.findByIdAndUpdate(id, { softDelete: true }, { new: true, session });
+    
       if (!result) {
         await session.abortTransaction(); // Abort transaction if unit is not found
         session.endSession();
         return res.status(404).json({ message: 'Unit not found' });
       }
-  
+    
       // Fetch all rooms associated with the unit before deleting them
       const roomsToDelete = await roomModel.find({ unit: id });
-  
+    
       if (!roomsToDelete.length) {
         await session.abortTransaction(); // Abort transaction if no rooms are found
         session.endSession();
         return res.status(404).json({ message: 'No rooms found associated with the unit' });
       }
-  
-      // Delete all rooms associated with the unit within the transaction
-      const deleteRoomResult = await roomModel.deleteMany({ unit: id }, { session });
-  
-      if (!deleteRoomResult) {
-        await session.abortTransaction(); // Abort transaction if room deletion fails
+    
+      // Soft delete all rooms associated with the unit within the transaction
+      const updateRoomsResult = await roomModel.updateMany(
+        { unit: id },
+        { softDelete: true },
+        { session }
+      );
+    
+      if (!updateRoomsResult) {
+        await session.abortTransaction(); // Abort transaction if room update fails
         session.endSession();
-        return res.status(500).json({ message: 'Failed to delete associated rooms' });
+        return res.status(500).json({ message: 'Failed to soft delete associated rooms' });
       }
-  
-      // Delete associated data for each room (e.g., Inventory, UserItem, Tickets)
-      const roomIds = roomsToDelete.map(room => room._id); // Collect all room IDs
-  
-      // Delete associated inventories, user items, and tickets for the rooms
-      const res1 = await inventoryModel.deleteMany({ 'selectedRooms.room': { $in: roomIds } }, { session });
-      const res2 = await UserItem.deleteMany({ room: { $in: roomIds } }, { session });
-      const res3 = await Ticket.deleteMany({ room: { $in: roomIds } }, { session });
-      const res4=await LaundryTicket.deleteMany({room:{ $in:roomIds }},{session});
-
-  
-      console.log({ res1, res2, res3,res4 });
-  
+    
+     
+    
       // Commit the transaction if everything goes well
       await session.commitTransaction();
       session.endSession();
-  
-      return res.status(200).json({ 
-        message: 'Unit and associated rooms and their data deleted successfully', 
-        unit: result 
+    
+      return res.status(200).json({
+        message: 'Unit and associated rooms and their data marked as deleted successfully',
+        unit: result
       });
     } catch (error) {
       // Rollback the transaction on error
@@ -193,7 +255,6 @@ const getUnitRoomsByCompanyId = async (req, res) => {
       return res.status(500).json({ message: 'Internal server error' });
     }
   };
-  
   
 
 

@@ -42,7 +42,7 @@ const getLocationsByIds = async (req, res) => {
         if (!Array.isArray(locations) || locations.length === 0) {
             return res.status(400).json({ error: "Invalid or empty IDs array." });
         }
-        const getLocations = await Location.find({ _id: { $in: locations } });
+        const getLocations = await Location.find({ _id: { $in: locations } ,softDelete: { $ne: true }});
         if (!getLocations.length) {
             return res.status(404).json({ message: "No locations found for the provided IDs." });
         }
