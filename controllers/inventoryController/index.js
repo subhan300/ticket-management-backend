@@ -200,7 +200,7 @@ const updateInventoryItem = async (req, res) => {
 
 const getAllItems = async (req, res) => {
   try {
-    const items = await Inventory.find()
+    const items = await Inventory.find({softDelete: { $ne: true }})
       .populate("unit")
       .populate("room")
       .populate("location"
@@ -216,7 +216,7 @@ const getProductBySku = async (req, res) => {
   const { SKU } = req.params;
 
   try {
-    const items = await Inventory.findOne({ SKU })
+    const items = await Inventory.findOne({ SKU ,softDelete: { $ne: true }})
       .populate("unit")
       .populate("room")
       .populate("location");
@@ -235,7 +235,7 @@ const getInventoryItemsByCompany = async (req, res) => {
   const { companyId } = req.user;
 
   try {
-    const items =  Inventory.find({ companyId })
+    const items =  Inventory.find({ companyId,softDelete: { $ne: true } })
      const invetoryPopulated=await populateInventory(items)
      console.log("inventory",invetoryPopulated.map(val=>val.selectedRooms.map(item=>item.room)))
     const transFormInventory = invetoryPopulated.map((val) => ({
@@ -253,7 +253,7 @@ const getInventoryItemShortDetail = async (req, res) => {
   const { companyId } = req.user;
 
   try {
-    const items = await Inventory.find({ companyId })
+    const items = await Inventory.find({ companyId ,softDelete: { $ne: true }})
       .select("productName productImage")
       .lean();
     const transFormInventory = items.map((val) => ({
@@ -271,7 +271,8 @@ const getInventoryItemShortDetail = async (req, res) => {
 const deleteInventoryItem = async (req, res) => {
   try {
     const { inventoryId } = req.params;
-    const deletedItem = await Inventory.findByIdAndDelete(inventoryId);
+    const deletedItem = await Inventory.findByIdAndUpdate(inventoryId, { softDelete: true }, { new: true });
+    // Inventory.findByIdAndDelete(inventoryId);
 
     res.status(200).json("deleted");
   } catch (err) {

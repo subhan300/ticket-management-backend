@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
 const roomSchema = new Schema({
   SKU: { type: String, required: true },
   sensor:{type:String},
-  softDelete:{type:Boolean},
+  softDelete:{type:Boolean,default:false},
   roomName: {
     type: String,
     required: true,

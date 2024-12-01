@@ -6,6 +6,7 @@ const Schema = mongoose.Schema;
 // Define the User schema
 const UserSchema = new Schema({
   SKU: { type: String },
+  softDelete:{type:Boolean,default:false},
   name: {
     type: String,
     required: true,

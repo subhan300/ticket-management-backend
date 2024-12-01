@@ -95,7 +95,7 @@ const inventorySchema = new Schema(
       type: String,
       required: true,
     },
-    softDelete:{type:Boolean},
+    softDelete:{type:Boolean,default:false},
     status: {
       type: String,
       enum: ["In Stock", "Out of Stock", "Low Stock"],
