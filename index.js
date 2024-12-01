@@ -24,6 +24,7 @@ const environmentCheckListRoute = require("./routes/environmentCheckListRoute");
 const predefinedQuestionRoute = require("./routes/predefinedQuestionRoute");
 const scheduleRoute = require("./routes/sheduleJobRoute");
 const recordTemperatureRoute = require("./routes/recordTemperatureRoute");
+const helpGuideRoute = require("./routes/guideVideosRoute");
 
 const connectDB = require("./config/db");
 const path = require("path");
@@ -121,6 +122,7 @@ app.use("/api/environmentCheckListRoute", environmentCheckListRoute);
 app.use("/api/predefinedQuestionRoute", predefinedQuestionRoute);
 app.use("/api/schedule", scheduleRoute);
 app.use("/api/record-temperature", recordTemperatureRoute);
+app.use("/api/help-guide", helpGuideRoute);
 
 app.post("/api/genereate-barCode", async (req, res) => {
   const { text } = req.body;
