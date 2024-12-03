@@ -30,7 +30,8 @@ const addPredefinedQuestionInBulk = async (req, res) => {
 // Get all user responses
 const getPredefinedQuestion = async (req, res) => {
   try {
-    const responses = await PredefinedQuestion.find({})// Assuming you want to populate user data
+    const {locations}=req.user;
+    const responses = await PredefinedQuestion.find({ location: { $in: locations },})// Assuming you want to populate user data
     res.status(200).json(responses);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -38,6 +39,18 @@ const getPredefinedQuestion = async (req, res) => {
 };
 
 // Update user response
+const updateAll = async (req, res) => {
+  try {
+    const location = "66df7372e2fe86332f1ad7c5";
+
+    const result = await PredefinedQuestion.updateMany(
+      { $set: { location: location } } 
+    );
+  console.log('result',result)
+  } catch (error) {
+    console.error("Error updating temperature readings:", error);
+  }
+};
 const updatePredefinedQuestion = async (req, res) => {
   const { id } = req.params;
   const updatedData = req.body;

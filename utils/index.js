@@ -207,8 +207,8 @@ const laundryTicketStructure = async (populatedTickets) => {
   }
 };
 const ticketStructure = async (ticket) => {
-  // console.log("maintenance ticket strucuture==>",ticket)
-  if (ticket?.length) {
+  console.log("maintenance ticket strucuture==>",ticket)
+  if (Array.isArray(ticket)) {
     return await Promise.all(
       ticket.map(async (ticket) => {
       

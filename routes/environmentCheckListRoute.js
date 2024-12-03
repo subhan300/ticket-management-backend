@@ -7,19 +7,20 @@ const {
   deleteAllChecklists,
   getSearchChecklist
 } = require('../controllers/environmentChecklistController/environmentChecklistController');
+const { authenticateJWT } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 // Add a new checklist
-router.post('/', addChecklist);
-router.post('/search',  getSearchChecklist);
+router.post('/', authenticateJWT,addChecklist);
+router.post('/search', authenticateJWT, getSearchChecklist);
 
 // Get all checklists
-router.get('/', getChecklists);
+router.get('/', authenticateJWT,getChecklists);
 
 // Update checklist by ID
-router.put('/:id', updateChecklist);
-router.delete("/:id",deleteChecklistById);
-router.delete("/delete/all",deleteAllChecklists)
+router.put('/:id', authenticateJWT,updateChecklist);
+router.delete("/:id",authenticateJWT,deleteChecklistById);
+router.delete("/delete/all",authenticateJWT,deleteAllChecklists)
 
 module.exports = router;

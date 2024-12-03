@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const supplierSchema = new Schema({
+    location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
     name: {
         type: String,
         required: true

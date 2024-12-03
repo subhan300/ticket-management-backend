@@ -76,7 +76,9 @@ const getLatestTemperatureReading = async (req, res) => {
 };
 const getAllTemperatureReadings = async (req, res) => {
     try {
-      const tempRecord = await Temperature.find({ }).populate("roomId")
+       const {locations}=req.user;
+        
+      const tempRecord = await Temperature.find({  location: { $in: locations }}).populate("roomId")
       tempRecord.forEach(record => {
         record.readings.sort((a, b) => new Date(b.date) - new Date(a.date));
       });
@@ -135,6 +137,24 @@ const getAllTemperatureReadings = async (req, res) => {
       res.status(500).json({ message: "Internal server error" });
     }
   }
+  const updateAllTemperatureReadings = async (req, res) => {
+    try {
+      const location = "66df7372e2fe86332f1ad7c5"; // The location you want to add to all records
+  
+      // Update all records in the Temperature collection to include the 'location' field
+      const result = await Temperature.updateMany(
+        {}, // Empty filter to target all documents in the collection
+        { $set: { location: location } } // Set the 'location' field for all records
+      );
+
+      // Return a response with the number of updated records
+      // res.status(200).json({ message: `${result.modifiedCount} records updated.` });
+    } catch (error) {
+      console.error("Error updating temperature readings:", error);
+      // res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
   const updateThreshold = async (req, res) => {
     try {
       const thresholds = req.body; // Get the thresholds from the request body
@@ -193,5 +213,6 @@ module.exports = {
   addTemperatureReading,
   getTemperatureReadings,
   getLatestTemperatureReading,
-  weebHookTrigger
+  weebHookTrigger,
+  updateAllTemperatureReadings
 };

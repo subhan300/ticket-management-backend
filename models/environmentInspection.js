@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const environmentCheckListSchema = new mongoose.Schema({
   month: { type: String },
   week: { type: String },
+  location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
   year:{type:String},
   checkList: [{
     category: {

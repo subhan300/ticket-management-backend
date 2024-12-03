@@ -6,6 +6,7 @@ const recordTemperatureSchema = new mongoose.Schema({
     ref: "Room",
     required: true,
   },
+  location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
   threshold:{type:Number,default:0},
   temperatureThreshold:{type:Number,default:0},
   humidityThreshold:{type:Number,default:0},

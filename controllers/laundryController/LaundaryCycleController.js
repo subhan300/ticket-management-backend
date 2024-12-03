@@ -20,7 +20,7 @@ const getTicketsInProcess = async (req, res) => {
   try {
     const { id, companyId,locations } = req.user;
     const tickets =await LaundryTicket.find({
-      location: locations[0],
+      location: { $in: locations },
       status: { $ne: LAUNDRY_STATUS.DELIVERED_TO_RESIDENT}, 
       confirmRecieve: { $exists: true, $not: { $size: 0 } }, 
     })

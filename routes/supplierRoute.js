@@ -2,21 +2,22 @@
 const express = require('express');
 const router = express.Router();
 const supplierController = require('../controllers/supplierController/supplierController');
+const { authenticateJWT } = require('../middleware/authMiddleware');
 
 // Create a new supplier
-router.post('/create', supplierController.createSupplier);
+router.post('/create', authenticateJWT,supplierController.createSupplier);
 
 // Get all suppliers
-router.get('/', supplierController.getAllSuppliers);
+router.get('/', authenticateJWT,supplierController.getAllSuppliers);
 
 
 // Get a single supplier by ID
-router.get('/:id', supplierController.getSupplierById);
+router.get('/:id', authenticateJWT,supplierController.getSupplierById);
 
 // Update a supplier
-router.put('/:id', supplierController.updateSupplier);
+router.put('/:id', authenticateJWT,supplierController.updateSupplier);
 
 // Delete a supplier
-router.delete('/:id', supplierController.deleteSupplier);
+router.delete('/:id', authenticateJWT,supplierController.deleteSupplier);
 
 module.exports = router;

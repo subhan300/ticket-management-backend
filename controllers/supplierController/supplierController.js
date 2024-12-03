@@ -15,7 +15,9 @@ exports.createSupplier = async (req, res) => {
 // Get all suppliers
 exports.getAllSuppliers = async (req, res) => {
     try {
-        const suppliers = await Supplier.find();
+        const {locations}=req.user
+        console.log("locations==",locations)
+        const suppliers = await Supplier.find( {location: { $in: locations } ,});
         res.status(200).json(suppliers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -43,7 +45,20 @@ exports.updateSupplier = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
+const updateAllSupplier = async () => {
+    try {
+      const location = "66df7372e2fe86332f1ad7c5"; // The location you want to add to all records
+  
+      const result = await Supplier.updateMany(
+        {}, 
+        { $set: { location: location } } // Set the 'location' field for all records
+      );
+   console.log("result===",result)
+    } catch (error) {
+      console.error("Error updating temperature readings:", error);
+      // res.status(500).json({ message: "Internal server error" });
+    }
+  };
 // Delete a supplier
 exports.deleteSupplier = async (req, res) => {
     try {

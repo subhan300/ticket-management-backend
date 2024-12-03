@@ -55,16 +55,17 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId,roles:userRoles } = req.user;
+    const { id: userId,roles:userRoles,locations } = req.user;
     let roles=Object.keys(req.body).length?req.body : userRoles
-    console.log("roles",roles)
+    console.log("roles",roles,"locations===",locations)
     let tickets;
     if (roles.includes(MANAGER)) {
       // add lcoation as well
-      tickets = Ticket.find({});
+      tickets = Ticket.find({ location: { $in: locations },});
     } 
     else if(roles.includes(USER) && roles.includes(TECHNICIAN) ){
       tickets = Ticket.find({ 
+        location: { $in: locations },
         $or: [
           { assignedTo: userId },
           { assignedTo: NotAssignedId },
@@ -73,9 +74,10 @@ const getTicketByUserId = async (req, res) => {
       });
     }
     else if (roles.includes(USER)) {
-      tickets = Ticket.find({ userId });
+      tickets = Ticket.find({ userId ,location: { $in: locations },});
     }else if(roles.includes(TECHNICIAN)){
       tickets = Ticket.find({ 
+        location: { $in: locations },
         $or: [
           { assignedTo: userId },
           { assignedTo: NotAssignedId }
@@ -138,8 +140,8 @@ const getFilterCompanyTickets = async (req, res) => {
 };
 const getCompanyTickets = async (req, res) => {
   try {
-    const { id, companyId } = req.user;
-
+    const { id, companyId ,locations} = req.user;
+     console.log("locations====",locations)
     const tickets = Ticket.find({
       companyId: companyId,
     });
@@ -164,15 +166,16 @@ const getUserTicket = async (req, res) => {
     }).lean();
  
     let tickets ;
+    if(!getRoom) return res.status(400).json({error:"did not found any room at this location"})
     if(roles.includes(MANAGER) || roles.includes(USER)){
      tickets= Ticket.find({
-        companyId: companyId,
+      location: { $in: locations } ,
         room: getRoom._id,
         
       });
     }else{
       tickets= Ticket.find({
-        companyId: companyId,
+        location: { $in: locations } ,
         room: getRoom._id,
         $or: [
           { userId: id },
@@ -195,12 +198,13 @@ const getUserTicket = async (req, res) => {
 };
 const searchTicket = async (req, res) => {
   try {
-    const { query } = req.body;
+    const { query ,locations} = req.body;
     if (!query || query.trim() === "") {
       return res.status(200).json([]);
     }
 
     const tickets = await Ticket.find({
+      location: { $in: locations } ,
       $or: [
         { issue: { $regex: query, $options: "i" } },
         { issueItem: { $regex: query, $options: "i" } },
@@ -463,10 +467,11 @@ const updateTicket = async (req, res) => {
           path: "comments.userId",         // Populating the userId inside each comment
           select: "name email"             // Selecting the name and email of the user who commented
         });
+      // const populatedTickets=populateTickets(ticket)
       const ticketStrcutureRes = await ticketStructure(populatedTickets);
-      // const users = await getAllUsersByRole(companyId, USER);
-      // const managers = await getAllUsersByRole(companyId, MANAGER);
-      // handleNotification(req, updates, managers, users, populatedTickets);
+      const users = await getAllUsersByRole(companyId, USER);
+      const managers = await getAllUsersByRole(companyId, MANAGER);
+      handleNotification(req, updates, managers, users, populatedTickets);
 
       res.status(200).json(ticketStrcutureRes);
     });

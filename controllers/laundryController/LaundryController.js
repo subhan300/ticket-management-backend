@@ -48,17 +48,17 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId, roles } = req.user;
+    const { id: userId, roles,locations } = req.user;
     let tickets;
     if (roles.includes(MANAGER)) {
-      tickets = LaundryTicket.find({});
+      tickets = LaundryTicket.find({ location: { $in: locations },});
     } else {
       // for now show all tickets
-      tickets = LaundryTicket.find({ });
+      tickets = LaundryTicket.find({ location: { $in: locations }, });
     }
     const populatedTickets = await populateLaundryTickets(tickets);
     if(!populatedTickets.length){
-      res.status(200).json({message:"No tickets founf"});
+     return res.status(200).json({message:"No tickets found"});
     }
     const populatedTicketsStucture = await laundryTicketStructure(
       populatedTickets
@@ -74,7 +74,7 @@ const getLaundryTicketByRoom = async (req, res) => {
     
     const { room } = req.body
     console.log("location",locations,room)
-     const getRoom=await roomModel.findOne({location:locations[0],roomName:room})
+     const getRoom=await roomModel.findOne({ location: { $in: locations },roomName:room})
     console.log("room",getRoom);
     if(!getRoom){
       return res.status(404).json({message:"Room not found"})
