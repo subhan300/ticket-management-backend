@@ -196,6 +196,18 @@ const getUserTicket = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+const updateAll = async (req, res) => {
+  try {
+    const location = "66df7372e2fe86332f1ad7c5";
+
+    const result = await Ticket.updateMany(
+      { $set: { location: location } } 
+    );
+  console.log('result',result)
+  } catch (error) {
+    console.error("Error updating temperature readings:", error);
+  }
+};
 const searchTicket = async (req, res) => {
   try {
     const { query ,locations} = req.body;

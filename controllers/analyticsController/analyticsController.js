@@ -9,20 +9,20 @@ const { default: mongoose } = require('mongoose');
   
   const getTicketAnalytics = async (req, res) => {
     try {
-      const { roles:userRoles, id } = req.user; // Extract user roles and ID from request
+      const { roles:userRoles, id,locations } = req.user; // Extract user roles and ID from request
       const { startDate, endDate } = req.query;
       const roles=req?.body?.length ? req.body : userRoles
       const baseFilter = startDate && endDate 
         ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
         : {};
       
-      let roleFilter = {};
+      let roleFilter = {location: { $in: locations },};
       
       if (Array.isArray(roles)) {
         if (roles.includes(TECHNICIAN)) {
-          roleFilter = { assignedTo: id }; 
+          roleFilter = { assignedTo: id, location: { $in: locations },}; 
         } else if (roles.includes(USER)) {
-          roleFilter = { userId: id }; 
+          roleFilter = { userId: id ,location: { $in: locations },}; 
         }
       }
       
@@ -83,10 +83,10 @@ const { default: mongoose } = require('mongoose');
   };
   const getTicketAnalyticsForChart = async (req, res) => {
     try {
-      const { roles, id } = req.user;
+      const { roles, id ,locations} = req.user;
       const dateArray = req.body;
-      console.log("id===",id)
-      
+      console.log("id===ll",locations)
+      const locationObjectIds = locations.map(location => new mongoose.Types.ObjectId(location));
       // Helper function to get counts for date ranges
       const getCountsForDates = async () => {
         const counts = [];
@@ -96,8 +96,10 @@ const { default: mongoose } = require('mongoose');
           const startOfDay = dayjs(startDate).startOf('day').toDate();
           const startOfNextDay = dayjs(startDate).add(1, 'day').startOf('day').toDate();
 
-  
+          
+
           const matchFilter =  {
+            location: { $in: locationObjectIds },
             createdAt: {
             $gte: startOfDay,   // Start of today
             $lt: startOfNextDay // Start of tomorrow (exclusive)
@@ -165,14 +167,19 @@ const { default: mongoose } = require('mongoose');
       });
   
     } catch (err) {
+      console.log("err==",err)
       res.status(500).json({ message: err.message });
     }
   };
   
   const getLaundryTicketAnalytics = async (req, res) => {
     try {
+      const {locations}=req.user
       const { startDate, endDate } = req.query;
-      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
+      const locationObjectIds = locations.map(location => new mongoose.Types.ObjectId(location));
+
+   
+      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },location: { $in: locationObjectIds }, } : {location: { $in: locationObjectIds },};
       console.log("date===>",new Date("2024-11-06"));
       const date=new Date("2024-11-06")
      
@@ -204,8 +211,10 @@ const { default: mongoose } = require('mongoose');
   
   const getInventoryAnalytics = async (req, res) => {
     try {
+      const {locations}=req.user
       const { startDate, endDate } = req.query;
-      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } } : {};
+      
+      const filter = startDate && endDate ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },location: { $in: locations }, } : {location: { $in: locations },};
       const totalInventoryItems = await Inventory.countDocuments(filter);
       const outOfStock = await Inventory.countDocuments({ ...filter, status: 'Out of Stock' });
       const inStock = await Inventory.countDocuments({ ...filter, status: 'In Stock' });
@@ -232,10 +241,12 @@ const { default: mongoose } = require('mongoose');
   };
 const getUsersAnalytics = async (req, res) => {
     try {
-      const totalUserItems = await userModel.countDocuments();
-      const managers = await userModel.countDocuments({ roles: { $in: [MANAGER] }});
-      const technicians = await userModel.countDocuments({ roles: { $in: [TECHNICIAN] }});
-      const Nurse = await userModel.countDocuments({ roles: { $in: [USER] } });
+      const {locations}=req.user
+      const filter={locations: { $in: locations },}
+      const totalUserItems = await userModel.countDocuments(filter);
+      const managers = await userModel.countDocuments({ roles: { $in: [MANAGER] },...filter});
+      const technicians = await userModel.countDocuments({ roles: { $in: [TECHNICIAN] },...filter},);
+      const Nurse = await userModel.countDocuments({ roles: { $in: [USER] } ,...filter});
   
       res.status(200).json({
         // total:`${totalUserItems} Employees`,
@@ -254,8 +265,12 @@ const getUsersAnalytics = async (req, res) => {
 
   const getLaundryTicketAnalyticsForChart = async (req, res) => {
     try {
+      const {locations}=req.user
       // Extract date ranges from the request body
       const dateArray = req.body;
+      const locationObjectIds = locations.map(location => new mongoose.Types.ObjectId(location));
+
+      
       // console.log("------",dateArray)
       // Helper function to get counts for date ranges
       const getCountsForDates = async () => {
@@ -266,8 +281,10 @@ const getUsersAnalytics = async (req, res) => {
           const endOfDay = new Date(endDate);
   
           const result = await LaundryTicket.aggregate([
-            { $match: { createdAt: { $gte: startOfDay, 
-              // $lt: endOfDay 
+            { $match: { 
+              location: { $in: locationObjectIds },
+              createdAt: { $gte: startOfDay, 
+             
             } } },
             {
               $group: {
