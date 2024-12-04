@@ -36,6 +36,7 @@ const handleSortedJobs = (jobs)=>{
 }
 const getAllJobs = async (req, res) => {
   try {
+    const {locations}=req.user
     const jobs = await agenda.jobs({});
     const sortedJobs = handleSortedJobs(jobs);
 
@@ -43,7 +44,9 @@ const getAllJobs = async (req, res) => {
       sortedJobs.map(async (val) => {
         const { attrs: data } = val;
         const room  = await roomModel.findById(data.data.data.room);
-        return {...data, ...data.data.data, room ,...data.data.user};
+        const filterTickets=data.data.data.filter(val=>locations.includes(val.location))
+        console.log("data==",data.data.data)
+        return {...data, ...filterTickets, room ,...data.data.user};
       })
     );
 

@@ -4,6 +4,7 @@ const { getDevicesStatus, getTemepratureFromSensor } = require("../switchbotCont
 // Add a new temperature reading for a room
 const addTemperatureReading = async (req, res) => {
   try {
+
     const { roomId, temperature } = req.body;
     const today = new Date().setHours(0, 0, 0, 0); // Start of today's date
 

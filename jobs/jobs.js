@@ -48,7 +48,7 @@ module.exports = function (agenda, io) {
         const { data } = job.attrs.data;
 
         console.log("Fetching records from RecordTemperature...");
-        const records = await RecordTemperature.find({}).populate("roomId");
+        const records = await RecordTemperature.find({location:data.location}).populate("roomId");
         console.log("Fetched records:", records);
 
         for (const record of records) {
