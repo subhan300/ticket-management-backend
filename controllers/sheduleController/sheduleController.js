@@ -39,14 +39,16 @@ const getAllJobs = async (req, res) => {
     const {locations}=req.user
     const jobs = await agenda.jobs({});
     const sortedJobs = handleSortedJobs(jobs);
-
-    const jobsStructure = await Promise.all(
+    const jobsStructure=[]
+    const temp= await Promise.all(
       sortedJobs.map(async (val) => {
         const { attrs: data } = val;
         const room  = await roomModel.findById(data.data.data.room);
-        const filterTickets=data.data.data.filter(val=>locations.includes(val.location))
-        console.log("data==",data.data.data)
-        return {...data, ...filterTickets, room ,...data.data.user};
+         
+        if(locations.includes(data.data.data.location)){
+         jobsStructure.push({ ...data, ...data.data.data, room ,...data.data.user})
+        }
+        
       })
     );
 
