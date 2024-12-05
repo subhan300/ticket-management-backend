@@ -21,5 +21,6 @@ router.put('/:id',authenticateJWT, locationController.updateLocation);
 
 // Delete a location by ID
 router.delete('/:id',authenticateJWT, locationController.deleteLocation);
+router.get('/get/settings',authenticateJWT, locationController.getLocationSettings);
 
 module.exports = router;

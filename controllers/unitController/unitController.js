@@ -69,7 +69,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
   const createUnitsInBulk = async (req, res) => {
     try {
       const units = req.body; 
-
+     console.log("inits================",units)
       if (!Array.isArray(units)) {
         return res.status(400).json({ message: 'Invalid data format. Expected an array of units.' });
       }

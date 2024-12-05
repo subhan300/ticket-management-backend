@@ -80,6 +80,33 @@ const updateLocation = async (req, res) => {
     }
 };
 
+const updateAll = async (req, res) => { 
+    try {
+      const location = "674f48a5d4903325eec6b58a"; // Example location ID
+      const updateData = {
+        $set: {
+          settings: {
+            unitName: "Unit-Name-Floor-Info", // Hardcoded Unit Name and Floor Info
+            roomName: "Unit-Room-Number-Info", // Hardcoded Room Name and Number Info
+            scanOption: "SKU" // Hardcoded Scan Option
+          }
+        }
+      };
+  
+      // Perform the update operation for all records with the given location ID
+      const result = await Location.updateMany(
+        { _id: location }, // Filter by location
+        updateData // The update action to apply
+      );
+  
+      console.log('result', result); // Log the result to verify the update
+    //   res.status(200).json({ message: 'Records updated successfully' });
+    } catch (error) {
+      console.error("Error updating temperature readings:", error);
+    //   res.status(500).json({ message: "Internal server error" });
+    }
+  };
+// updateAll()  
 // Delete a location by ID
 const deleteLocation = async (req, res) => {
     try {
@@ -92,8 +119,22 @@ const deleteLocation = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+const getLocationSettings= async (req,res) => {
 
+    try {
+      const {locations}=req.user
+      console.log("locat",locations)
+      const getLocations=await Location.find({_id:locations})
+      console.log("locations",getLocations)
+      return res.status(200).send(getLocations)
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      res.status(400).send("failed to handle query")
+    }
+  };
+  
 module.exports = {
+    getLocationSettings,
     createLocation,
     getLocations,
     getLocationById,

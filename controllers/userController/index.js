@@ -7,6 +7,7 @@ const { RESIDENT } = require('../../utils/constants');
 const Ticket = require('../../models/ticketModel');
 const LaundryTicket = require('../../models/laundryModel');
 const { default: mongoose } = require('mongoose');
+const locationModel = require('../../models/locationModel');
 // Function to create a new user
 const createUser = async (req, res) => {
     const { name, email, role, password, companyId, livingLocation, locationName,locations,imageUrl,roles
@@ -57,7 +58,7 @@ const login = async (req, res) => {
         }
 
         // Generate JWT token
-        const {role,companyId,name, livingLocation,locationName ,locations,roles}=user
+        const {role,companyId,name,locationName ,locations,roles}=user
         const token = jwt.sign(
             { user: { id: user._id, email ,role,roles,companyId,name, locationName ,locations} },
             process.env.JWT_SECRET,
@@ -108,6 +109,7 @@ const getUsersByRole= async (req,res) => {
     res.status(400).send("failed to handle query")
   }
 };
+
 const getUsersByRoles= async (req,res) => {
 
   try {
@@ -223,6 +225,7 @@ const deleteUsers = async (req, res) => {
 
 
 module.exports={
+  
   getUsers,
   getUsersByRole,
   updateUser,

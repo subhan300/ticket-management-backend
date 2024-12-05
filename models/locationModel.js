@@ -7,6 +7,12 @@ const Schema = mongoose.Schema;
 const LocationSchema = new Schema({
   locationName: { type: String, required: true },
   company: { type: Schema.Types.ObjectId, ref: "company" },
+  settings:{
+    unitName:{type:String,default:"Floor"},
+    roomName:{type:String,default:"Room"},
+    scanOption:{type:String,default:"roomName"}
+
+  }
   // unit: [{ type: Schema.Types.ObjectId, ref: "unit" }],
 });
 
