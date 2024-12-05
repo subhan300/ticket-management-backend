@@ -155,6 +155,23 @@ const getAllTemperatureReadings = async (req, res) => {
       // res.status(500).json({ message: "Internal server error" });
     }
   };
+  const deleteTemperatureRecords = async (req, res) => {
+    try {
+      const location = "66df7372e2fe86332f1ad7c5"; // The location you want to delete records for
+  
+      // Delete all records in the Temperature collection that match the location
+      const result = await Temperature.deleteMany(
+        { location: location } // Filter to find records with the specified location
+      );
+  console.log(result)
+      // Return a response with the number of deleted records
+      // res.status(200).json({ message: `${result.deletedCount} records deleted.` });
+    } catch (error) {
+      console.error("Error deleting temperature records:", error);
+      // res.status(500).json({ message: "Internal server error" });
+    }
+  };
+  deleteTemperatureRecords()
 
   const updateThreshold = async (req, res) => {
     try {

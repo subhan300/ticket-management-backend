@@ -210,9 +210,7 @@ const updateRoom = async (req, res) => {
       if (existingRoom) {
         return res.status(400).json({ message: `Sensor already exists in room ${existingRoom.roomName}` });
       }
-    }
-
-    // Find or create the temperature record within the transaction
+         // Find or create the temperature record within the transaction
     let record = await RecordTemperature.findOne({ roomId: id }).session(session);
     if (record) {
       // Update the existing record if it exists
@@ -223,6 +221,11 @@ const updateRoom = async (req, res) => {
       // Create a new record if it doesn't exist
       await RecordTemperature.create([{ roomId: id, isSensorIntegrated:sensor,location:locations[0]}], { session });
     }
+    }
+
+   if(sensor==="false"){
+    let record = await RecordTemperature.findOneAndUpdate({ roomId: id },{isSensorIntegrated:false}).session(session);
+   }
 
     // Proceed with the room update within the transaction
     const updatedRoom = await Room.findByIdAndUpdate(id, { sensor, ...payload }, { new: true, session });
