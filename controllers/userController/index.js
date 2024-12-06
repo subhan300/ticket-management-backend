@@ -114,12 +114,15 @@ const getUsersByRole= async (req,res) => {
 const getUsersByRoles= async (req,res) => {
 
   try {
-    const {roles,locations}=req.body
+    const {locations}=req.user
+    const roles=req.body
+    console.log("locations",locations,"roles",roles)
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
-      // locations: locations[0], 
-      roles: { $in: roles }, locations:{$in:locations} ,softDelete: { $ne: true }        // Filters by the user's role
-    }).select("name _id softDelete");
+ 
+      roles: { $in: roles },
+   locations:{$in:locations} ,softDelete: { $ne: true }        // Filters by the user's role
+    }).select("name _id softDelete roles locations");
     return res.status(200).send(usersCollection)
   } catch (error) {
     console.error('Error fetching managers:', error);
@@ -133,7 +136,7 @@ const getUsers= async (req,res) => {
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
     locations:{$in:locations}, softDelete: { $ne: true } 
-    }).populate("companyId").populate("locations");
+    }).populate("companyId");
     return res.status(200).send(usersCollection)
   } catch (error) {
     console.error('Error fetching managers:', error);
