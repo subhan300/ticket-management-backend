@@ -1,5 +1,4 @@
 const UserItem = require("../../models/userItemsModel");
-
 const getItemsGroupedByRoom = async (locationObjectId) => {
   try {
     const itemsGroupedByRoom = await UserItem.aggregate([
@@ -19,17 +18,24 @@ const getItemsGroupedByRoom = async (locationObjectId) => {
         }
       },
       { $unwind: "$roomDetails" },  // Unwind the roomDetails array to flatten the data
+      {
+        $lookup: {
+          from: "units",  // Lookup details from the "units" collection
+          localField: "roomDetails.unit",  // Assuming roomDetails has a field `unitId`
+          foreignField: "_id",  // Match on the unit's ID
+          as: "unitDetails"  // Output as "unitDetails"
+        }
+      },
+      { $unwind: "$unitDetails" },  // Unwind the unitDetails array to flatten the data
       { $match: { items: { $ne: [] } } }  // Filter out rooms with zero items (empty arrays)
     ]);
-    
-    return itemsGroupedByRoom;  // Return the grouped items
+
+    return itemsGroupedByRoom;
   } catch (error) {
-    console.error("Error in getItemsGroupedByRoom:", error);
-    throw error;  // Handle or rethrow the error
+    console.error(error);
+    throw new Error("Error fetching grouped items by room.");
   }
 };
-
-  
   const getItemsGroupedByRoomForIds = async (room) => {
     try {
       const itemsGroupedByRoom = await UserItem.aggregate([

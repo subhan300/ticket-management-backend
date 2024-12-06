@@ -150,7 +150,7 @@ const getCompanyTickets = async (req, res) => {
 const getUserTicket = async (req, res) => {
   try {
     const { id, companyId,locations ,roles} = req.user;
-    // console.log("location",locations)
+    console.log("location",locations,"roles",roles)
     const { SKU } = req.params;
     const getRoom = await Room.findOne({
       location: { $in: locations },
@@ -159,17 +159,17 @@ const getUserTicket = async (req, res) => {
         { roomName: SKU }, 
       ],
     }).lean();
- 
+  // console.log("get room",getRoom)
     let tickets ;
     if(!getRoom) return res.status(400).json({error:"did not found any room at this location"})
     if(roles.includes(MANAGER) || roles.includes(USER)){
      tickets= Ticket.find({
       location: { $in: locations } ,
-        room: getRoom._id,
+      room: getRoom._id,
         
       });
     }else{
-      tickets= Ticket.find({
+      tickets=await Ticket.find({
         location: { $in: locations } ,
         room: getRoom._id,
         $or: [
@@ -179,7 +179,9 @@ const getUserTicket = async (req, res) => {
         
       });
     }
+    // console.log("tikse",tickets)
     const populatedTickets = await populateTickets(tickets);
+     console.log("populatedTickets",populatedTickets)
     if(!populatedTickets.length){
       return res.status(200).json([]);
     }
