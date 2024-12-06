@@ -96,7 +96,9 @@ const updateUser = async (req, res) => {
 const getUsersByRole= async (req,res) => {
 
   try {
-    const {role,locations}=req.params
+    const {locations}=req.user
+    const {role,}=req.params
+    console.log("roles__",role,)
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       // locations: locations[0], 
@@ -116,7 +118,6 @@ const getUsersByRoles= async (req,res) => {
   try {
     const {locations}=req.user
     const roles=req.body
-    console.log("locations",locations,"roles",roles)
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
  
