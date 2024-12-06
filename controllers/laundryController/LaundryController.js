@@ -75,7 +75,6 @@ const updateAll = async (req, res) => {
     const result = await LaundryTicket.updateMany(
       { $set: { location: location } } 
     );
-  console.log('result',result)
   } catch (error) {
     console.error("Error updating temperature readings:", error);
   }
@@ -86,9 +85,7 @@ const getLaundryTicketByRoom = async (req, res) => {
      const {locations}=req.user;
     
     const { room } = req.body
-    console.log("location",locations,room)
      const getRoom=await roomModel.findOne({ location: { $in: locations },roomName:room})
-    console.log("room",getRoom);
     if(!getRoom){
       return res.status(404).json({message:"Room not found"})
     }
@@ -204,7 +201,6 @@ const createTicket = async (req, res) => {
     const structuredLaundaryRes = await laundryTicketStructure(getSelectedTicket);
     const laundryOperator = await getAllUsersByRole(companyId, LaundryOperator);
     const managers = await getAllUsersByRole(companyId, MANAGER);
-     console.log("____",structuredLaundaryRes)
     handleLaundaryTicketNotification(req, managers, laundryOperator, structuredLaundaryRes);
    
     return res.status(201).json(structuredLaundaryRes);

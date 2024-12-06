@@ -16,7 +16,6 @@ exports.createSupplier = async (req, res) => {
 exports.getAllSuppliers = async (req, res) => {
     try {
         const {locations}=req.user
-        console.log("locations==",locations)
         const suppliers = await Supplier.find( {location: { $in: locations } ,});
         res.status(200).json(suppliers);
     } catch (error) {
@@ -53,7 +52,6 @@ const updateAllSupplier = async () => {
         {}, 
         { $set: { location: location } } // Set the 'location' field for all records
       );
-   console.log("result===",result)
     } catch (error) {
       console.error("Error updating temperature readings:", error);
       // res.status(500).json({ message: "Internal server error" });

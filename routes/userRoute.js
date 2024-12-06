@@ -8,8 +8,9 @@ const { authenticateJWT } = require('../middleware/authMiddleware');
 // Route for creating a new user
 router.post('/signup', userController.createUser);
 router.post('/login', userController.login);
-router.put('/update/:id', userController.updateUser);
+router.put('/update/:id',authenticateJWT, userController.updateUser);
 router.get('/:role', authenticateJWT,userController.getUsersByRole);
+
 router.post('/role', authenticateJWT,userController.getUsersByRoles);
 router.get('/', authenticateJWT,userController.getUsers);
 router.delete('/:userId', authenticateJWT,userController.deleteUser);

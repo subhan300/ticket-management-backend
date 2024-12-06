@@ -57,7 +57,6 @@ const getTicketByUserId = async (req, res) => {
   try {
     const { id: userId,roles:userRoles,locations } = req.user;
     let roles=Object.keys(req.body).length?req.body : userRoles
-    console.log("roles",roles,"locations===",locations)
     let tickets;
     if (roles.includes(MANAGER)) {
       // add lcoation as well
@@ -101,15 +100,12 @@ const getTicketById = async (req, res) => {
     if (category === laundaryCategory) {
       tickets = LaundaryTicket.findById(id);
       const populatedTickets = await populateLaundryTickets(tickets);
-      console.log("populated",populateTickets)
       if(!populateTickets){
           return   res.status(400).json("no ticket found");
       }
       ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
     } else {
-      console.log("getticketbyid",id)
       tickets =Ticket.findById(id);
-      // console.log("tickets",tickets)
       const populatedTickets = await populateTickets(tickets);
       if(!populateTickets){
         return   res.
@@ -141,7 +137,6 @@ const getFilterCompanyTickets = async (req, res) => {
 const getCompanyTickets = async (req, res) => {
   try {
     const { id, companyId ,locations} = req.user;
-     console.log("locations====",locations)
     const tickets = Ticket.find({
       companyId: companyId,
     });
@@ -185,7 +180,6 @@ const getUserTicket = async (req, res) => {
       });
     }
     const populatedTickets = await populateTickets(tickets);
-    console.log(populatedTickets);
     if(!populatedTickets.length){
       return res.status(200).json([]);
     }
@@ -203,7 +197,6 @@ const updateAll = async (req, res) => {
     const result = await Ticket.updateMany(
       { $set: { location: location } } 
     );
-  console.log('result',result)
   } catch (error) {
     console.error("Error updating temperature readings:", error);
   }
@@ -255,7 +248,6 @@ const searchTicket = async (req, res) => {
 const createTicket = async (req, res) => {
   try {
     const { companyId, name, email, id: userId } = req.user;
-    console.log("crate ticket-------------------------------------")
     const {
       issue,
       description,
@@ -293,7 +285,6 @@ const createTicket = async (req, res) => {
     });
 
     await ticket.save();
-    console.log("ticket----------------",ticket)
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
@@ -340,7 +331,6 @@ const updateTicket = async (req, res) => {
       const { ticketId } = req.params;
       const updates = req.body;
       const inventoryUsed = updates?.inventoryUsed;
-      // console.log("udpates",updates)
       const isInventoryUsed = Array.isArray(inventoryUsed);
 
       if (!mongoose.Types.ObjectId.isValid(ticketId)) {
@@ -352,29 +342,24 @@ const updateTicket = async (req, res) => {
           const getInventoryItem = await InventoryModel.findById(
             item.inventoryId
           );
-          console.log("getInventoryItem.inventoryUsed",getInventoryItem.inventoryUsed)
           const filteredInventoryUsedTicket = getInventoryItem.inventoryUsed?.filter(
             (usedItem) => usedItem.ticket.toString() === ticketId
           );
          
-            console.log("____________________Already updated one ")
             let getStatus = {};
               const filteredInventoryUsed = getInventoryItem.inventoryUsed?.filter(
                 (usedItem) => usedItem.ticket.toString() !== ticketId
               );
-            console.log("________filteredinventoryused",filteredInventoryUsed,"___get invenotry",getInventoryItem.availableQty )
             // filtering this ticket data and totaling others ,so will get inventoryused for them 
                const totalUsedItemQty = filteredInventoryUsed?.reduce(
                 (total, usedItem) => total + usedItem.usedItemQty,
                 0
               );
-              console.log("___total used item",totalUsedItemQty)
               const usedItem = { usedItem: totalUsedItemQty ,updatedQty:item.quantityUsed};
               getStatus = updateStockStatus({
                 ...getInventoryItem.toObject(),
                 ...usedItem,
               });
-            console.log("_status",getStatus)
             if (
               getStatus.status === "Out of Stock" &&
               getStatus.availableQty < 0
@@ -384,7 +369,6 @@ const updateTicket = async (req, res) => {
                 .send("Inventory is out of stock ,can't order that much");
             }
             const getTicket=await Ticket.findById(ticketId).populate("room").select("room ticketNo");
-            // console.log("get ticket------",getTicket)
             if(filteredInventoryUsedTicket.length){
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
@@ -407,7 +391,6 @@ const updateTicket = async (req, res) => {
             }
          
           }else{
-               console.log("__________else")
               const res = await InventoryModel.updateOne(
                 { _id: item.inventoryId },
                 {

@@ -43,7 +43,6 @@ const getUnitsByLocationId = async (req, res) => {
 const getUnitRoomsByCompanyId = async (req, res) => {
     try {
       const { unitId } = req.params;
-      console.log(unitId)
       const unit = await Unit.findById(unitId)
       res.status(200).json(unit);
     } catch (err) {
@@ -69,7 +68,6 @@ const getUnitRoomsByCompanyId = async (req, res) => {
   const createUnitsInBulk = async (req, res) => {
     try {
       const units = req.body; 
-     console.log("inits================",units)
       if (!Array.isArray(units)) {
         return res.status(400).json({ message: 'Invalid data format. Expected an array of units.' });
       }
@@ -176,7 +174,7 @@ const getUnitRoomsByCompanyId = async (req, res) => {
   //     const res4=await LaundryTicket.deleteMany({room:{ $in:roomIds }},{session});
 
   
-  //     console.log({ res1, res2, res3,res4 });
+  
   
   //     // Commit the transaction if everything goes well
   //     await session.commitTransaction();

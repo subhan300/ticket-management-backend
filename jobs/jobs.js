@@ -37,28 +37,22 @@ module.exports = function (agenda, io) {
       const req = { io, user };
 
       handleSheduledTicketNotification(req, managers, technicians, ticket);
-      console.log("Ticket created successfully");
     } catch (err) {
       console.log(err);
     }
   });
   agenda.define("recordTemperature", async (job) => {
     try {
-        console.log("Started recordTemperature job:", job.attrs._id);
         const { data } = job.attrs.data;
 
-        console.log("Fetching records from RecordTemperature...");
         const records = await RecordTemperature.find({location:data.location}).populate("roomId");
-        console.log("Fetched records:", records);
 
         for (const record of records) {
             if (record.isSensorIntegrated) {
                 const sensorStatus = await getTemepratureFromSensor(record.isSensorIntegrated);
-                console.log("Sensor Status:", sensorStatus, "Room:", record.roomId);
 
                 const nurses = await getAllUsersByRole(data.companyId, USER);
                 const managers = await getAllUsersByRole(data.companyId, MANAGER);
-                 console.log("working====")
                 if (sensorStatus && sensorStatus.temperature != null) {
                     const req = { io, user: data };
                     if (
@@ -88,7 +82,6 @@ module.exports = function (agenda, io) {
             record.readings.sort((a, b) => b.date - a.date);
         }
 
-        console.log("Temperature recording completed successfully.");
     } catch (err) {
         console.error("Error in recordTemperature job:", err);
     }

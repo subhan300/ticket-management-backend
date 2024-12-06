@@ -46,7 +46,6 @@ const updateAll = async (req, res) => {
     const result = await PredefinedQuestion.updateMany(
       { $set: { location: location } } 
     );
-  console.log('result',result)
   } catch (error) {
     console.error("Error updating temperature readings:", error);
   }

@@ -163,7 +163,6 @@ const getAllTemperatureReadings = async (req, res) => {
       const result = await Temperature.deleteMany(
         { location: location } // Filter to find records with the specified location
       );
-  console.log(result)
       // Return a response with the number of deleted records
       // res.status(200).json({ message: `${result.deletedCount} records deleted.` });
     } catch (error) {
@@ -171,7 +170,7 @@ const getAllTemperatureReadings = async (req, res) => {
       // res.status(500).json({ message: "Internal server error" });
     }
   };
-  deleteTemperatureRecords()
+  // deleteTemperatureRecords()
 
   const updateThreshold = async (req, res) => {
     try {

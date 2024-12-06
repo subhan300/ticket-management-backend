@@ -130,7 +130,6 @@ app.post("/api/genereate-barCode", async (req, res) => {
   try {
     const barcodeRes = await generateBarcode(text);
     console.log("res", barcodeRes);
-    console.log("res", barcodeRes);
     res.set("Content-Type", "image/png");
     res.status(200).send(barcodeRes);
   } catch (err) {

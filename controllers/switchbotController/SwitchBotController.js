@@ -51,10 +51,8 @@ const getSignature = async (req, res) => {
         switchBotRes.on('data', chunk => {
             data += chunk;
         });
-        console.log("_______data",data)
         // When response is complete, send it back to the client
         switchBotRes.on('end', () => {
-            console.log("status___",switchBotRes)
             res.status(switchBotRes.statusCode).json({
 
                 status: switchBotRes.statusCode,

@@ -45,7 +45,6 @@ const deleteNotifications = async (req, res) => {
   
     try {
      const deleteRes=await await Notification.deleteMany({ _id: { $in: notificationIds } ,userId});
-     console.log("delete res",deleteRes.deletedCount)
 
       res.status(200).json({ message: 'Notifications deleted successfully' });
     } catch (error) {

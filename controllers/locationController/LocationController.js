@@ -38,7 +38,6 @@ const getLocationsByIds = async (req, res) => {
     try {
         const {locations}=req.user
         // const locationsIds = req.body;
-        console.log("locations",locations)
         if (!Array.isArray(locations) || locations.length === 0) {
             return res.status(400).json({ error: "Invalid or empty IDs array." });
         }
@@ -99,7 +98,6 @@ const updateAll = async (req, res) => {
         updateData // The update action to apply
       );
   
-      console.log('result', result); // Log the result to verify the update
     //   res.status(200).json({ message: 'Records updated successfully' });
     } catch (error) {
       console.error("Error updating temperature readings:", error);
@@ -123,9 +121,7 @@ const getLocationSettings= async (req,res) => {
 
     try {
       const {locations}=req.user
-      console.log("locat",locations)
       const getLocations=await Location.find({_id:locations})
-      console.log("locations",getLocations)
       return res.status(200).send(getLocations)
     } catch (error) {
       console.error('Error fetching managers:', error);

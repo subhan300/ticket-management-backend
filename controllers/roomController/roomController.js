@@ -172,7 +172,6 @@ const getStorageRooms = async (req, res) => {
 const getRoomBySku = async (req, res) => {
     try {
       const {locations}=req.user
-      console.log("location>>",req.user)
       const { SKU} = req.params;
     
       const room = await Room.find({
@@ -203,7 +202,7 @@ const updateRoom = async (req, res) => {
     const { id } = req.params;
     const {locations}=req.user
     const { sensor, ...payload } = req.body;
-     console.log("payload====",payload)
+   
     // Check if the sensor exists in another room
     if (sensor !== "false" && sensor) {
       const existingRoom = await Room.findOne({ sensor, _id: { $ne: id } }).session(session);
@@ -214,7 +213,6 @@ const updateRoom = async (req, res) => {
     let record = await RecordTemperature.findOne({ roomId: id }).session(session);
     if (record) {
       // Update the existing record if it exists
-      console.log("_sensor",sensor)
       record.isSensorIntegrated = sensor;
       await record.save({ session });
     } else {

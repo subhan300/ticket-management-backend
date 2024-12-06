@@ -18,7 +18,6 @@ const populateInventory=async(item)=>{
 const handleSelectedRoomResSet=(val)=>{
 
   return val.selectedRooms.map(({room,id,quantity})=>{
-    console.log("id",id,room)
     return {room:room._id,roomName:room.roomName,quantity}
   })
 

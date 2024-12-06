@@ -52,7 +52,7 @@ const getAllJobs = async (req, res) => {
       })
     );
 
-    // console.log("===> jobs", jobsStructure);
+
     res.status(200).json(jobsStructure);
   } catch (error) {
     console.error("Error fetching jobs:", error);
@@ -65,7 +65,6 @@ const deleteJob = async (req, res) => {
   try {
     const job = await agenda.cancel({ _id: new ObjectId(jobId) }); // Cancel the job by ID
 
-    console.log("job", job, "jobId", jobId);
     if (job === 0) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -77,10 +76,9 @@ const deleteJob = async (req, res) => {
 };
 
 agenda.start().then(() => {
-//   console.log("Agenda started");
+
 });
 recordTemperatureAgenda.start().then(() => {
-    // console.log("Record Temperature Agenda started");
   });
 
 const sheduleTicketCreation = async (req, res) => {
@@ -139,11 +137,7 @@ const sheduleTicketCreation = async (req, res) => {
             }
           );
 
-          console.log(
-            `Scheduled job for ${scheduledTime.format(
-              "DD/MM/YYYY HH:mm:ss"
-            )} with ID: ${job.attrs._id}`
-          );
+         
         }
 
         // Move to the next day while preserving the original time

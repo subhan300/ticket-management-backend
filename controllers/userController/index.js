@@ -96,10 +96,11 @@ const updateUser = async (req, res) => {
 const getUsersByRole= async (req,res) => {
 
   try {
-    const {role}=req.params
+    const {role,locations}=req.params
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       // locations: locations[0], 
+      locations:{$in:locations},
       roles: { $in: [role] },    
       softDelete: { $ne: true }  
     }).select("name _id softDelete");
@@ -113,11 +114,11 @@ const getUsersByRole= async (req,res) => {
 const getUsersByRoles= async (req,res) => {
 
   try {
-    const {roles}=req.body
+    const {roles,locations}=req.body
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       // locations: locations[0], 
-      roles: { $in: roles },  softDelete: { $ne: true }        // Filters by the user's role
+      roles: { $in: roles }, locations:{$in:locations} ,softDelete: { $ne: true }        // Filters by the user's role
     }).select("name _id softDelete");
     return res.status(200).send(usersCollection)
   } catch (error) {
@@ -131,7 +132,7 @@ const getUsers= async (req,res) => {
     const {companyId,locations}=req.user;
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
-      locations: locations[0], softDelete: { $ne: true } 
+    locations:{$in:locations}, softDelete: { $ne: true } 
     }).populate("companyId").populate("locations");
     return res.status(200).send(usersCollection)
   } catch (error) {
@@ -140,51 +141,6 @@ const getUsers= async (req,res) => {
   }
 };
 
-// const deleteUser = async (req, res) => {
-//   const session = await mongoose.startSession(); // Start a new session for the transaction
-//   session.startTransaction(); // Start the transaction
-
-//   try {
-//     const { userId } = req.params;
-
-//     if (!userId) {
-//       return res.status(400).json({ message: 'User ID is required' });
-//     }
-
-//     // Delete the user by its ID within the transaction
-//     const deletedUser = await User.findByIdAndDelete(userId, { session });
-
-//     if (!deletedUser) {
-//       await session.abortTransaction(); // Abort transaction if user is not found
-//       session.endSession();
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     // Delete all tickets created by the user within the transaction
-//     const deletedTickets = await Ticket.deleteMany({  userId }, { session });
-//     const deletedLaundryTickets = await LaundryTicket.deleteMany({  userId }, { session });
-
-//     // Check if any tickets were deleted
-//     if (deletedTickets.deletedCount === 0) {
-//       console.log('No tickets found for the user');
-//     }
-//     if (deletedLaundryTickets.deletedCount === 0) {
-//       console.log('No tickets found for the user');
-//     }
-
-//     // Commit the transaction if everything goes well
-//     await session.commitTransaction();
-//     session.endSession();
-
-//     return res.status(200).json("deleted");
-//   } catch (error) {
-//     // Rollback the transaction on error
-//     await session.abortTransaction();
-//     session.endSession();
-//     console.error('Error deleting user by id:', error);
-//     return res.status(500).json({ message: 'Internal server error' });
-//   }
-// };
 
 
 const deleteUser = async (req, res) => {

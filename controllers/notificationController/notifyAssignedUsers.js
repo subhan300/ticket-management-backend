@@ -17,7 +17,6 @@ const notifyAssignedUser = async (ticket, req,category) => {
         : `Ticket is assigned by ${
           roles.includes(MANAGER)? "Manager" : "Technician"
           } ${name} to ${assignedTo.name}`;
-    console.log("assigngedto====", assignedTo._id, "sockt==", socketId);
   
     const notifyRes = await createNotification(assignedTo._id, message, ticketId,category);
     sendSocketNotification(req, socketId, notifyRes);

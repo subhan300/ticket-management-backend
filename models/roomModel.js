@@ -25,21 +25,20 @@ const roomSchema = new Schema({
   type:{type:String,default:"general",required:false}
 });
 
-roomSchema.pre('findOneAndDelete', async function (next) {
-  const roomId = this.getQuery()['_id'];
+// roomSchema.pre('findOneAndDelete', async function (next) {
+//   const roomId = this.getQuery()['_id'];
 
-  try {
+//   try {
 
-    const res1=await await Inventory.deleteMany({ 'selectedRooms.room': roomId });
-    const res2=await await UserItem.deleteMany({ room: roomId });
-    const res3=await await Ticket.deleteMany({ room: roomId });
-    const res4=await LaundryTicket.deleteMany({room: roomId});
-    console.log({res1,res2,res3,res4})
-    next();
-  } catch (error) {
-    console.error('Error while deleting room and associated data:', error);
-    next(error); // Pass the error to the next middleware
-  }
-});
+//     const res1=await await Inventory.deleteMany({ 'selectedRooms.room': roomId });
+//     const res2=await await UserItem.deleteMany({ room: roomId });
+//     const res3=await await Ticket.deleteMany({ room: roomId });
+//     const res4=await LaundryTicket.deleteMany({room: roomId});
+//     next();
+//   } catch (error) {
+//     console.error('Error while deleting room and associated data:', error);
+//     next(error); // Pass the error to the next middleware
+//   }
+// });
 
 module.exports = mongoose.model("Room", roomSchema);

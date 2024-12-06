@@ -85,7 +85,6 @@ const { default: mongoose } = require('mongoose');
     try {
       const { roles, id ,locations} = req.user;
       const dateArray = req.body;
-      console.log("id===ll",locations)
       const locationObjectIds = locations.map(location => new mongoose.Types.ObjectId(location));
       // Helper function to get counts for date ranges
       const getCountsForDates = async () => {
