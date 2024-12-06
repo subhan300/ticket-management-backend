@@ -38,20 +38,23 @@ const getAllJobs = async (req, res) => {
   try {
     const {locations}=req.user
     const jobs = await agenda.jobs({});
+    console.log("jobs",jobs)
     const sortedJobs = handleSortedJobs(jobs);
     const jobsStructure=[]
     const temp= await Promise.all(
       sortedJobs.map(async (val) => {
         const { attrs: data } = val;
-        const room  = await roomModel.findById(data.data.data.room);
-         
+        const room  = await roomModel.findById(data.data.data.room).populate("unit");
+        const unit=room?.unit
+        
+        console.log("jobsStructure",data.data.data,"location",locations,room,unit)
         if(locations.includes(data.data.data.location)){
-         jobsStructure.push({ ...data, ...data.data.data, room ,...data.data.user})
+         jobsStructure.push({ ...data, ...data.data.data, room,unit:unit ,...data.data.user})
         }
         
       })
     );
-
+    console.log("jobsStructure",jobsStructure)
 
     res.status(200).json(jobsStructure);
   } catch (error) {
