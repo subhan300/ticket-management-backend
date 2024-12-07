@@ -78,16 +78,17 @@ const getLatestTemperatureReading = async (req, res) => {
 const getAllTemperatureReadings = async (req, res) => {
     try {
        const {locations}=req.user;
-        
+       console.log("locations",locations)
       const tempRecord = await Temperature.find({  location: { $in: locations }}).populate("roomId")
+      console.log("temp",tempRecord)
       tempRecord.forEach(record => {
         record.readings.sort((a, b) => new Date(b.date) - new Date(a.date));
       });
   
-      if (!tempRecord) {
+      if (!tempRecord.length) {
         return res
           .status(404)
-          .json({ message: "Temperature record not found for rooms" });
+          .json({ message: "No Temperature record for selected rooms" });
       }
   
       res.status(200).json(tempRecord);

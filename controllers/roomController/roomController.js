@@ -227,6 +227,7 @@ const updateRoom = async (req, res) => {
 
     // Proceed with the room update within the transaction
     const updatedRoom = await Room.findByIdAndUpdate(id, { sensor, ...payload }, { new: true, session });
+    console.log("udpated room",updatedRoom)
     if (!updatedRoom) {
       throw new Error('Room not found');
     }

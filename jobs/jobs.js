@@ -44,9 +44,9 @@ module.exports = function (agenda, io) {
   agenda.define("recordTemperature", async (job) => {
     try {
         const { data } = job.attrs.data;
-
-        const records = await RecordTemperature.find({location:data.location}).populate("roomId");
-
+        debugger
+        const records = await RecordTemperature.find({location:{$in:data.locations}}).populate("roomId");
+        console.log("record ",records)
         for (const record of records) {
             if (record.isSensorIntegrated) {
                 const sensorStatus = await getTemepratureFromSensor(record.isSensorIntegrated);
