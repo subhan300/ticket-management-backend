@@ -7,6 +7,9 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   SKU: { type: String },
   softDelete:{type:Boolean,default:false},
+  userSettings: {
+    selectedLocation: { type: Schema.Types.ObjectId, ref: 'Location' } 
+  },
   name: {
     type: String,
     required: true,

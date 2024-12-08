@@ -173,19 +173,41 @@ const deleteUser = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-const deleteUsers = async (req, res) => {
+const updateAll = async (req, res) => {
   try {
-    await Inventory.deleteMany({});
+      const { locations } = req.user;
+      
+      // Validate input
+      if (!locations || !Array.isArray(locations)) {
+          return res.status(400).json({ error: "Invalid locations data" });
+      }
 
-    res.status(200).json("deleted");
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+      // Perform bulk update
+      const result = await User.updateMany(
+          { locations: { $in: locations } }, // Match users with IDs in the locations array
+          { 
+              $set: { 
+                  "userSettings.selectedLocation": locations[0] 
+              } 
+          }
+      );
+console.log("====",result)
+      res.status(200).json({
+          message: "Users updated successfully",
+          modifiedCount: result.modifiedCount,
+          matchedCount: result.matchedCount
+      });
+  } catch (error) {
+      console.error("Update error:", error);
+      res.status(500).json({ 
+          error: "Failed to update users", 
+          details: error.message 
+      });
   }
 };
 
-
 module.exports={
-  
+  updateAll,
   getUsers,
   getUsersByRole,
   updateUser,

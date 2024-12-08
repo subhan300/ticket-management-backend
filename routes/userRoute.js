@@ -9,6 +9,7 @@ const { authenticateJWT } = require('../middleware/authMiddleware');
 router.post('/signup', userController.createUser);
 router.post('/login', userController.login);
 router.put('/update/:id',authenticateJWT, userController.updateUser);
+router.put('/update-all',authenticateJWT, userController.updateAll);
 router.get('/:role', authenticateJWT,userController.getUsersByRole);
 
 router.post('/role', authenticateJWT,userController.getUsersByRoles);

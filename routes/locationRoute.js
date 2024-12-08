@@ -12,12 +12,14 @@ router.post('/getLocationsByIds', authenticateJWT,locationController.getLocation
 
 // Get all locations
 router.get('/', authenticateJWT,locationController.getLocations);
+router.post('/company', authenticateJWT,locationController.getCompanyLocations);
 
 // Get a single location by ID
 router.get('/:SKU',authenticateJWT, locationController.getLocationById);
 
 // Update a location by ID
 router.put('/:id',authenticateJWT, locationController.updateLocation);
+router.put('/selectedLocation/settings',authenticateJWT, locationController.updateSelectedLocation);
 
 // Delete a location by ID
 router.delete('/:id',authenticateJWT, locationController.deleteLocation);

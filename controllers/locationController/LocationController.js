@@ -1,5 +1,6 @@
 const Location = require('../../models/locationModel');
-
+const { default: mongoose } = require('mongoose');
+const userModel = require('../../models/userModel');
 // Create a new location
 const createLocation = async (req, res) => {
     try {
@@ -28,6 +29,18 @@ const getLocations = async (req, res) => {
     try {
         const {companyId}=req.user
         const locations = await Location.find();
+        res.status(200).json(locations);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Get all locations
+const getCompanyLocations = async (req, res) => {
+    try {
+        const {companyId}=req.user
+        console.log("comapny",companyId)
+        const locations = await Location.find({company:companyId });
         res.status(200).json(locations);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -117,12 +130,75 @@ const deleteLocation = async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 };
+const updateSelectedLocation = async (req, res) => {
+    try {
+        // Extract user information from request
+        const { id, locations ,companyId} = req.user; 
+        const locationObjectIds = locations.map(location => new mongoose.Types.ObjectId(location));
+        const { userSettings, name, email } = req.body;
+
+        const updateFields = {};
+
+        // Only add fields to update if they're provided
+        if (userSettings) updateFields.userSettings = userSettings;
+        if (name) updateFields.name = name;
+        if (email) updateFields.email = email;
+
+        // If no fields to update, return an error
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({
+                message: "No valid fields provided for update."
+            });
+        }
+
+        // Perform the update on the user document
+        const updatedUser = await userModel.findByIdAndUpdate(
+            id,
+            updateFields,
+            { new: true }  // Returns the updated user document
+        );
+
+        // If user not found after update, return error
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found."
+            });
+        }
+
+        // Fetch locations by _id (using $in operator correctly)
+        const getLocations = await Location.find({ company: companyId }).populate("company");
+
+        // Filter the selected location from the list of locations
+        const selectedLocation = getLocations.filter(val => 
+            val._id.toString() === updatedUser.userSettings.selectedLocation.toString()
+        )[0];
+
+        // Send a response with the updated user and locations
+        return res.status(200).json({
+            locations: getLocations,
+            user: updatedUser,
+            selectedLocation
+        });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            message: "Server error, please try again later."
+        });
+    }
+};
+
 const getLocationSettings= async (req,res) => {
 
     try {
-      const {locations}=req.user
-      const getLocations=await Location.find({_id:locations})
-      return res.status(200).send(getLocations)
+      const {locations,id,companyId}=req.user
+    const user=await userModel.findById(id)
+
+     console.log("user===",user)
+      const getLocations=await Location.find({company:companyId}).populate("company");
+      const selectedLocation= getLocations.filter(val=>val._id.toString()===user.userSettings.selectedLocation.toString())[0]
+      console.log("selected",selectedLocation,user.userSettings,"---",getLocations)
+      return res.status(200).send({locations:getLocations,user,selectedLocation})
     } catch (error) {
       console.error('Error fetching managers:', error);
       res.status(400).send("failed to handle query")
@@ -130,11 +206,13 @@ const getLocationSettings= async (req,res) => {
   };
   
 module.exports = {
+    updateSelectedLocation,
     getLocationSettings,
     createLocation,
     getLocations,
     getLocationById,
     updateLocation,
     deleteLocation,
-    getLocationsByIds
+    getLocationsByIds,
+    getCompanyLocations
 };
