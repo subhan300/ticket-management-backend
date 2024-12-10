@@ -8,6 +8,8 @@ const { authenticateJWT } = require('../middleware/authMiddleware');
 // Route to get stock items by company ID
 router.get('/company/:companyId', authenticateJWT, inventoryController.getInventoryItemsByCompany);
 router.get('/company/short-details/:id', authenticateJWT, inventoryController.getInventoryItemShortDetail);
+router.get('/location/:id', authenticateJWT, inventoryController.getInventoryItemsByLocation);
+router.get('/location/short-details/:id', authenticateJWT, inventoryController.getInventoryItemShortDetailByLocation);
 router.post('/create/:companyId', authenticateJWT, inventoryController.createInventoryItem);
 router.post('/createInBulk/:companyId', authenticateJWT, inventoryController.createBulkInventoryItem);
 router.put('/update/:productId', authenticateJWT, inventoryController.updateInventoryItem );

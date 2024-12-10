@@ -4,7 +4,7 @@ const EnvironmentChecklist = require('../../models/environmentInspection');
 const addChecklist = async (req, res) => {
   try {
      const {locations}=req.user
-    const { year, month, week, checkList } = req.body;
+    const { year, month, week, checkList,location } = req.body;
 
     // Ensure year, month, week, and checkList are provided
     if (!year || !month || !week || !checkList || !Array.isArray(checkList)) {
@@ -24,7 +24,7 @@ const addChecklist = async (req, res) => {
       month,
       week,
       checkList,
-      location:locations[0]
+      location:location
     });
 
     await newChecklist.save();

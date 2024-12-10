@@ -62,16 +62,7 @@ const getTicketByUserId = async (req, res) => {
       // add lcoation as well
       tickets = Ticket.find({ location: { $in: locations },});
     } 
-    else if(roles.includes(USER) && roles.includes(TECHNICIAN) ){
-      tickets = Ticket.find({ 
-        location: { $in: locations },
-        $or: [
-          { assignedTo: userId },
-          { assignedTo: NotAssignedId },
-          { userId }
-        ]
-      });
-    }
+   
     else if (roles.includes(USER)) {
       tickets = Ticket.find({ userId ,location: { $in: locations },});
     }else if(roles.includes(TECHNICIAN)){
@@ -82,7 +73,16 @@ const getTicketByUserId = async (req, res) => {
           { assignedTo: NotAssignedId }
         ]
       });
-    }
+    } else if(roles.includes(USER) && roles.includes(TECHNICIAN) ){
+      return tickets = Ticket.find({ 
+         location: { $in: locations },
+         $or: [
+           { assignedTo: userId },
+           { assignedTo: NotAssignedId },
+           { userId }
+         ]
+       });
+     }
     const populatedTickets = await populateTickets(tickets);
     const ticketStrcutureRes = await ticketStructure(populatedTickets);
     res.status(200).json(ticketStrcutureRes);

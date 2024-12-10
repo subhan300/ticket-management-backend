@@ -231,10 +231,10 @@ const getProductBySku = async (req, res) => {
 
 
 const getInventoryItemsByCompany = async (req, res) => {
-  const { companyId } = req.user;
+  const { companyId ,locations} = req.user;
 
   try {
-    const items =  Inventory.find({ companyId,softDelete: { $ne: true } })
+    const items =  Inventory.find({ location:{$in:locations},softDelete: { $ne: true } })
      const invetoryPopulated=await populateInventory(items)
      console.log("inventory",invetoryPopulated.map(val=>val.selectedRooms.map(item=>item.room)))
     const transFormInventory = invetoryPopulated.map((val) => ({
@@ -249,10 +249,10 @@ const getInventoryItemsByCompany = async (req, res) => {
   }
 };
 const getInventoryItemShortDetail = async (req, res) => {
-  const { companyId } = req.user;
+  const { locations} = req.user;
 
   try {
-    const items = await Inventory.find({ companyId ,softDelete: { $ne: true }})
+    const items = await Inventory.find({ location:{$in:locations} ,softDelete: { $ne: true }})
       .select("productName productImage")
       .lean();
     const transFormInventory = items.map((val) => ({
@@ -266,6 +266,45 @@ const getInventoryItemShortDetail = async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 };
+const getInventoryItemsByLocation = async (req, res) => {
+ 
+  const {id}=req.params
+
+  try {
+    const items =  Inventory.find({ location:id,softDelete: { $ne: true } })
+     const invetoryPopulated=await populateInventory(items)
+     console.log("inventory",invetoryPopulated.map(val=>val.selectedRooms.map(item=>item.room)))
+    const transFormInventory = invetoryPopulated.map((val) => ({
+      ...val.toObject(),
+       selectedRooms:handleSelectedRoomResSet(val),
+      inventoryId: val._id,
+    }));
+    res.json(transFormInventory);
+  } catch (err) {
+    console.error("Error fetching inventory items:", err);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+const getInventoryItemShortDetailByLocation = async (req, res) => {
+
+  const {id}=req.params
+
+  try {
+    const items = await Inventory.find({ location:id ,softDelete: { $ne: true }})
+      .select("productName productImage")
+      .lean();
+    const transFormInventory = items.map((val) => ({
+      ...val,
+      quantityUsed: 1,
+      inventoryId: val._id,
+    }));
+    res.json(transFormInventory);
+  } catch (err) {
+    console.error("Error fetching inventory items:", err);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 
 const deleteInventoryItem = async (req, res) => {
   try {
@@ -307,6 +346,8 @@ const createBulkInventoryItem = async (req, res) => {
 };
 
 module.exports = {
+  getInventoryItemShortDetailByLocation,
+  getInventoryItemsByLocation,
   getProductBySku,
   getInventoryItemsByCompany,
   createInventoryItem,
