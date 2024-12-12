@@ -81,10 +81,10 @@ exports.deleteVideo = async (req, res) => {
 };
 
 exports.getVideosByLocationIds = async (req, res) => {
-    const { locationIds ,type} = req.body;
+    const { locationIds ,type,selectedLocation} = req.body;
   
     try {
-      const videos = await Video.find({ type,locationIds: { $in: locationIds } });
+      const videos = await Video.find({ type,locationIds: { $in: selectedLocation} });
       res.status(200).json(videos);
     } catch (error) {
       res.status(500).json({ message: error.message });
