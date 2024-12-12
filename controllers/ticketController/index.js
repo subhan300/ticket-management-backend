@@ -55,19 +55,19 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId,roles:userRoles,locations } = req.user;
+    const { id: userId,roles:userRoles,locations,selectedLocation } = req.user;
     let roles=Object.keys(req.body).length?req.body : userRoles
     let tickets;
     if (roles.includes(MANAGER)) {
       // add lcoation as well
-      tickets = Ticket.find({ location: { $in: locations },});
+      tickets = Ticket.find({ location: { $in: selectedLocation  },});
     } 
    
     else if (roles.includes(USER)) {
-      tickets = Ticket.find({ userId ,location: { $in: locations },});
+      tickets = Ticket.find({ userId ,location: { $in:  selectedLocation },});
     }else if(roles.includes(TECHNICIAN)){
       tickets = Ticket.find({ 
-        location: { $in: locations },
+        location: { $in:  selectedLocation },
         $or: [
           { assignedTo: userId },
           { assignedTo: NotAssignedId }
@@ -75,7 +75,7 @@ const getTicketByUserId = async (req, res) => {
       });
     } else if(roles.includes(USER) && roles.includes(TECHNICIAN) ){
       return tickets = Ticket.find({ 
-         location: { $in: locations },
+         location: { $in:  selectedLocation },
          $or: [
            { assignedTo: userId },
            { assignedTo: NotAssignedId },
@@ -149,11 +149,11 @@ const getCompanyTickets = async (req, res) => {
 };
 const getUserTicket = async (req, res) => {
   try {
-    const { id, companyId,locations ,roles} = req.user;
-    console.log("location",locations,"roles",roles)
+    const { id, companyId,locations ,roles, selectedLocation} = req.user;
+   
     const { SKU } = req.params;
     const getRoom = await Room.findOne({
-      location: { $in: locations },
+      location: { $in: selectedLocation },
       $or: [
         { SKU: SKU }, 
         { roomName: SKU }, 
@@ -164,13 +164,13 @@ const getUserTicket = async (req, res) => {
     if(!getRoom) return res.status(400).json({error:"did not found any room at this location"})
     if(roles.includes(MANAGER) || roles.includes(USER)){
      tickets= Ticket.find({
-      location: { $in: locations } ,
+      location: { $in:  selectedLocation } ,
       room: getRoom._id,
         
       });
     }else{
       tickets=await Ticket.find({
-        location: { $in: locations } ,
+        location: { $in:  selectedLocation } ,
         room: getRoom._id,
         $or: [
           { userId: id },
@@ -205,13 +205,13 @@ const updateAll = async (req, res) => {
 };
 const searchTicket = async (req, res) => {
   try {
-    const { query ,locations} = req.body;
+    const { query ,locations, selectedLocation} = req.body;
     if (!query || query.trim() === "") {
       return res.status(200).json([]);
     }
 
     const tickets = await Ticket.find({
-      location: { $in: locations } ,
+      location: { $in: selectedLocation } ,
       $or: [
         { issue: { $regex: query, $options: "i" } },
         { issueItem: { $regex: query, $options: "i" } },

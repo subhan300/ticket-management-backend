@@ -24,7 +24,13 @@ const getTicketsInProcess = async (req, res) => {
       status: { $ne: LAUNDRY_STATUS.DELIVERED_TO_RESIDENT}, 
       confirmRecieve: { $exists: true, $not: { $size: 0 } }, 
     })
-    .select("ticketNo room userItems confirmRecieve confirmCompleted status assignedTo").populate("room");
+    .select("ticketNo room userItems confirmRecieve confirmCompleted status assignedTo").populate({
+      path: 'room',
+      populate: {
+        path: 'unit',
+        // select: 'specificSubField'
+      }
+    })
    
      
     if(!tickets.length){
@@ -36,7 +42,7 @@ const getTicketsInProcess = async (req, res) => {
     }
      const assignedTo=handleAssignedTo(tickets[0])
    
-      const populatedTicketsStructure=tickets.map(val=>({...val.toObject(),assignedTo}))
+      const populatedTicketsStructure=tickets.map(val=>({...val.toObject(),unit:val.room.unit,assignedTo}))
       let sendRes=populatedTicketsStructure.length ? populatedTicketsStructure: []
       return res.status(200).json(sendRes);
 

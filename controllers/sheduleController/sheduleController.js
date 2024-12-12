@@ -36,7 +36,7 @@ const handleSortedJobs = (jobs)=>{
 }
 const getAllJobs = async (req, res) => {
   try {
-    const {locations}=req.user
+    const {locations, selectedLocation}=req.user
     const jobs = await agenda.jobs({});
     console.log("jobs",jobs)
     const sortedJobs = handleSortedJobs(jobs);
@@ -47,8 +47,8 @@ const getAllJobs = async (req, res) => {
         const room  = await roomModel.findById(data.data.data.room).populate("unit");
         const unit=room?.unit
         
-        console.log("jobsStructure",data.data.data,"location",locations,room,unit)
-        if(locations.includes(data.data.data.location)){
+        // console.log("jobsStructure",data.data.data,"location",locations,room,unit)
+        if( selectedLocation.includes(data.data.data.location)){
          jobsStructure.push({ ...data, ...data.data.data, room,unit:unit ,...data.data.user})
         }
         

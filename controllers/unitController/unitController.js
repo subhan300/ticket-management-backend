@@ -21,8 +21,9 @@ const getAllUnits = async (req, res) => {
 const getUnitsByCompanyId = async (req, res) => {
   try {
     const { companyId } = req.params;
+    const {selectedLocation}=req.user
    
-    const unit = await Unit.find({company: companyId,softDelete: { $ne: true }},{name:1})
+    const unit = await Unit.find({location: selectedLocation,softDelete: { $ne: true }},{name:1})
     res.status(200).json(unit);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31,9 +32,9 @@ const getUnitsByCompanyId = async (req, res) => {
 
 const getUnitsByLocationId = async (req, res) => {
   try {
-    const { locationId } = req.params;
-   
-    const unit = await Unit.find({location:locationId,softDelete: { $ne: true }})
+    // const { locationId } = req.params;
+    const {selectedLocation}=req.user
+    const unit = await Unit.find({location:selectedLocation,softDelete: { $ne: true }})
     res.status(200).json(unit);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -259,9 +260,9 @@ const getUnitRoomsByCompanyId = async (req, res) => {
 
 const createUnitAndRooms = async (req, res) => {
   try {
-    const { unitName, rooms,existingUnit } = req.body; // Expect unitName and an array of rooms in the request body
+    const { unitName, rooms,existingUnit,location } = req.body; // Expect unitName and an array of rooms in the request body
     const { locations } = req.user; // Assuming location comes from req.user
-    const location=locations[0]
+    // const location=locations[0]
     if (!rooms || !rooms.length) {
       return res.status(400).json({ message: "Unit name and rooms are required" });
     }

@@ -15,8 +15,8 @@ exports.createSupplier = async (req, res) => {
 // Get all suppliers
 exports.getAllSuppliers = async (req, res) => {
     try {
-        const {locations}=req.user
-        const suppliers = await Supplier.find( {location: { $in: locations } ,});
+        const { selectedLocation}=req.user
+        const suppliers = await Supplier.find( {location: { $in:  selectedLocation } ,});
         res.status(200).json(suppliers);
     } catch (error) {
         res.status(500).json({ message: error.message });

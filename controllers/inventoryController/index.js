@@ -231,10 +231,10 @@ const getProductBySku = async (req, res) => {
 
 
 const getInventoryItemsByCompany = async (req, res) => {
-  const { companyId ,locations} = req.user;
+  const { companyId , selectedLocation} = req.user;
 
   try {
-    const items =  Inventory.find({ location:{$in:locations},softDelete: { $ne: true } })
+    const items =  Inventory.find({ location:{$in: selectedLocation},softDelete: { $ne: true } })
      const invetoryPopulated=await populateInventory(items)
      console.log("inventory",invetoryPopulated.map(val=>val.selectedRooms.map(item=>item.room)))
     const transFormInventory = invetoryPopulated.map((val) => ({
@@ -249,10 +249,10 @@ const getInventoryItemsByCompany = async (req, res) => {
   }
 };
 const getInventoryItemShortDetail = async (req, res) => {
-  const { locations} = req.user;
+  const {  selectedLocation} = req.user;
 
   try {
-    const items = await Inventory.find({ location:{$in:locations} ,softDelete: { $ne: true }})
+    const items = await Inventory.find({ location:{$in: selectedLocation} ,softDelete: { $ne: true }})
       .select("productName productImage")
       .lean();
     const transFormInventory = items.map((val) => ({

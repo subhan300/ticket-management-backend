@@ -60,14 +60,14 @@ const getUserItemsByRoom = async (req, res) => {
 
 const getUserItems =  async (req, res) => {
     try {
-        const { locations } = req.user;
-        const location = locations[0]; 
-        const locationObjectId = new mongoose.Types.ObjectId(location);
+        const {  selectedLocation } = req.user;
+        // const location = locations[0]; 
+        const locationObjectId =selectedLocation.map(location=> new mongoose.Types.ObjectId(location))
         
         const itemsGroupedByRoom = await getItemsGroupedByRoom(locationObjectId)
         console.log("itemsGroupedByRoom",itemsGroupedByRoom)
        
-        res.status(200).json(itemsGroupedByRoom)
+        return res.status(200).json(itemsGroupedByRoom)
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

@@ -77,9 +77,9 @@ const getLatestTemperatureReading = async (req, res) => {
 };
 const getAllTemperatureReadings = async (req, res) => {
     try {
-       const {locations}=req.user;
-       console.log("locations",locations)
-      const tempRecord = await Temperature.find({  location: { $in: locations }}).populate("roomId")
+       const {locations, selectedLocation}=req.user;
+      //  console.log("locations",locations)
+      const tempRecord = await Temperature.find({  location: { $in:  selectedLocation }}).populate("roomId")
       console.log("temp",tempRecord)
       tempRecord.forEach(record => {
         record.readings.sort((a, b) => new Date(b.date) - new Date(a.date));

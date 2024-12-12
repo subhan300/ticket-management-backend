@@ -48,13 +48,13 @@ const getAllTickets = async (req, res) => {
 
 const getTicketByUserId = async (req, res) => {
   try {
-    const { id: userId, roles,locations } = req.user;
+    const { id: userId, roles, selectedLocation } = req.user;
     let tickets;
     if (roles.includes(MANAGER)) {
-      tickets = LaundryTicket.find({ location: { $in: locations },});
+      tickets = LaundryTicket.find({ location: { $in:  selectedLocation },});
     } else {
       // for now show all tickets
-      tickets = LaundryTicket.find({ location: { $in: locations }, });
+      tickets = LaundryTicket.find({ location: { $in:  selectedLocation }, });
     }
     const populatedTickets = await populateLaundryTickets(tickets);
     if(!populatedTickets.length){
@@ -82,10 +82,10 @@ const updateAll = async (req, res) => {
 
 const getLaundryTicketByRoom = async (req, res) => {
   try {
-     const {locations}=req.user;
+     const { selectedLocation}=req.user;
     
     const { room } = req.body
-     const getRoom=await roomModel.findOne({ location: { $in: locations },roomName:room})
+     const getRoom=await roomModel.findOne({ location: { $in:  selectedLocation },roomName:room})
     if(!getRoom){
       return res.status(404).json({message:"Room not found"})
     }

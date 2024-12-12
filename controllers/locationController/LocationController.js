@@ -194,7 +194,6 @@ const getLocationSettings= async (req,res) => {
       const {locations,id,companyId}=req.user
     const user=await userModel.findById(id)
 
-     console.log("user===",user)
       const getLocations=await Location.find({company:companyId}).populate("company");
       const selectedLocation= getLocations.filter(val=>val._id.toString()===user.userSettings.selectedLocation.toString())[0]
       console.log("selected",selectedLocation,user.userSettings,"---",getLocations)

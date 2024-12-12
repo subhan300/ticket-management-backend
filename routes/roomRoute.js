@@ -14,6 +14,7 @@ const { authenticateJWT } = require("../middleware/authMiddleware");
 
 // Route to create a new room
 router.post("/",authenticateJWT, createRoom);
+// not in use
 router.post("/create-inbulk",authenticateJWT, createRoomsInBulk);
 router.put("/update-inbulk",authenticateJWT, updateBulkRooms);
 

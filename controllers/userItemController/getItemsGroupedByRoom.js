@@ -2,7 +2,7 @@ const UserItem = require("../../models/userItemsModel");
 const getItemsGroupedByRoom = async (locationObjectId) => {
   try {
     const itemsGroupedByRoom = await UserItem.aggregate([
-      { $match: { location: locationObjectId } },  // Match based on location
+      { $match: { location: {$in:locationObjectId} } },  // Match based on location
       {
         $group: {
           _id: "$room",  // Group by room

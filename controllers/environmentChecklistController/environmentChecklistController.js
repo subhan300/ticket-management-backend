@@ -64,9 +64,9 @@ const updateChecklist = async (req, res) => {
 // Get all checklists
 const getChecklists = async (req, res) => {
   try {
-    const {locations}=req.user
+    const {selectedLocation}=req.user
 
-    const checklists = await EnvironmentChecklist.find({location: { $in: locations },});
+    const checklists = await EnvironmentChecklist.find({location: { $in: selectedLocation },});
     res.status(200).json(checklists);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -74,14 +74,14 @@ const getChecklists = async (req, res) => {
 };
 const  getSearchChecklist= async (req, res) => {
   try {
-    const {locations}=req.user
+    const { selectedLocation}=req.user
     const { month, year, week } = req.body; // Using query parameters
 
     if (!month || !year || !week) {
       return res.status(400).json({ error: "Month, year, and week are required." });
     }
 
-    const checklists = await EnvironmentChecklist.find({ month, year, week, location: { $in: locations }, });
+    const checklists = await EnvironmentChecklist.find({ month, year, week, location: { $in: selectedLocation }, });
     res.status(200).json(checklists);
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -96,13 +96,15 @@ const updateUser = async (req, res) => {
 const getUsersByRole= async (req,res) => {
 
   try {
-    const {locations}=req.user
+    // const {locations}=req.user
+
+    const {selectedLocation}=req.user
     const {role,}=req.params
     console.log("roles__",role,)
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
       // locations: locations[0], 
-      locations:{$in:locations},
+      locations:{$in:selectedLocation},
       roles: { $in: [role] },    
       softDelete: { $ne: true }  
     }).select("name _id softDelete");
@@ -116,13 +118,13 @@ const getUsersByRole= async (req,res) => {
 const getUsersByRoles= async (req,res) => {
 
   try {
-    const {locations}=req.user
+    const {locations,selectedLocation}=req.user
     const roles=req.body
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
  
       roles: { $in: roles },
-   locations:{$in:locations} ,softDelete: { $ne: true }        // Filters by the user's role
+   locations:{$in:selectedLocation} ,softDelete: { $ne: true }        // Filters by the user's role
     }).select("name _id softDelete roles locations");
     return res.status(200).send(usersCollection)
   } catch (error) {
@@ -133,10 +135,10 @@ const getUsersByRoles= async (req,res) => {
 const getUsers= async (req,res) => {
 
   try {
-    const {companyId,locations}=req.user;
+    const {companyId,locations,selectedLocation}=req.user;
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
-    locations:{$in:locations}, softDelete: { $ne: true } 
+    locations:{$in:selectedLocation}, softDelete: { $ne: true } 
     }).populate("companyId");
     return res.status(200).send(usersCollection)
   } catch (error) {
