@@ -167,9 +167,9 @@ const recordTemperature = async (req, res) => {
     // debugger
 
     await  recordTemperatureAgenda.start();
-    await  recordTemperatureAgenda.every("0 8,14,20 * * *", "recordTemperature",{data:user});
+    // await  recordTemperatureAgenda.every("0 8,14,20 * * *", "recordTemperature",{data:user});
     
-    // await recordTemperatureAgenda.now("recordTemperature",{data:user});
+    await recordTemperatureAgenda.now("recordTemperature",{data:user});
     return res.status(200).send("record temperature job scheduled")
   };
 

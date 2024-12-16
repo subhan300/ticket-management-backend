@@ -44,15 +44,16 @@ module.exports = function (agenda, io) {
   agenda.define("recordTemperature", async (job) => {
     try {
         const { data } = job.attrs.data;
-        debugger
-        const records = await RecordTemperature.find({location:{$in:data.locations}}).populate("roomId");
-        console.log("record ",records)
+        const records = await RecordTemperature.find({location:{$in:data.locations}}).populate("roomId").populate("location");
+        console.log("record temperature____ ",records[0].isSensorIntegrated)
+       
         for (const record of records) {
             if (record.isSensorIntegrated) {
                 const sensorStatus = await getTemepratureFromSensor(record.isSensorIntegrated);
 
                 const nurses = await getAllUsersByRole(data.companyId, USER);
                 const managers = await getAllUsersByRole(data.companyId, MANAGER);
+                console.log("sensot sttaus",sensorStatus)
                 if (sensorStatus && sensorStatus.temperature != null) {
                     const req = { io, user: data };
                     if (
@@ -64,7 +65,9 @@ module.exports = function (agenda, io) {
                             humidity: sensorStatus.humidity,
                             temperatureThreshold: record.temperatureThreshold,
                             temperature: sensorStatus.temperature,
-                            room: record.roomId.roomName
+                            room: record.roomId.roomName,
+                            location: record.location
+
                         });
                     }
 

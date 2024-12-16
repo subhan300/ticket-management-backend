@@ -112,7 +112,8 @@ const getDevices = async (req, res) => {
         switchBotRes.on('end', () => {
             try {
                 const devices = JSON.parse(data);
-                 const filterDevices=devices.body.deviceList.filter(val=>val.enableCloudService)
+                 console.log("devices.body",devices)
+                 const filterDevices=devices?.body?.deviceList?.filter(val=>val.enableCloudService)
                 res.status(switchBotRes.statusCode).json(filterDevices); // Return device data
             } catch (error) {
                 console.error("Error parsing response: ", error);
@@ -177,6 +178,7 @@ const getDevicesStatus = async (req,res ) => {
 };
 
 const getTemepratureFromSensor = (deviceId) => {
+    debugger
     return new Promise((resolve, reject) => {
       const nonce = "123";
       const t = Date.now();

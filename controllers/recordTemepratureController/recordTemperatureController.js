@@ -175,11 +175,14 @@ const getAllTemperatureReadings = async (req, res) => {
 
   const updateThreshold = async (req, res) => {
     try {
+       const {selectedLocation}=req.user;
+  
       const thresholds = req.body; // Get the thresholds from the request body
+
       const thresholdKeys = Object.keys(thresholds); // Extract the keys (e.g., temperatureThreshold, humidityThreshold)
       
       // Fetch all temperature records and populate roomId
-      const records = await Temperature.find().populate("roomId");
+      const records = await Temperature.find({location: { $in: selectedLocation }}).populate("roomId");
       
       // Loop through each record to update the corresponding threshold
       for (const record of records) {

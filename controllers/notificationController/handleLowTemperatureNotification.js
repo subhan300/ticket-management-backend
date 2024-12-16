@@ -13,18 +13,19 @@ const checkLowReadings = ({
   humidityThreshold,
   temperature,
   humidity,
-  room
+  room,
+  location
 }) => {
     console.log( temperatureThreshold,
         humidityThreshold,
         temperature,
-        humidity,room)
+        humidity,room,"___",location)
   const lowReading = {
     temperatureLow: false,
     humidityLow: false,
     message: "",
   };
-
+  const {locationName}=location
   if (temperature <= temperatureThreshold) {
     lowReading.temperatureLow = true;
   }
@@ -33,27 +34,27 @@ const checkLowReadings = ({
   }
 
   if (lowReading.temperatureLow && lowReading.humidityLow) {
-    lowReading.message = `Both temperature (${temperature}°C, threshold: ${temperatureThreshold}°C) and humidity (${humidity}%, threshold: ${humidityThreshold}%) are below their respective thresholds of Room ${room}`;
+    lowReading.message = `Both temperature (${temperature}°C, threshold: ${temperatureThreshold}°C) and humidity (${humidity}%, threshold: ${humidityThreshold}%) are below their respective thresholds of Room ${room} of location ${locationName}`;
   } else if (lowReading.temperatureLow) {
-    lowReading.message = `Temperature is below the threshold. Current temperature: ${temperature}°C, threshold: ${temperatureThreshold}°C  of Room ${room}`;
+    lowReading.message = `Temperature is below the threshold. Current temperature: ${temperature}°C, threshold: ${temperatureThreshold}°C  of Room ${room} location ${locationName}`;
   } else if (lowReading.humidityLow) {
-    lowReading.message = `Humidity is below the threshold. Current humidity: ${humidity}%, threshold: ${humidityThreshold}% of Room ${room}`;
+    lowReading.message = `Humidity is below the threshold. Current humidity: ${humidity}%, threshold: ${humidityThreshold}% of Room ${room} location ${locationName}`;
   } else {
-    lowReading.message = `Temperature (${temperature}°C) and humidity (${humidity}%) are within safe levels of Room ${room}`;
+    lowReading.message = `Temperature (${temperature}°C) and humidity (${humidity}%) are within safe levels of Room ${room} location ${locationName}`;
   }
 
   return lowReading;
 };
 
-const notifyUsers = async (req, data, usersCollection, message, category) => {
+const notifyUsers = async (req, data, usersCollection, message, category,location) => {
   
-//   console.log("ticket====>", data);
+  console.log("notify user room", location);
 
   for (const userId of usersCollection) {
     
     const socketId = connectedUsers[userId];
     console.log("notify func run =====user====", userId,"scoket id",connectedUsers);
-    const notifyRes = await createNotification(userId, message, null, category);
+    const notifyRes = await createNotification(userId, message, null, category,location);
     sendSocketNotification(req, socketId, notifyRes);
   }
 };
@@ -62,7 +63,7 @@ const  handleLowTemperatureNotification = async (
   req,
   managersCollection,
   roleBasedUserCollection,
-  data
+  data,
 ) => {
   const getLowReadingThings = checkLowReadings(data);
 
@@ -72,14 +73,14 @@ const  handleLowTemperatureNotification = async (
     data,
     roleBasedUserCollection,
     getLowReadingThings.message,
-    LOW_TEMPERATURE_CATEGORY
+    LOW_TEMPERATURE_CATEGORY,data.location._id
   );
   await notifyUsers(
     req,
     data,
     managersCollection,
     getLowReadingThings.message,
-    LOW_TEMPERATURE_CATEGORY
+    LOW_TEMPERATURE_CATEGORY,data.location._id
   );
   return true
 

@@ -7,7 +7,7 @@ const authenticateJWT = (req, res, next) => {
    try{
     const token = req.headers.authorization?.split(' ')[1]; // Assuming Bearer token forma
     const location=req.headers['location']
-    // console.log("location",location)
+    console.log("location",location)
    if (!token) {
        return res.status(401).json({ message: 'Authentication failed. Token required.' });
    }
