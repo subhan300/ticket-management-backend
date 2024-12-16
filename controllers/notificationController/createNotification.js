@@ -3,7 +3,7 @@ const Notification = require("../../models/notificationModel");
 
 
 
-const createNotification = async (userId, message, ticketId,category) => {
+const createNotification = async (userId, message, ticketId,category,location) => {
     try {
       console.log("create time user id==",userId)
       console.log("whilte creating....",userId, message, ticketId,"category====>",category)
@@ -11,7 +11,8 @@ const createNotification = async (userId, message, ticketId,category) => {
         userId,
         message,
         ticketId:  mongoose.Types.ObjectId.isValid(ticketId) ? new mongoose.Types.ObjectId(ticketId): null,
-        category
+        category,
+        location
       });
       const savedNotification = await notification.save();
       console.log("saved====", savedNotification);

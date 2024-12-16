@@ -59,30 +59,29 @@ function generateBarcode(text) {
   return canvas.toBuffer();
 }
 
-const updateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
-  return `${name} have  assigned a  ticket # ${ticketNo} to ${assignedTo}`;
+const updateTicketAssignedMessage = (name, assignedTo,ticketNo,locationName) => {
+  return `${name} have  assigned a  ticket # ${ticketNo} to ${assignedTo} of location ${locationName}`;
 };
-const managerUpdateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
-  return `Ticket # ${ticketNo} is assigned to ${assignedTo} by Manager ${name}`;
+
+const technicianUpdateTicketAssignedMessage = (name, assignedTo,ticketNo,locationName) => {
+  return `Ticket # ${ticketNo} is assigned by technician to himself ${name} of location ${locationName}`;
 };
-const technicianUpdateTicketAssignedMessage = (name, assignedTo,ticketNo) => {
-  return `Ticket # ${ticketNo} is assigned by technician to himself ${name}`;
+const updateTicketStatusMessage = (name, status, ticketNo,locationName) => {
+  return `Ticket # ${ticketNo} is updated to  ${status} by ${name} of location ${locationName}`;
 };
-const updateTicketStatusMessage = (name, status, ticketNo) => {
-  return `Ticket # ${ticketNo} is updateed to  ${status} by ${name}`;
+
+const updateStatusMessage = (name, status,ticketNo,locationName) => {
+  return `Ticket # ${ticketNo} Status is updated to ${status} by ${name} of location ${locationName}`;
+};
+const ticketCreateMessage = (name,_,ticketNo,locationName) => {
+  return `Ticket # ${ticketNo} is created by ${name} of location ${locationName} `;
+};
+const ticketUnAssignedMessage = (name, roles, ticketNo,locationName) => {
+  const rolesList = roles.join(', '); // Convert roles array to a comma-separated string
+  return `Ticket # ${ticketNo} is UnAssigned by ${name} (${rolesList}) of location ${locationName}`;
 };
 const updateBatchLaundryStatusMessage = (name, status, tickets) => {
   return `Tickets # ${tickets} is updated to  ${status} by ${name}`;
-};
-const updateStatusMessage = (name, status,ticketNo) => {
-  return `Ticket # ${ticketNo} Status is updated to ${status} by ${name}`;
-};
-const ticketCreateMessage = (name,_,ticketNo) => {
-  return `Ticket # ${ticketNo} is created by ${name}`;
-};
-const ticketUnAssignedMessage = (name, roles, ticketNo) => {
-  const rolesList = roles.join(', '); // Convert roles array to a comma-separated string
-  return `Ticket # ${ticketNo} is UnAssigned by ${name} (${rolesList})`;
 };
 const handleLowTemperatureMessage=({room,temperature,threshold})=>{
   return `Temperature ${temperature} is below the threshold (${threshold}) of room ${room}.`
@@ -306,7 +305,6 @@ module.exports = {
   ObjectId,
   formatTicketNumber,
   generateQRCode,
-  managerUpdateTicketAssignedMessage,
   updateTicketStatusMessage,
   updateTicketAssignedMessage,
   getAssignedTo ,

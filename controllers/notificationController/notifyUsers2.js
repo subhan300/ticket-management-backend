@@ -15,11 +15,11 @@ const notifyUsers2 = async (
     message,category
   ) => {
       const { role, } = req.user;
-    const { _id: ticketId} = ticket;
+    const { _id: ticketId,location:{_id,locationName}} = ticket;
     for (const userId of usersCollection) {
       const socketId = connectedUsers[userId];
      
-      const notifyRes = await createNotification(userId, message, ticketId,category);
+      const notifyRes = await createNotification(userId, message, ticketId,category,_id);
       sendSocketNotification(req, socketId, notifyRes);
     }
   };

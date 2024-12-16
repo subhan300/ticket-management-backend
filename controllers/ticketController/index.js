@@ -287,6 +287,7 @@ const createTicket = async (req, res) => {
     });
 
     await ticket.save();
+    console.log("ticket",ticket)
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
@@ -296,14 +297,21 @@ const createTicket = async (req, res) => {
         : ticket.assignedTo;
     const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
     const managers = await getAllUsersByRole(companyId, MANAGER);
-    handleTicketNotification(req, managers, technicians, ticket);
-    await ticket.populate({
-      path: "room",
-      populate: {
-        path: "unit",
-        model: "Unit",
+    await ticket.populate([
+      {
+        path: "room",
+        populate: {
+          path: "unit",
+          model: "Unit",
+        },
       },
-    });
+      {
+        path: "location",
+      },
+    ]);
+    
+    handleTicketNotification(req, managers, technicians, ticket);
+   
 
     const Room = {
       roomName: ticket.room.roomName,
@@ -320,7 +328,7 @@ const createTicket = async (req, res) => {
       assignedTo: assignedToPayload,
     });
   } catch (err) {
-    consol.log("err--------------------",err)
+    console.log("err--------------------",err)
     res.status(500).json({ error: err.message });
   }
 };
@@ -463,7 +471,7 @@ const updateTicket = async (req, res) => {
         }) .populate({
           path: "comments.userId",         // Populating the userId inside each comment
           select: "name email"             // Selecting the name and email of the user who commented
-        });
+        }).populate({path:"location",select:"locationName settings"});
       // const populatedTickets=populateTickets(ticket)
       const ticketStrcutureRes = await ticketStructure(populatedTickets);
       const users = await getAllUsersByRole(companyId, USER);

@@ -1,11 +1,11 @@
-const broadcastAssignedMessage = (name, assignedTo,ticketNo) => {
-  return `${name} have  assigned a  Laundary ticket # ${ticketNo} to ${assignedTo}`;
+const broadcastAssignedMessage = (name, assignedTo,ticketNo,locationName) => {
+  return `${name} have  assigned a  Laundary ticket # ${ticketNo} to ${assignedTo} of location ${locationName}`;
 };
-const broadcastUnAssignedMessage = (name,ticketNo,role) => {
-  return `Ticket # ${ticketNo} is UnAssigned  by ${role} ${name}`;
+const broadcastUnAssignedMessage = (name,ticketNo,role,locationName) => {
+  return `Ticket # ${ticketNo} is UnAssigned  by ${role} ${name} of location ${locationName}`;
 };
-const messageToAssignedUser=(ticketNo)=>{
-  return `Ticket # ${ticketNo} is assigned to you `
+const messageToAssignedUser=(ticketNo,locationName)=>{
+  return `Ticket # ${ticketNo} is assigned to you of location ${locationName} `
 }
 
 const updateTicketStatusMessage = (name, status, ticketNo) => {

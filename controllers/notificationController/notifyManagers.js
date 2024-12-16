@@ -11,11 +11,11 @@ const notifyManagers = async (
     managersCollection,
     messageHandler,category
   ) => {
-    const { ticketNo, _id: ticketId, assignedTo } = ticket;
+    const { ticketNo, _id: ticketId, assignedTo ,location:{_id,locationName}} = ticket;
     for (const managerId of managersCollection) {
       const socketId = connectedUsers[managerId];
-      const message = messageHandler(name, assignedTo.name,ticketNo);
-      const notifyRes = await createNotification(managerId, message, ticketId,category);
+      const message = messageHandler(name, assignedTo.name,ticketNo,locationName);
+      const notifyRes = await createNotification(managerId, message, ticketId,category,_id);
       sendSocketNotification(req, socketId, notifyRes);
     }
   };

@@ -21,6 +21,7 @@ const handleStatusNotification = async (
   ) => {
     const { status, } = updates;
     const assignedTo=ticket.assignedTo._id
+    const {location:{_id,locationName}}=ticket;
     console.log("catwgpory",category)
     const { role, name,id ,roles} = req.user;
     if (roles.includes(USER) && status) {
@@ -47,8 +48,8 @@ const handleStatusNotification = async (
         const userSocketId = connectedUsers[ticket.userId._id];
         const notifyRes = await await createNotification(
           ticket.userId._id,
-          updateTicketStatusMessage(name, ticket.status,ticket.ticketNo),
-          updates._id,category
+          updateTicketStatusMessage(name, ticket.status,ticket.ticketNo,locationName),
+          updates._id,category,_id
         );
         sendSocketNotification(req, userSocketId, notifyRes);
       }
@@ -59,8 +60,8 @@ const handleStatusNotification = async (
         const userSocketId = connectedUsers[ticket.userId._id];
         const notifyRes = await await createNotification(
           ticket.userId._id,
-          updateTicketStatusMessage(name, ticket.status,ticket.ticketNo),
-          updates._id,category
+          updateTicketStatusMessage(name, ticket.status,ticket.ticketNo,locationName),
+          updates._id,category,_id
         );
         sendSocketNotification(req, userSocketId, notifyRes);
       }
@@ -70,8 +71,8 @@ const handleStatusNotification = async (
       const userSocketId = connectedUsers[ticket.userId._id];
       const notifyRes = await createNotification(
         ticket.userId._id,
-        updateStatusMessage(name, ticket.status,ticket.ticketNo),
-        updates._id,category
+        updateStatusMessage(name, ticket.status,ticket.ticketNo,locationName),
+        updates._id,category,_id
       );
       sendSocketNotification(req, userSocketId, notifyRes);
   

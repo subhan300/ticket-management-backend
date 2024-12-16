@@ -29,6 +29,7 @@ const handleAssignedNotifications = async (
       // console.log("ticket===",ticket)
     const { assignedTo, status } = updates;
     console.log("assigned to",assignedTo,ticket._id,ticket.ticketNO)
+    const {location:{_id,locationName}}=ticket;
     const technicianSocketId = connectedUsers[assignedTo];
     const { roles, name } = req.user;
     if (roles.includes(USER) && assignedTo) {
@@ -46,7 +47,7 @@ const handleAssignedNotifications = async (
     
     if (roles.includes(MANAGER) && assignedTo !== NotAssignedId) {
       console.log("manger====",category)
-      await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo),category);
+      await notifyAssignedUser2(ticket, req,messageToAssignedUser(ticket.ticketNo,locationName),category);
      
     }
     if (roles.includes(MANAGER) && assignedTo === NotAssignedId) {
@@ -68,8 +69,8 @@ const handleAssignedNotifications = async (
        console.log("ticket iserid twhxcnian",ticket.userId)
       const notifyRes = await createNotification(
         ticket.userId._id,
-        technicianUpdateTicketAssignedMessage(name,"",ticket.ticketNo),
-        updates._id,category
+        technicianUpdateTicketAssignedMessage(name,"",ticket.ticketNo,locationName),
+        updates._id,category,_id
       );
       sendSocketNotification(req, userSocketId, notifyRes);
       if (managersCollection.length)
@@ -78,7 +79,7 @@ const handleAssignedNotifications = async (
           name,
           ticket,
           managersCollection,
-          technicianUpdateTicketAssignedMessage,category
+          technicianUpdateTicketAssignedMessage,category,_id
         );
     }
     if (roles.includes(TECHNICIAN) && assignedTo === NotAssignedId) {
@@ -104,13 +105,13 @@ const handleAssignedNotifications = async (
       const userSocketId = connectedUsers[assignedTo];
       const notifyRes = await createNotification(
          assignedTo,
-         messageToAssignedUser(ticket.ticketNo),
-        updates._id,category
+         messageToAssignedUser(ticket.ticketNo,locationName),
+        updates._id,category,_id
       );
       sendSocketNotification(req, userSocketId, notifyRes);
      }
       
-      const message=assignedTo !== NotAssignedId?broadcastAssignedMessage(name,ticket.assignedTo.name,ticket.ticketNo):broadcastUnAssignedMessage(name,"Laundary Operator",ticket.ticketNo);
+      const message=assignedTo !== NotAssignedId?broadcastAssignedMessage(name,ticket.assignedTo.name,ticket.ticketNo,locationName):broadcastUnAssignedMessage(name,"Laundary Operator",ticket.ticketNo,locationName);
       if (managersCollection.length)
        
         await notifyUsers2(
