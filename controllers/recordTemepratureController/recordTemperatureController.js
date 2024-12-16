@@ -87,8 +87,8 @@ const getAllTemperatureReadings = async (req, res) => {
   
       if (!tempRecord.length) {
         return res
-          .status(404)
-          .json({ message: "No Temperature record for selected rooms" });
+          .status(200)
+          .json({data:[] });
       }
   
       res.status(200).json(tempRecord);
