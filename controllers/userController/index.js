@@ -136,6 +136,7 @@ const getUsers= async (req,res) => {
 
   try {
     const {companyId,locations,selectedLocation}=req.user;
+    console.log("selected users location__",selectedLocation)
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
     locations:{$in:selectedLocation}, softDelete: { $ne: true } 

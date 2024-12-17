@@ -36,11 +36,11 @@ const checkLowReadings = ({
   if (lowReading.temperatureLow && lowReading.humidityLow) {
     lowReading.message = `Both temperature (${temperature}°C, threshold: ${temperatureThreshold}°C) and humidity (${humidity}%, threshold: ${humidityThreshold}%) are below their respective thresholds of Room ${room} of location ${locationName}`;
   } else if (lowReading.temperatureLow) {
-    lowReading.message = `Temperature is below the threshold. Current temperature: ${temperature}°C, threshold: ${temperatureThreshold}°C  of Room ${room} location ${locationName}`;
+    lowReading.message = `Temperature is below the threshold. Current temperature: ${temperature}°C, threshold: ${temperatureThreshold}°C  of Room ${room} of location ${locationName}`;
   } else if (lowReading.humidityLow) {
-    lowReading.message = `Humidity is below the threshold. Current humidity: ${humidity}%, threshold: ${humidityThreshold}% of Room ${room} location ${locationName}`;
+    lowReading.message = `Humidity is below the threshold. Current humidity: ${humidity}%, threshold: ${humidityThreshold}% of Room ${room} of location ${locationName}`;
   } else {
-    lowReading.message = `Temperature (${temperature}°C) and humidity (${humidity}%) are within safe levels of Room ${room} location ${locationName}`;
+    lowReading.message = `Temperature (${temperature}°C) and humidity (${humidity}%) are within safe levels of Room ${room} of location ${locationName}`;
   }
 
   return lowReading;
