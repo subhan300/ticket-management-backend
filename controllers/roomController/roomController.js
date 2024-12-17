@@ -19,8 +19,8 @@ const createRoom = async (req, res) => {
 };
 const createRoomsInBulk = async (req, res) => {
     try {
-      const {locations}=req.user;
-      const location=locations[0]
+      const {selectedLocation}=req.user;
+      const location=selectedLocation[0]
       const rooms = req.body; // Expecting an array of room objects
   
       if (!Array.isArray(rooms) || rooms.length === 0) {
@@ -46,8 +46,9 @@ const createRoomsInBulk = async (req, res) => {
 // Get all rooms
 const getAllRooms = async (req, res) => {
   try {
-    const {locations}=req.user
-    const rooms = await Room.find({softDelete: { $ne: true }, location: { $in: locations },}).populate('unit'); // Populate unit reference
+    const {selectedLocation}=req.user
+    console.log("____",selectedLocation)
+    const rooms = await Room.find({softDelete: { $ne: true }, location: { $in: selectedLocation },}).populate('unit'); // Populate unit reference
     res.status(200).json(rooms);
   } catch (error) {
     console.error('Error fetching rooms:', error);

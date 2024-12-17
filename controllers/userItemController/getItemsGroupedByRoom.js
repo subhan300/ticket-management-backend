@@ -54,7 +54,16 @@ const getItemsGroupedByRoom = async (locationObjectId) => {
             as: "roomDetails"  // Output as "roomDetails"
           }
         },
-        { $unwind: "$roomDetails" }  // Unwind the roomDetails array to flatten the data
+        { $unwind: "$roomDetails" } , // Unwind the roomDetails array to flatten the data
+        {
+          $lookup: {
+            from: "units",  // Lookup details from the "units" collection
+            localField: "roomDetails.unit",  // Assuming roomDetails has a field `unitId`
+            foreignField: "_id",  // Match on the unit's ID
+            as: "unitDetails"  // Output as "unitDetails"
+          }
+        },
+        { $unwind: "$unitDetails" },  // Unwind the unitDetails array to flatten the data
       ]);
       
       return itemsGroupedByRoom;  // Return the grouped items
