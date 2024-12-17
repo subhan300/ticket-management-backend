@@ -224,7 +224,7 @@ const updateTicket = async (req, res) => {
         updates,
         managers,
         users,
-        populatedTicketsStucture
+        populatedTicketsStucture[0]
       );
        console.log("update laundryv populatedTicketsStucture")
       res.status(200).json(populatedTicketsStucture);
@@ -290,7 +290,7 @@ const updateInProcessTicketStatus = async (req, res) => {
       { status:populatedTicketsStructure[0].status,tickets:populatedTicketsStructure,batchStatus:true }, // Sending the updated status for notification
       managers,
       users,
-      // populatedTicketsStructure
+      populatedTicketsStructure[0]
     );
 
     res.status(200).json(populatedTicketsStructure);

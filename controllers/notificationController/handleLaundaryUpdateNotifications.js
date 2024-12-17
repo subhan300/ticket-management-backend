@@ -15,7 +15,8 @@ const handleLaundaryUpdateTicketNotification = async (
   ) => {
      const category=laundaryCategory
     const { assignedTo, status,batchStatus } = updates;
-      console.log("udpates====",assignedTo,"----",status,batchStatus)
+      console.log(
+       "ticket",ticket ,"udpates====",assignedTo,"----",status,batchStatus)
     if (assignedTo && status) {
         console.log("shoul not reach")
     handleLaundaryStatusNotification(req, updates, managersCollection,roleBasedUserCollection,ticket);
@@ -42,7 +43,7 @@ const handleLaundaryUpdateTicketNotification = async (
       handleLaundaryStatusNotification(req, updates, managersCollection,roleBasedUserCollection, ticket);
       return;
     }else if(status && batchStatus){
-      laundaryBatchNotification(req,updates,managersCollection,roleBasedUserCollection,{})
+      laundaryBatchNotification(req,updates,managersCollection,roleBasedUserCollection,ticket)
     }
   };
   

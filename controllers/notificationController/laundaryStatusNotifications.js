@@ -22,6 +22,8 @@ const handleLaundaryStatusNotification = async (
   const { status } = updates;
   
   const { roles, name ,id} = req.user;
+  const {location:{locationName,_id}}=ticket;
+  console.log("location name laundry notificiation ==",locationName)
    const filterUser=roleBasedUserCollection.filter(val=>val._id !== id)
   if (roles.includes(LaundryOperator) && status) {
       await notifyUsers2(
@@ -29,7 +31,7 @@ const handleLaundaryStatusNotification = async (
         name,
         ticket,
         filterUser,
-        updateTicketStatusMessage(name,status,ticket.ticketNo),laundaryCategory
+        updateTicketStatusMessage(name,status,ticket.ticketNo,locationName),laundaryCategory
         
       );
     
@@ -39,7 +41,7 @@ const handleLaundaryStatusNotification = async (
         name,
         ticket,
         managersCollection,
-        updateTicketStatusMessage(name,status,ticket.ticketNo),laundaryCategory
+        updateTicketStatusMessage(name,status,ticket.ticketNo,locationName),laundaryCategory
       );
   }
 
@@ -49,7 +51,7 @@ const handleLaundaryStatusNotification = async (
         name,
         ticket,
         roleBasedUserCollection,
-        updateTicketStatusMessage(name,status,ticket.ticketNo),laundaryCategory
+        updateTicketStatusMessage(name,status,ticket.ticketNo,locationName),laundaryCategory
       );
   }
 

@@ -22,7 +22,9 @@ const {
   ) => {
     
     const { status,tickets } = updates;
-    debugger
+    console.log("tickrt",ticket)
+    const {location:{locationName,_id}}=ticket
+
     const { roles, name ,id} = req.user;
     const ticketNoAll = tickets.map(val => val.ticketNo).join(",");
      const filterUser=roleBasedUserCollection.filter(val=>val._id !== id)
@@ -32,7 +34,7 @@ const {
           name,
           ticket,
           filterUser,
-          updateBatchLaundryStatusMessage(name,status,ticketNoAll),laundaryCategory
+          updateBatchLaundryStatusMessage(name,status,ticketNoAll,locationName),laundaryCategory
           
         );
       
@@ -42,7 +44,7 @@ const {
           name,
           ticket,
           managersCollection,
-          updateBatchLaundryStatusMessage(name,status,ticketNoAll),laundaryCategory
+          updateBatchLaundryStatusMessage(name,status,ticketNoAll,locationName),laundaryCategory
         );
     }
   
@@ -52,7 +54,7 @@ const {
           name,
           ticket,
           roleBasedUserCollection,
-          updateBatchLaundryStatusMessage(name,status,ticketNoAll),laundaryCategory
+          updateBatchLaundryStatusMessage(name,status,ticketNoAll,locationName),laundaryCategory
         );
     }
   

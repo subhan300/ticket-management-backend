@@ -80,8 +80,8 @@ const ticketUnAssignedMessage = (name, roles, ticketNo,locationName) => {
   const rolesList = roles.join(', '); // Convert roles array to a comma-separated string
   return `Ticket # ${ticketNo} is UnAssigned by ${name} (${rolesList}) of location ${locationName}`;
 };
-const updateBatchLaundryStatusMessage = (name, status, tickets) => {
-  return `Tickets # ${tickets} is updated to  ${status} by ${name}`;
+const updateBatchLaundryStatusMessage = (name, status, tickets,locationName) => {
+  return `Tickets # ${tickets} is updated to  ${status} by ${name} of location ${locationName}`;
 };
 const handleLowTemperatureMessage=({room,temperature,threshold})=>{
   return `Temperature ${temperature} is below the threshold (${threshold}) of room ${room}.`

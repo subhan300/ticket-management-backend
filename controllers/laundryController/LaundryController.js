@@ -195,7 +195,8 @@ const createTicket = async (req, res) => {
       }) .populate({
         path: "comments.userId",         // Populating the userId inside each comment
         select: "name email"             // Selecting the name and email of the user who commented
-      })
+      }).populate({ path: "location",         // Populating the userId inside each comment
+        select: "locationName settings"   })
       .sort({ createdAt: -1 });
 
     const structuredLaundaryRes = await laundryTicketStructure(getSelectedTicket);
