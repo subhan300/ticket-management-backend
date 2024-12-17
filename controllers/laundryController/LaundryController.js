@@ -28,8 +28,8 @@ const UserItem = require("../../models/userItemsModel");
 const roomModel = require("../../models/roomModel");
 const { handleLaundaryTicketNotification } = require("../notificationController/handleLaundaryNotification");
 const { handleLaundaryUpdateTicketNotification } = require("../notificationController/handleLaundaryUpdateNotifications");
-const getLastTicketNumber = async () => {
-  const lastTicket = await LaundryTicket.findOne().sort({ ticketNo: -1 });
+const getLastTicketNumber = async (location) => {
+  const lastTicket = await LaundryTicket.findOne({location}).sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
   return formatTicketNumber(getNumber);
 };
@@ -164,7 +164,7 @@ const createTicket = async (req, res) => {
     }
 
     // Step 3: Proceed with creating a new ticket if no conflicting ticket is found
-    const ticketNo = await getLastTicketNumber();
+    const ticketNo = await getLastTicketNumber(req.body.location);
     const generateSku = generateSKU(`${req.body.room}-${ticketNo}`);
 
     const ticket = new LaundryTicket({

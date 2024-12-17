@@ -35,8 +35,8 @@ const {
   handleTicketNotification,
 } = require("../notificationController/notificationHelper");
 const userModel = require("../../models/userModel");
-const getLastTicketNumber = async () => {
-  const lastTicket = await Ticket.findOne().sort({ ticketNo: -1 });
+const getLastTicketNumber = async (location) => {
+  const lastTicket = await Ticket.findOne({location}).sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
   return formatTicketNumber(getNumber);
 };
@@ -265,7 +265,7 @@ const createTicket = async (req, res) => {
       isSheduled,
       dueDate,
     } = req.body;
-    const ticketNo = await getLastTicketNumber();
+    const ticketNo = await getLastTicketNumber(location);
     const ticket = new Ticket({
       userId,
       issue,

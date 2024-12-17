@@ -140,7 +140,10 @@ const getUsers= async (req,res) => {
 // location[0] because laundary operator will have only one location 
    const usersCollection=  await User.find({
     locations:{$in:selectedLocation}, softDelete: { $ne: true } 
-    }).populate("companyId");
+    }).populate("companyId").populate({
+      path: "locations",   
+      model: "Location",  
+    });
     return res.status(200).send(usersCollection)
   } catch (error) {
     console.error('Error fetching managers:', error);

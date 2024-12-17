@@ -18,8 +18,8 @@ const {
 const {
   handleLowTemperatureNotification,
 } = require("../controllers/notificationController/handleLowTemperatureNotification");
-const getLastTicketNumber = async () => {
-  const lastTicket = await Ticket.findOne().sort({ ticketNo: -1 });
+const getLastTicketNumber = async (location) => {
+  const lastTicket = await Ticket.findOne({location}).sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
   return formatTicketNumber(getNumber);
 };
@@ -28,8 +28,8 @@ module.exports = function (agenda, io) {
     try {
       const { data } = job.attrs.data;
       const { user } = job.attrs.data;
-      const { companyId } = data;
-      const ticketNo = await getLastTicketNumber();
+      const { companyId,location } = data;
+      const ticketNo = await getLastTicketNumber(location);
       const ticket = new Ticket({ ...data, ticketNo });
       await ticket.save();
       const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
