@@ -77,6 +77,7 @@ const getRoomsByUnitId = async (req, res) => {
     const { unitId } = req.params;
 
     const room = await Room.find({unit:unitId,softDelete: { $ne: true }}).populate('unit').sort({roomName:1});
+    console.log("room======",room)
     if (!room) {
       return res.status(404).json({ message: 'Room not found' });
     }

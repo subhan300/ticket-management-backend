@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {uploadMiddleware} = require('../middleware/Upload');
-const ticketController = require('../controllers/ticketController');
+const ticketController = require('../controllers/groupTicketController');
 const { adminAuthenticateJWT } = require('../middleware/adminAuthMiddleware');
 const { authenticateJWT } = require('../middleware/authMiddleware');
 

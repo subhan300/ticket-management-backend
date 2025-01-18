@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Ticket = require("../../models/ticketModel");
+const Ticket = require("../../models/groupTicketModel");
 const LaundaryTicket = require("../../models/laundryModel");
 const User = require("../../models/userModel");
 const Room = require("../../models/roomModel");
@@ -253,12 +253,12 @@ const createTicket = async (req, res) => {
     const {
       issue,
       description,
-      issueLocation,
       status,
       assignedTo,
       images,
       location,
-      room,
+      rooms,
+      units,
       issueItem,
       issueItemDescription,
       audit,
@@ -271,13 +271,13 @@ const createTicket = async (req, res) => {
       issue,
       isSheduled:isSheduled??false,
       description,
-      issueLocation,
       status,
       assignedTo,
       companyId,
       images,
       ticketNo,
-      room,
+      rooms,
+      units,
       location,
       issueItem,
       issueItemDescription,
@@ -287,42 +287,50 @@ const createTicket = async (req, res) => {
     });
 
     await ticket.save();
-    console.log("ticket",ticket)
+    console.log("ticket______________",ticket)
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
+    // assignedto will be array
     const assignedToPayload =
-      ticket.assignedTo === NotAssignedId
-        ? { name: NotAssigned, _id: NotAssignedId }
-        : ticket.assignedTo;
+      !ticket.assignedTo.length
+        ? [{ name: NotAssigned, _id: NotAssignedId }]
+        : ticket.assignedTo
     const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
     const managers = await getAllUsersByRole(companyId, MANAGER);
+    console.log("here___")
     await ticket.populate([
       {
-        path: "room",
+        path: "rooms",
         populate: {
-          path: "unit",
+          path: "units",
           model: "Unit",
         },
       },
       {
         path: "location",
       },
+      {
+        path: "units",
+      },
     ]);
     
-    handleTicketNotification(req, managers, technicians, ticket);
+    // handleTicketNotification(req, managers, technicians, ticket);
    
 
-    const Room = {
-      roomName: ticket.room.roomName,
-      _id: ticket.room._id,
-      SKU: ticket.room.SKU,
-    };
-    const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
+    const Rooms = ticket.rooms.map(val=>({
+      
+        roomName: val.room.roomName,
+        _id: val.room._id,
+        SKU: val.room.SKU,
+      
+    }))
+    console.log("ticket",ticket,"rooms",Rooms)
+    // const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
     res.status(201).json({
       ...ticket.toObject(),
-      room: Room,
-      unit,
+      rooms:Rooms,
+      // unit,
       name,
       email,
       assignedTo: assignedToPayload,

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const GroupTicket = require("../../models/groupTicketModel");
+const Ticket = require("../../models/ticketModel");
 const LaundaryTicket = require("../../models/laundryModel");
 const User = require("../../models/userModel");
 const Room = require("../../models/roomModel");
@@ -36,14 +36,14 @@ const {
 } = require("../notificationController/notificationHelper");
 const userModel = require("../../models/userModel");
 const getLastTicketNumber = async (location) => {
-  const lastTicket = await GroupTicket.findOne({location}).sort({ ticketNo: -1 });
+  const lastTicket = await Ticket.findOne({location}).sort({ ticketNo: -1 });
   const getNumber = lastTicket ? lastTicket.ticketNo : 0;
   return formatTicketNumber(getNumber);
 };
 
 const getAllTickets = async (req, res) => {
   try {
-    const tickets = await GroupTicket.find()
+    const tickets = await Ticket.find()
       .sort({ createdAt: -1 })
       .populate("userId", "name email")
       .sort({ createdAt: -1 });
@@ -60,13 +60,13 @@ const getTicketByUserId = async (req, res) => {
     let tickets;
     if (roles.includes(MANAGER)) {
       // add lcoation as well
-      tickets = GroupTicket.find({ location: { $in: selectedLocation  },});
+      tickets = Ticket.find({ location: { $in: selectedLocation  },});
     } 
    
     else if (roles.includes(USER)) {
-      tickets = GroupTicket.find({ userId ,location: { $in:  selectedLocation },});
+      tickets = Ticket.find({ userId ,location: { $in:  selectedLocation },});
     }else if(roles.includes(TECHNICIAN)){
-      tickets = GroupTicket.find({ 
+      tickets = Ticket.find({ 
         location: { $in:  selectedLocation },
         $or: [
           { assignedTo: userId },
@@ -74,7 +74,7 @@ const getTicketByUserId = async (req, res) => {
         ]
       });
     } else if(roles.includes(USER) && roles.includes(TECHNICIAN) ){
-      return tickets = GroupTicket.find({ 
+      return tickets = Ticket.find({ 
          location: { $in:  selectedLocation },
          $or: [
            { assignedTo: userId },
@@ -105,7 +105,7 @@ const getTicketById = async (req, res) => {
       }
       ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
     } else {
-      tickets =GroupTicket.findById(id);
+      tickets =Ticket.findById(id);
       const populatedTickets = await populateTickets(tickets);
       if(!populateTickets){
         return   res.
@@ -123,7 +123,7 @@ const getFilterCompanyTickets = async (req, res) => {
   try {
     const { id, companyId } = req.user;
 
-    const tickets = GroupTicket.find({
+    const tickets = Ticket.find({
       companyId: companyId,
       $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
     });
@@ -137,7 +137,7 @@ const getFilterCompanyTickets = async (req, res) => {
 const getCompanyTickets = async (req, res) => {
   try {
     const { id, companyId ,locations} = req.user;
-    const tickets = GroupTicket.find({
+    const tickets = Ticket.find({
       companyId: companyId,
     });
     const populatedTickets = await populateTickets(tickets);
@@ -163,13 +163,13 @@ const getUserTicket = async (req, res) => {
     let tickets ;
     if(!getRoom) return res.status(400).json({error:"did not found any room at this location"})
     if(roles.includes(MANAGER) || roles.includes(USER)){
-     tickets= GroupTicket.find({
+     tickets= Ticket.find({
       location: { $in:  selectedLocation } ,
       room: getRoom._id,
         
       });
     }else{
-      tickets=await GroupTicket.find({
+      tickets=await Ticket.find({
         location: { $in:  selectedLocation } ,
         room: getRoom._id,
         $or: [
@@ -196,7 +196,7 @@ const updateAll = async (req, res) => {
   try {
     const location = "66df7372e2fe86332f1ad7c5";
 
-    const result = await GroupTicket.updateMany(
+    const result = await Ticket.updateMany(
       { $set: { location: location } } 
     );
   } catch (error) {
@@ -210,7 +210,7 @@ const searchTicket = async (req, res) => {
       return res.status(200).json([]);
     }
 
-    const tickets = await GroupTicket.find({
+    const tickets = await Ticket.find({
       location: { $in: selectedLocation } ,
       $or: [
         { issue: { $regex: query, $options: "i" } },
@@ -266,7 +266,7 @@ const createTicket = async (req, res) => {
       dueDate,
     } = req.body;
     const ticketNo = await getLastTicketNumber(location);
-    const ticket = new GroupTicket({
+    const ticket = new Ticket({
       userId,
       issue,
       isSheduled:isSheduled??false,
@@ -378,7 +378,7 @@ const updateTicket = async (req, res) => {
                 .status(400)
                 .send("Inventory is out of stock ,can't order that much");
             }
-            const getTicket=await GroupTicket.findById(ticketId).populate("room").select("room ticketNo");
+            const getTicket=await Ticket.findById(ticketId).populate("room").select("room ticketNo");
             if(filteredInventoryUsedTicket.length){
             const result = await InventoryModel.updateOne(
               { _id: item.inventoryId, "inventoryUsed.ticket": ticketId }, // Look for a document with a matching ticketId in inventoryUsed array
@@ -448,7 +448,7 @@ const updateTicket = async (req, res) => {
         }
       }
 
-      const populatedTickets = await GroupTicket.findByIdAndUpdate(
+      const populatedTickets = await Ticket.findByIdAndUpdate(
         ticketId,
         {...updates,updatedBy:userId},
         {
@@ -494,8 +494,8 @@ const deleteTicket = async (req, res) => {
       return res.status(400).json({ error: "Invalid ticketId" });
     }
 
-    await GroupTicket.findByIdAndDelete(ticketId);
-    res.status(200).json({ message: "GroupTicket deleted successfully" });
+    await Ticket.findByIdAndDelete(ticketId);
+    res.status(200).json({ message: "Ticket deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -506,9 +506,9 @@ const addComment = async (req, res) => {
   const { userId, text, images, files } = req.body;
 
   try {
-    const ticket = await GroupTicket.findById(ticketId);
+    const ticket = await Ticket.findById(ticketId);
     if (!ticket) {
-      return res.status(404).json({ message: "GroupTicket not found" });
+      return res.status(404).json({ message: "Ticket not found" });
     }
 
     const newComment = {
@@ -534,7 +534,7 @@ const updateInBulk = async (req, res) => {
 
   try {
     // Update tickets that currently have status "Progress" to "In-Progress"
-    const result = await GroupTicket.updateMany(
+    const result = await Ticket.updateMany(
       { status: "COMPLETED" }, // Filter: Only update tickets with 'Progress' status
       { status: COMPLETED }, // Update: Set status to 'In-Progress'
       { session }
