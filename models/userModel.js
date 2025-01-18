@@ -6,9 +6,9 @@ const Schema = mongoose.Schema;
 // Define the User schema
 const UserSchema = new Schema({
   SKU: { type: String },
-  softDelete:{type:Boolean,default:false},
+  softDelete: { type: Boolean, default: false },
   userSettings: {
-    selectedLocation: { type: Schema.Types.ObjectId, ref: 'Location' } 
+    selectedLocation: { type: Schema.Types.ObjectId, ref: "Location" },
   },
   name: {
     type: String,
@@ -22,10 +22,9 @@ const UserSchema = new Schema({
   role: {
     type: String,
     required: false,
-    // enum: ['user', 'admin'],
-    // default: 'user'
+    
   },
-  roles:[{type:String}],
+  roles: [{ type: String }],
   password: {
     type: String,
     required: true,
@@ -35,10 +34,12 @@ const UserSchema = new Schema({
     ref: "Company",
     required: false,
   },
-// need to remove
+  rooms: [{ type: Schema.Types.ObjectId, ref: "Room" }],
+  // need to remove
   locationName: { type: String, required: false },
-  imageUrl:{type:String,},
 
+
+  imageUrl: { type: String },
   locations: [{ type: Schema.Types.ObjectId, ref: "Location" }],
 });
 

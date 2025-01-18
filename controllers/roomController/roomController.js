@@ -86,7 +86,27 @@ const getRoomsByUnitId = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
+const testLookup = async(locationId)=>{
+  const res=await Room.aggregate([
+    { $match: { location: covertId(locationId) } },
+    {
+      $lookup: {
+        from: 'users', // Ensure this matches the actual collection name
+        localField: 'resident',
+        foreignField: '_id',
+        as: 'resident',
+      },
+    },
+    { $unwind: {
+      path: '$resident',
+      preserveNullAndEmptyArrays: true, // Keep documents even if resident is null
+    },},
+  ]);
+  const room=await Room.findById("6750de338d6b4c086bbd29d7")
+  console.log("Res",res,"room",room)
+  return res
+}
+// console.log(testLookup("674f48a5d4903325eec6b58a"));
 const getRoomsByLocationId = async (req, res) => {
   try {
     const { locationId } = req.params;
@@ -99,6 +119,23 @@ const getRoomsByLocationId = async (req, res) => {
       },
       {
         $lookup: {
+          from: 'users', // Assuming the collection name for units is 'units'
+          localField: 'resident',
+          foreignField: '_id',
+          as: 'resident', // The field to add the unit details
+        },
+      },
+     {
+      
+      $unwind: {
+      path: '$resident',
+      preserveNullAndEmptyArrays: true, // Keep documents even if resident is null
+    },
+  },
+    
+
+      {
+        $lookup: {
           from: 'units', // Assuming the collection name for units is 'units'
           localField: 'unit',
           foreignField: '_id',
@@ -108,6 +145,9 @@ const getRoomsByLocationId = async (req, res) => {
       {
         $unwind: '$unitDetails', // Unwind the array to get individual unit details
       },
+  
+      
+      
       {
         $match: {
           'unitDetails.softDelete': { $ne: true }, // Exclude soft-deleted units
@@ -122,6 +162,7 @@ const getRoomsByLocationId = async (req, res) => {
         $group: {
           _id: '$unitDetails._id', // Group by unit ID
           unit: { $first: '$unitDetails' }, // Get the unit details
+       
           rooms: {
             $push: {
               _id: '$_id',
@@ -129,6 +170,9 @@ const getRoomsByLocationId = async (req, res) => {
               roomName: '$roomName',
               type: '$type',
               sensor: '$sensor',
+              resident: {
+                $ifNull: ['$resident', ''], // If no resident, set to an empty string
+              },
             },
           },
         },
@@ -138,6 +182,7 @@ const getRoomsByLocationId = async (req, res) => {
           _id: 0, // Exclude the default _id field
           unit: 1,
           rooms: 1,
+          resident:1,
         },
       },
       {
@@ -150,7 +195,7 @@ const getRoomsByLocationId = async (req, res) => {
     if (!groupedRooms || groupedRooms.length === 0) {
       return res.status(404).json({ message: 'Rooms not found for this location' });
     }
-
+      
     res.status(200).json(groupedRooms);
   } catch (error) {
     console.error('Error fetching rooms:', error);
