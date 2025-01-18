@@ -1,6 +1,5 @@
-import mongoose from "mongoose";
-
-export const commentSchema = new mongoose.Schema({
+const mongoose = require("mongoose");
+ const commentSchema = new mongoose.Schema({
     isSystemGenerated:{type:Boolean,default:false},
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +23,7 @@ export const commentSchema = new mongoose.Schema({
   });
 
 
-export const inventoryUsedSchema = new mongoose.Schema({
+ const inventoryUsedSchema = new mongoose.Schema({
   inventoryId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Inventory',
@@ -35,3 +34,7 @@ export const inventoryUsedSchema = new mongoose.Schema({
     required: true,
   }
 });
+
+module.exports={
+    commentSchema,inventoryUsedSchema
+}
