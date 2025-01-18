@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const { OPEN,} = require("../utils/constants");
 const { commentSchema, inventoryUsedSchema } = require("./HelperSchemas");
 
-const ticketSchema = new mongoose.Schema(
+const groupTicketSchema = new mongoose.Schema(
   {
     isSheduled:{type:Boolean,default:false},
     ticketNo:{type:String,},
@@ -63,7 +63,7 @@ const ticketSchema = new mongoose.Schema(
 
 );
 
-const GroupTicket = mongoose.model("GroupTicket", ticketSchema);
+const GroupTicket = mongoose.model("GroupTicket", groupTicketSchema);
 
 
   
