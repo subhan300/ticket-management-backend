@@ -70,6 +70,33 @@ const getRoomById = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+const getRoomsByMultipleUnit = async (req, res) => {
+  try {
+    const { unitIds } = req.body; // Assume unit IDs are passed in the request body as an array
+
+    if (!Array.isArray(unitIds) || unitIds.length === 0) {
+      return res.status(400).json([]);
+    }
+
+    const rooms = await Room.find({
+      unit: { $in: unitIds },
+      softDelete: { $ne: true },
+    })
+      .populate('unit').populate({path:"resident",select:"name"})
+      .sort({ roomName: 1 });
+
+    console.log("rooms======", rooms);
+
+    if (!rooms || rooms.length === 0) {
+      return res.status(404).json({ message: 'No rooms found for the provided unit IDs.' });
+    }
+
+    res.status(200).json(rooms);
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 const getRoomsByUnitId = async (req, res) => {
   try {
@@ -362,5 +389,6 @@ module.exports = {
   deleteRoom,
   createRoomsInBulk,
   getRoomsByLocationId,
-  getStorageRooms
+  getStorageRooms,
+  getRoomsByMultipleUnit
 };

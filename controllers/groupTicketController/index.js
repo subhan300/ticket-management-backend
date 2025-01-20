@@ -7,11 +7,9 @@ const {
   ObjectId,
   formatTicketNumber,
   updateStockStatus,
-  populateTickets,
-  ticketStructure,
-  populateLaundryTickets,
-  laundryTicketStructure,
+ 
 } = require("../../utils");
+const { populateTickets,transformTicket}=require("./utils")
 const {
   TECHNICIAN,
   NotAssigned,
@@ -84,7 +82,7 @@ const getTicketByUserId = async (req, res) => {
        });
      }
     const populatedTickets = await populateTickets(tickets);
-    const ticketStrcutureRes = await ticketStructure(populatedTickets);
+    const ticketStrcutureRes = await transformTicket(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     console.log("Err",err)
@@ -94,25 +92,16 @@ const getTicketByUserId = async (req, res) => {
 const getTicketById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { category } = req.body;
-    let tickets;
-    let ticketStrcutureRes;
-    if (category === laundaryCategory) {
-      tickets = LaundaryTicket.findById(id);
-      const populatedTickets = await populateLaundryTickets(tickets);
-      if(!populateTickets){
-          return   res.status(400).json("no ticket found");
-      }
-      ticketStrcutureRes = await laundryTicketStructure(populatedTickets);
-    } else {
-      tickets =Ticket.findById(id);
+    
+  
+      const tickets =Ticket.findById(id);
       const populatedTickets = await populateTickets(tickets);
       if(!populateTickets){
         return   res.
         status(400).json("no ticket found");
     }
-      ticketStrcutureRes = await ticketStructure(populatedTickets);
-    }
+      const ticketStrcutureRes = await transformTicket(populatedTickets);
+    
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     console.log("err",err)
@@ -121,14 +110,16 @@ const getTicketById = async (req, res) => {
 };
 const getFilterCompanyTickets = async (req, res) => {
   try {
-    const { id, companyId } = req.user;
-
+    const { id, companyId ,selectedLocation} = req.user;
+    console.log("requ",req.user,"id")
     const tickets = Ticket.find({
-      companyId: companyId,
-      $or: [{ assignedTo: id }, { assignedTo: NotAssignedId }],
+      location: {$in:selectedLocation},
+      // assignedTo: { $in: [id,] },
     });
+  
     const populatedTickets = await populateTickets(tickets);
-    const ticketStrcutureRes = await ticketStructure(populatedTickets);
+    console.log("populated",populateTickets)
+    const ticketStrcutureRes = await transformTicket(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -141,7 +132,7 @@ const getCompanyTickets = async (req, res) => {
       companyId: companyId,
     });
     const populatedTickets = await populateTickets(tickets);
-    const ticketStrcutureRes = await ticketStructure(populatedTickets);
+    const ticketStrcutureRes = await transformTicket(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -185,7 +176,7 @@ const getUserTicket = async (req, res) => {
     if(!populatedTickets.length){
       return res.status(200).json([]);
     }
-    const ticketStrcutureRes = await ticketStructure(populatedTickets);
+    const ticketStrcutureRes = await transformTicket(populatedTickets);
     res.status(200).json(ticketStrcutureRes);
   } catch (err) {
     console.log(err)
@@ -287,23 +278,23 @@ const createTicket = async (req, res) => {
     });
 
     await ticket.save();
-    console.log("ticket______________",ticket)
     if (mongoose.Types.ObjectId.isValid(ticket.assignedTo)) {
       await ticket.populate("assignedTo", "name email");
     }
     // assignedto will be array
-    const assignedToPayload =
-      !ticket.assignedTo.length
-        ? [{ name: NotAssigned, _id: NotAssignedId }]
-        : ticket.assignedTo
+    // const assignedToPayload =
+    //   !ticket.assignedTo.length
+    //     ? [{ name: NotAssigned, _id: NotAssignedId }]
+    //     : ticket.assignedTo
     const technicians = await getAllUsersByRole(companyId, TECHNICIAN);
     const managers = await getAllUsersByRole(companyId, MANAGER);
     console.log("here___")
     await ticket.populate([
       {
         path: "rooms",
+        select:"roomName SKU",
         populate: {
-          path: "units",
+          path: "unit",
           model: "Unit",
         },
       },
@@ -316,24 +307,17 @@ const createTicket = async (req, res) => {
     ]);
     
     // handleTicketNotification(req, managers, technicians, ticket);
+    console.log("ticket",ticket)
+
    
 
-    const Rooms = ticket.rooms.map(val=>({
-      
-        roomName: val.room.roomName,
-        _id: val.room._id,
-        SKU: val.room.SKU,
-      
-    }))
-    console.log("ticket",ticket,"rooms",Rooms)
     // const unit = { name: ticket.room.unit.name, _id: ticket.room.unit._id };
     res.status(201).json({
       ...ticket.toObject(),
-      rooms:Rooms,
-      // unit,
+   
       name,
       email,
-      assignedTo: assignedToPayload,
+      assignedTo
     });
   } catch (err) {
     console.log("err--------------------",err)
@@ -481,7 +465,7 @@ const updateTicket = async (req, res) => {
           select: "name email"             // Selecting the name and email of the user who commented
         }).populate({path:"location",select:"locationName settings"});
       // const populatedTickets=populateTickets(ticket)
-      const ticketStrcutureRes = await ticketStructure(populatedTickets);
+      const ticketStrcutureRes = await transformTicket(populatedTickets);
       const users = await getAllUsersByRole(companyId, USER);
       const managers = await getAllUsersByRole(companyId, MANAGER);
       handleNotification(req, updates, managers, users, populatedTickets);

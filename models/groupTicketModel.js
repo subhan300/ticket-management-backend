@@ -22,7 +22,7 @@ const groupTicketSchema = new mongoose.Schema(
     comments: [commentSchema], // Embed the comment schema
     inventoryUsed: [inventoryUsedSchema],
     externalInventory:{type:String,default:"Not Ordered anything Externally"},
-    units:[{type: mongoose.Schema.Types.ObjectId, ref: "Room",required:true}],
+    units:[{type: mongoose.Schema.Types.ObjectId, ref: "Unit",required:true}],
     rooms:[{type: mongoose.Schema.Types.ObjectId, ref: "Room",required:true}],
     location:{type: mongoose.Schema.Types.ObjectId, ref: "Location",required:true},
     assignedTo: [{ type: mongoose.Schema.Types.Mixed, ref: "User", required: false }],
